@@ -3,7 +3,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="screen-orientation" content="portrait">
 <title>QuickCorn</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -109,7 +110,7 @@ body {
         .ppr-row.team-red .ppr-val { color: #ff7a74; }
             .ppr-row.team-blue .ppr-val { color: #74b3ff; }
                 .play-again-btn {
-                    display: block; width: calc(100 % - 24px); margin: 8px 12px 12px;
+                    display: block; width: calc(100% - 24px); margin: 8px 12px 12px;
                     background: var(--green); border: none; border-radius: 12px;
                     color: #fff; font-family: 'Bebas Neue', sans-serif;
                     font-size: 22px; letter-spacing: 2px; padding: 11px 0;
@@ -281,6 +282,13 @@ body {
                                 .about-appname { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 4px; color: var(--green); margin-bottom: 6px; }
                                 .about-version { font-size: 13px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
                                 .about-credit { font-size: 16px; color: var(--text); }
+
+                                /* ── FORCE PORTRAIT IN LANDSCAPE ── */
+                                @media (orientation: landscape) {
+                                    body { max-width: 100%; height: 100dvh; }
+                                    .scoreboards { flex: 0 0 22vh; }
+                                    .bag-section { flex: 1 1 0; }
+                                }
                                 </style>
                                 </head>
                                 <body>
@@ -447,7 +455,7 @@ body {
                                                     const val = state.bags[team][type];
                                                     const p = team === 'red' ? 'r' : 'b';
                                                     for (let i = 1; i <= 4; i++) {
-                                                        document.getElementById(`$ { p }-${type}-${i}`).className =
+                                                        document.getElementById(`${p}-${type}-${i}`).className =
                                                             'bag-btn' + (i === val ? ` selected-${team}` : '');
                                                         }
                                                     });
@@ -508,7 +516,7 @@ body {
                                         const teamLine = (state.mode === '2v2' && wp2) ? wp1 + ' & ' + wp2 : wp1;
                                         document.getElementById('win-team-name').textContent = teamLine;
                                         document.getElementById('win-players').style.display = 'none';
-                                        document.getElementById('win-score-line').textContent = `$ { state.redTotal } – ${state.blueTotal}`;
+                                        document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
 
                                         const rounds = state.rounds, n = rounds.length;
                                         const pprList = document.getElementById('ppr-list');
@@ -519,15 +527,15 @@ body {
                                             players.push({ color:'red', name:state.redP1, pts:rounds.map(r=>r.redNet) });
                                             players.push({ color:'blue', name:state.blueP1, pts:rounds.map(r=>r.blueNet) });
                                         } else {
-                                            const p1Rounds = rounds.filter((_, i) = >i%2===0);
-                                            const p2Rounds = rounds.filter((_, i) = >i%2===1);
+                                            const p1Rounds = rounds.filter((_, i) => i%2===0);
+                                            const p2Rounds = rounds.filter((_, i) => i%2===1);
                                             players.push({ color:'red', name:state.redP1, pts:p1Rounds.map(r=>r.redNet) });
                                             if (state.redP2)  players.push({ color:'red', name:state.redP2, pts:p2Rounds.map(r=>r.redNet) });
                                             players.push({ color:'blue', name:state.blueP1, pts:p1Rounds.map(r=>r.blueNet) });
                                             if (state.blueP2) players.push({ color:'blue', name:state.blueP2, pts:p2Rounds.map(r=>r.blueNet) });
                                         }
                                         players.forEach(p => {
-                                                const tot = p.pts.reduce((a, b) = >a+b, 0);
+                                                const tot = p.pts.reduce((a, b) => a+b, 0);
                                                 const avg = p.pts.length ? (tot/p.pts.length).toFixed(1) : '0.0';
                                                 pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${avg}</span></div>`;
                                             });
@@ -597,7 +605,7 @@ body {
                                     function renderRounds() {
                                         const grid = document.getElementById('rounds-grid');
                                         grid.innerHTML = '';
-                                        state.rounds.forEach((r, i) = > {
+                                        state.rounds.forEach((r, i) => {
                                                 const col = document.createElement('div');
                                                 col.className = 'round-col' + (state.editingRound === i ? ' selected' : '');
                                                 col.onclick = () => selectRound(i);
@@ -659,7 +667,12 @@ body {
                                     function closeMenu() {
                                         document.getElementById('dropdown-menu').classList.remove('open');
                                     }
-                                    document.addEventListener('click', () => closeMenu());
+                                    document.addEventListener('click', (e) => {
+                                        if (!e.target.closest('.menu-wrap')) closeMenu();
+                                    });
+                                    document.addEventListener('touchstart', (e) => {
+                                        if (!e.target.closest('.menu-wrap')) closeMenu();
+                                    }, { passive: true });
 
                                     // ── ABOUT MODAL ──
                                     function openAbout() { document.getElementById('about-modal').classList.add('open'); }
@@ -692,6 +705,11 @@ body {
                                             if (dy >= THRESHOLD) { location.reload(); }
                                         });
                                     })();
+
+                                    // ── ORIENTATION LOCK ──
+                                    if (screen.orientation && screen.orientation.lock) {
+                                        screen.orientation.lock('portrait').catch(() => {});
+                                    }
                                     </script>
                                     </body>
                                     </html>
