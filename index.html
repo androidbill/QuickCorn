@@ -67,6 +67,33 @@
   .btn-restart { background: #7a3030; color: #ffaaaa; }
   .btn-save { background: var(--green); color: #fff; }
 
+  /* ── DROPDOWN MENU ── */
+  .menu-dropdown {
+    display: none; position: absolute; top: 32px; right: 10px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; z-index: 150;
+    min-width: 140px; box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .menu-dropdown.open { display: block; }
+  .menu-dropdown button {
+    display: block; width: 100%; padding: 11px 16px;
+    background: none; border: none; color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+    font-weight: 600; text-align: left; cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .menu-dropdown button:hover { background: var(--bg3); }
+  .menu-dropdown button + button { border-top: 1px solid var(--border); }
+
+  /* ── ABOUT MODAL ── */
+  .about-body { text-align: center; padding: 10px 0 4px; }
+  .about-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    letter-spacing: 4px; color: var(--text); line-height: 1;
+  }
+  .about-version { font-size: 14px; color: var(--muted); margin: 6px 0 4px; letter-spacing: 1px; }
+  .about-credit  { font-size: 14px; color: var(--muted); }
+
   /* ── MODE TOGGLE ── */
   .mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
   .mode-btn {
@@ -287,10 +314,28 @@
   </div>
 </div>
 
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="about-modal">
+  <div class="modal">
+    <div class="about-body">
+      <div class="about-title">QuickCorn</div>
+      <div class="about-version">Version 1.0</div>
+      <div class="about-credit">Created by: Bill Parsons</div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-save" onclick="document.getElementById('about-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="position:relative">
   <div class="app-title">QuickCorn</div>
-  <button class="menu-btn" onclick="openModal()">⋮</button>
+  <button class="menu-btn" onclick="toggleDropdown(event)">⋮</button>
+  <div class="menu-dropdown" id="main-dropdown">
+    <button onclick="closeDropdown();openModal()">Edit Teams</button>
+    <button onclick="closeDropdown();document.getElementById('about-modal').classList.add('open')">About</button>
+  </div>
 </div>
 
 <!-- SCOREBOARDS -->
@@ -562,6 +607,15 @@
     }
     render();
   }
+
+  function toggleDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('main-dropdown').classList.toggle('open');
+  }
+  function closeDropdown() {
+    document.getElementById('main-dropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function() { closeDropdown(); });
 
   function openModal() {
     document.getElementById('in-red1').value  = state.redP1;
