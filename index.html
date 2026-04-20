@@ -539,11 +539,14 @@
   function renderRounds() {
     const grid = document.getElementById('rounds-grid');
     grid.innerHTML = '';
+    let redRunning = 0, blueRunning = 0;
     state.rounds.forEach((r, i) => {
+      redRunning  += r.redNet;
+      blueRunning += r.blueNet;
       const col = document.createElement('div');
       col.className = 'round-col' + (state.editingRound === i ? ' selected' : '');
       col.onclick = () => selectRound(i);
-      col.innerHTML = `<div class="round-col-label">R${i+1}</div><div class="round-score red">${r.redNet}</div><div class="round-score blue">${r.blueNet}</div>`;
+      col.innerHTML = `<div class="round-col-label">R${i+1}</div><div class="round-score red">${redRunning}</div><div class="round-score blue">${blueRunning}</div>`;
       grid.appendChild(col);
     });
   }
