@@ -710,7 +710,8 @@
       { id:2, section:'L', label:'LB Round 1', t1:null, t2:null, winner:null },
       { id:3, section:'W', label:'WB Final',   t1:null, t2:null, winner:null },
       { id:4, section:'L', label:'LB Final',   t1:null, t2:null, winner:null },
-      { id:5, section:'G', label:'Grand Final',t1:null, t2:null, winner:null },
+      { id:5, section:'G', label:'Grand Final',       t1:null, t2:null, winner:null },
+      { id:6, section:'G', label:'Grand Final Reset',  t1:null, t2:null, winner:null },
     ];
     propagateTourn();
     renderBracket();
@@ -738,8 +739,20 @@
     setTeams(m[2], l(m[0]),  l(m[1]));   // LB R1: losers of WB R1
     setTeams(m[3], w(m[0]),  w(m[1]));   // WB Final: winners of WB R1
     setTeams(m[4], w(m[2]),  l(m[3]));   // LB Final: LB R1 winner vs WB Final loser
-    setTeams(m[5], w(m[3]),  w(m[4]));   // Grand Final
-    tourn.champion = w(m[5]);
+    setTeams(m[5], w(m[3]),  w(m[4]));   // Grand Final: WB finalist vs LB finalist
+    // Grand Final Reset: only if LB finalist wins GF (WB finalist has only 1 loss)
+    const lbFinalist = w(m[4]);
+    const gfWinner   = w(m[5]);
+    if (gfWinner !== null && gfWinner === lbFinalist) {
+      setTeams(m[6], gfWinner, l(m[5]));
+    } else {
+      setTeams(m[6], null, null);
+    }
+    if (m[6].t1 !== null) {
+      tourn.champion = w(m[6]);
+    } else {
+      tourn.champion = gfWinner !== null ? gfWinner : null;
+    }
   }
 
   function renderBracket() {
@@ -752,10 +765,12 @@
       ch.textContent = '\uD83C\uDFC6 ' + tourn.teams[tourn.champion] + ' WINS!';
       bc.appendChild(ch);
     }
+    const gfIds = [5];
+    if (tourn.matches[6] && tourn.matches[6].t1 !== null) gfIds.push(6);
     [
       { label:'Winners Bracket', ids:[0,1,3] },
       { label:'Losers Bracket',  ids:[2,4]   },
-      { label:'Grand Final',     ids:[5]     },
+      { label:'Grand Final',     ids: gfIds  },
     ].forEach(sec => {
       const wrap = document.createElement('div');
       wrap.className = 'bracket-section';
@@ -794,3 +809,4 @@
 </script>
 </body>
 </html>
+
