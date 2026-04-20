@@ -1,6 +1,1 @@
-<div class="about-card">
-  <h2>About QuickCorn</h2>
-  <p><strong>App Name:</strong> QuickCorn</p>
-  <p><strong>Version:</strong> 1.0.0</p>
-  <p><strong>Created by:</strong> Bill Parsons</p>
-</div>
+<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>QuickCorn</title>\n    <link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n    <nav>\n        <div class=\"menu\">\n            <button id=\"threeDotsMenu\">...</button>\n        </div>\n        <div id=\"aboutModal\" class=\"modal\">\n            <div class=\"modal-content\">\n                <span class=\"close\">&times;</span>\n                <h2>About QuickCorn</h2>\n                <p>App Name: QuickCorn</p>\n                <p>Version: 1.0.0</p>\n                <p>Created by: Bill Parsons</p>\n            </div>\n        </div>\n    </nav>\n    <script>\n        const modal = document.getElementById('aboutModal');\n        const menuButton = document.getElementById('threeDotsMenu');\n        const closeModalButton = document.querySelector('.close');\n\n        menuButton.onclick = function() {\n            modal.style.display = 'block';\n        };\n\n        closeModalButton.onclick = function() {\n            modal.style.display = 'none';\n        };\n\n        window.onclick = function(event) {\n            if (event.target == modal) {\n                modal.style.display = 'none';\n            }\n        };\n    <\/script>\n</body>\n</html>
