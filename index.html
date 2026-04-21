@@ -302,10 +302,10 @@
       <button class="mode-btn" id="btn-1v1" onclick="setModalMode('1v1')">1 vs 1</button>
       <button class="mode-btn" id="btn-2v2" onclick="setModalMode('2v2')">2 vs 2</button>
     </div>
-    <div class="modal-field"><label>🔴 Red — Player 1</label><input id="in-red1" type="text" maxlength="12" placeholder="Player 1"></div>
-    <div class="modal-field" id="field-red2"><label>🔴 Red — Player 2</label><input id="in-red2" type="text" maxlength="12" placeholder="Player 2"></div>
-    <div class="modal-field"><label>🔵 Blue — Player 1</label><input id="in-blue1" type="text" maxlength="12" placeholder="Player 3"></div>
-    <div class="modal-field" id="field-blue2"><label>🔵 Blue — Player 2</label><input id="in-blue2" type="text" maxlength="12" placeholder="Player 4"></div>
+    <div class="modal-field"><label>🔴 Red — Player 1</label><input id="in-red1" type="text" maxlength="12" placeholder="Player 1" onfocus="clearOnFirstFocus(this)"></div>
+    <div class="modal-field" id="field-red2"><label>🔴 Red — Player 2</label><input id="in-red2" type="text" maxlength="12" placeholder="Player 2" onfocus="clearOnFirstFocus(this)"></div>
+    <div class="modal-field"><label>🔵 Blue — Player 1</label><input id="in-blue1" type="text" maxlength="12" placeholder="Player 3" onfocus="clearOnFirstFocus(this)"></div>
+    <div class="modal-field" id="field-blue2"><label>🔵 Blue — Player 2</label><input id="in-blue2" type="text" maxlength="12" placeholder="Player 4" onfocus="clearOnFirstFocus(this)"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
            <button class="btn-save" onclick="saveNames()">Save</button>
@@ -443,6 +443,14 @@
     bags:{ red:{in:0,on:0}, blue:{in:0,on:0} },
     rounds:[], editingRound:null, currentRound:1,
   };
+
+ function clearOnFirstFocus(input) {
+  if (!input.dataset.touched) {
+    input.value = '';
+    input.dataset.touched = 'true';
+  }
+ }
+
 
   function selectBag(team, type, val) {
     const cur = state.bags[team][type];
@@ -641,6 +649,11 @@
   document.addEventListener('click', function() { closeDropdown(); });
 
   function openModal() {
+
+  ['in-red1','in-red2','in-blue1','in-blue2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) delete el.dataset.touched;
+  });
     document.getElementById('in-red1').value  = state.redP1;
     document.getElementById('in-red2').value  = state.redP2;
     document.getElementById('in-blue1').value = state.blueP1;
