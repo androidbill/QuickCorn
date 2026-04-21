@@ -547,18 +547,18 @@
     pprList.innerHTML = '';
 
     const players = [];
-    if (state.mode === '1v1') {
-      players.push({ color:'red',  name:state.redP1,  pts:rounds.map(r=>r.redNet) });
-      players.push({ color:'blue', name:state.blueP1, pts:rounds.map(r=>r.blueNet) });
-    } else {
-      const p1Rounds = rounds.filter((_,i)=>i%2===0);
-      const p2Rounds = rounds.filter((_,i)=>i%2===1);
-      players.push({ color:'red',  name:state.redP1,  pts:p1Rounds.map(r=>r.redNet) });
-      if (state.redP2)  players.push({ color:'red',  name:state.redP2,  pts:p2Rounds.map(r=>r.redNet) });
-      players.push({ color:'blue', name:state.blueP1, pts:p1Rounds.map(r=>r.blueNet) });
-      if (state.blueP2) players.push({ color:'blue', name:state.blueP2, pts:p2Rounds.map(r=>r.blueNet) });
-    }
-    players.forEach(p => {
+ if (state.mode === '1v1') {
+  players.push({ color:'red', name:state.redP1, pts:rounds.map(r=>r.redPts) });
+  players.push({ color:'blue', name:state.blueP1, pts:rounds.map(r=>r.bluePts) });
+ } else {
+  const p1Rounds = rounds.filter((_,i)=>i%2===0);
+  const p2Rounds = rounds.filter((_,i)=>i%2===1);
+  players.push({ color:'red', name:state.redP1, pts:p1Rounds.map(r=>r.redPts) });
+  if (state.redP2) players.push({ color:'red', name:state.redP2, pts:p2Rounds.map(r=>r.redPts) });
+  players.push({ color:'blue', name:state.blueP1, pts:p1Rounds.map(r=>r.bluePts) });
+  if (state.blueP2) players.push({ color:'blue', name:state.blueP2, pts:p2Rounds.map(r=>r.bluePts) });
+ }
+ players.forEach(p => {
       const tot = p.pts.reduce((a,b)=>a+b,0);
       const avg = p.pts.length ? (tot/p.pts.length).toFixed(1) : '0.0';
       pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${avg}</span></div>`;
