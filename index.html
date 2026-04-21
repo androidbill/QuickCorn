@@ -323,7 +323,7 @@
       <div class="win-score-line" id="win-score-line">—</div>
     </div>
     <div class="win-stats">
-      <div class="stats-title">Avg Points Per Round</div>
+      <div class="stats-title">PTS · ROUNDS · PPR</div>
       <div class="ppr-list" id="ppr-list"></div>
     </div>
     <button class="play-again-btn" onclick="playAgain()">▶ PLAY AGAIN</button>
@@ -494,6 +494,7 @@
     const roundData = {
       redIn:rb.in, redOn:rb.on, blueIn:bb.in, blueOn:bb.on,
       redPts, bluePts,
+ redGross: redPts, blueGross: bluePts,
       redNet: net > 0 ? net : 0,
       blueNet: net < 0 ? -net : 0,
     };
@@ -529,28 +530,40 @@
     document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
 
     const rounds = state.rounds, n = rounds.length;
-    const pprList = document.getElementById('ppr-list');
-    pprList.innerHTML = '';
+ const pprList = document.getElementById('ppr-list');
+ pprList.innerHTML = '';
 
-    const players = [];
-    if (state.mode === '1v1') {
-      players.push({ color:'red',  name:state.redP1,  pts:rounds.map(r=>r.redNet) });
-      players.push({ color:'blue', name:state.blueP1, pts:rounds.map(r=>r.blueNet) });
-    } else {
-      const p1Rounds = rounds.filter((_,i)=>i%2===0);
-      const p2Rounds = rounds.filter((_,i)=>i%2===1);
-      players.push({ color:'red',  name:state.redP1,  pts:p1Rounds.map(r=>r.redNet) });
-      if (state.redP2)  players.push({ color:'red',  name:state.redP2,  pts:p2Rounds.map(r=>r.redNet) });
-      players.push({ color:'blue', name:state.blueP1, pts:p1Rounds.map(r=>r.blueNet) });
-      if (state.blueP2) players.push({ color:'blue', name:state.blueP2, pts:p2Rounds.map(r=>r.blueNet) });
-    }
-    players.forEach(p => {
-      const tot = p.pts.reduce((a,b)=>a+b,0);
-      const avg = p.pts.length ? (tot/p.pts.length).toFixed(1) : '0.0';
-      pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${avg}</span></div>`;
-    });
+ // ── CORNHOLE PPR (GROSS POINTS / ROUNDS THROWN) ──
+ const players = [];
 
-    document.getElementById('win-modal').classList.add('open');
+ function buildPlayer(name, color, grossArr) {
+  const roundsThrown = grossArr.length;
+  const total = grossArr.reduce((a,b)=>a+b,0);
+  const ppr = roundsThrown ? (total / roundsThrown).toFixed(2) : '0.00';
+  return { name, color, total, roundsThrown, ppr };
+ }
+
+ if (state.mode === '1v1') {
+  players.push(
+   buildPlayer(state.redP1, 'red', rounds.map(r => r.redGross ?? r.redPts ?? 0)),
+   buildPlayer(state.blueP1, 'blue', rounds.map(r => r.blueGross ?? r.bluePts ?? 0))
+  );
+ } else {
+  const p1Rounds = rounds.filter((_, i) => i % 2 === 0);
+  const p2Rounds = rounds.filter((_, i) => i % 2 === 1);
+
+  players.push(buildPlayer(state.redP1, 'red', p1Rounds.map(r => r.redGross ?? r.redPts ?? 0)));
+  if (state.redP2) players.push(buildPlayer(state.redP2, 'red', p2Rounds.map(r => r.redGross ?? r.redPts ?? 0)));
+
+  players.push(buildPlayer(state.blueP1, 'blue', p1Rounds.map(r => r.blueGross ?? r.bluePts ?? 0)));
+  if (state.blueP2) players.push(buildPlayer(state.blueP2, 'blue', p2Rounds.map(r => r.blueGross ?? r.bluePts ?? 0)));
+ }
+
+ players.forEach(p => {
+  pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${p.total} pts · ${p.roundsThrown} rds · ${p.ppr}</span></div>`;
+ });
+
+ document.getElementById('win-modal').classList.add('open');
   }
 
   function playAgain() {
