@@ -552,7 +552,8 @@
   // clear current round input when switching modes
   state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
   state.totals = { red:null, blue:null };
-  state.totals = { red:null, blue:null };
+ state.pendingBreakdown = null;
+ renderTotalBtns();
   state.pendingBreakdown = null;
 
   updateScoringUI();
@@ -707,7 +708,8 @@
     state.currentRound = state.rounds.length + 1;
     state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
   state.totals = { red:null, blue:null };
-    render();
+ render();
+ if (state.scoringMode === 'total') renderTotalBtns();
     checkWin();
   }
 
