@@ -290,9 +290,48 @@
   .match-team-btn.winner { background: var(--green-dark); border-color: var(--green); color: #fff; }
   .match-team-btn.loser  { opacity: 0.3; }
   .match-vs { color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
+
+ /* ── SCORING MODE / TOTAL POINTS INPUT ── */
+ .hidden { display: none !important; }
+ .total-cols { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; gap: 5px; flex: 1; min-height: 0; }
+ .total-team { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+ .total-col-label { text-align:center; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; flex-shrink: 0; }
+ .total-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex: 1; min-height: 0; }
+ .pt-btn { margin-bottom: 0; font-size: clamp(18px, 4.5vh, 40px); }
+ .pt-btn:active { transform: scale(0.93); }
+ .pt-btn.selected-red { background: var(--red-dark); border-color: var(--red); }
+ .pt-btn.selected-blue { background: var(--blue-dark); border-color: var(--blue); }
+ .modal-subtitle { font-size: 12px; color: var(--muted); text-align:center; margin-bottom: 10px; letter-spacing: 1px; }
+
 </style>
 </head>
 <body>
+
+
+
+<!-- SCORING MODE MODAL -->
+<div class="modal-overlay" id="scoring-modal">
+  <div class="modal">
+    <h2>Scoring Mode</h2>
+    <div class="modal-subtitle">Choose how you want to enter each round.</div>
+    <div class="modal-actions" style="margin-top:6px">
+      <button class="btn-save" onclick="setScoringMode('acl')">ACL Scoring</button>
+      <button class="btn-save" onclick="setScoringMode('total')">Total Number</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOTAL BREAKDOWN MODAL (for ambiguous totals) -->
+<div class="modal-overlay" id="breakdown-modal">
+  <div class="modal">
+    <h2 id="breakdown-title">Breakdown</h2>
+    <div class="modal-subtitle" id="breakdown-subtitle">Choose IN/ON for this total.</div>
+    <div class="modal-actions" id="breakdown-actions"></div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-cancel" onclick="closeBreakdown()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- NAMES MODAL -->
 <div class="modal-overlay" id="modal">
@@ -351,6 +390,7 @@
   <div class="menu-dropdown" id="main-dropdown">
     <button onclick="closeDropdown()">Home</button>
     <button onclick="closeDropdown();openModal()">Edit Teams</button>
+ <button onclick="closeDropdown();openScoringModal()">Scoring Mode</button>
   <button onclick="closeDropdown();restartGame()">Restart</button>
     <button onclick="closeDropdown();document.getElementById('about-modal').classList.add('open')">About</button>
   </div>
@@ -412,6 +452,44 @@
       </div>
     </div>
   </div>
+  <!-- TOTAL NUMBER INPUT (alternative to ACL IN/ON) -->
+  <div class="total-cols hidden" id="total-cols">
+    <div class="total-team">
+      <div class="total-col-label">RED POINTS</div>
+      <div class="total-grid">
+      <button class="bag-btn pt-btn" id="r-pt-0" onclick="selectTotal('red',0)">0</button>
+      <button class="bag-btn pt-btn" id="r-pt-1" onclick="selectTotal('red',1)">1</button>
+      <button class="bag-btn pt-btn" id="r-pt-2" onclick="selectTotal('red',2)">2</button>
+      <button class="bag-btn pt-btn" id="r-pt-3" onclick="selectTotal('red',3)">3</button>
+      <button class="bag-btn pt-btn" id="r-pt-4" onclick="selectTotal('red',4)">4</button>
+      <button class="bag-btn pt-btn" id="r-pt-5" onclick="selectTotal('red',5)">5</button>
+      <button class="bag-btn pt-btn" id="r-pt-6" onclick="selectTotal('red',6)">6</button>
+      <button class="bag-btn pt-btn" id="r-pt-7" onclick="selectTotal('red',7)">7</button>
+      <button class="bag-btn pt-btn" id="r-pt-8" onclick="selectTotal('red',8)">8</button>
+      <button class="bag-btn pt-btn" id="r-pt-9" onclick="selectTotal('red',9)">9</button>
+      <button class="bag-btn pt-btn" id="r-pt-10" onclick="selectTotal('red',10)">10</button>
+      <button class="bag-btn pt-btn" id="r-pt-12" onclick="selectTotal('red',12)">12</button>
+      </div>
+    </div>
+    <div class="total-team">
+      <div class="total-col-label">BLUE POINTS</div>
+      <div class="total-grid">
+      <button class="bag-btn pt-btn" id="b-pt-0" onclick="selectTotal('blue',0)">0</button>
+      <button class="bag-btn pt-btn" id="b-pt-1" onclick="selectTotal('blue',1)">1</button>
+      <button class="bag-btn pt-btn" id="b-pt-2" onclick="selectTotal('blue',2)">2</button>
+      <button class="bag-btn pt-btn" id="b-pt-3" onclick="selectTotal('blue',3)">3</button>
+      <button class="bag-btn pt-btn" id="b-pt-4" onclick="selectTotal('blue',4)">4</button>
+      <button class="bag-btn pt-btn" id="b-pt-5" onclick="selectTotal('blue',5)">5</button>
+      <button class="bag-btn pt-btn" id="b-pt-6" onclick="selectTotal('blue',6)">6</button>
+      <button class="bag-btn pt-btn" id="b-pt-7" onclick="selectTotal('blue',7)">7</button>
+      <button class="bag-btn pt-btn" id="b-pt-8" onclick="selectTotal('blue',8)">8</button>
+      <button class="bag-btn pt-btn" id="b-pt-9" onclick="selectTotal('blue',9)">9</button>
+      <button class="bag-btn pt-btn" id="b-pt-10" onclick="selectTotal('blue',10)">10</button>
+      <button class="bag-btn pt-btn" id="b-pt-12" onclick="selectTotal('blue',12)">12</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- BOTTOM BAR -->
@@ -450,6 +528,126 @@
     input.dataset.touched = 'true';
   }
  }
+
+ // ── SCORING MODE (ACL vs TOTAL NUMBER) ──
+ function openScoringModal() {
+  document.getElementById('scoring-modal').classList.add('open');
+ }
+
+ function initScoringMode() {
+  const saved = localStorage.getItem('qc_scoringMode');
+  if (saved === 'acl' || saved === 'total') {
+   state.scoringMode = saved;
+   updateScoringUI();
+  } else {
+   openScoringModal();
+  }
+ }
+
+ function setScoringMode(mode) {
+  state.scoringMode = mode;
+  localStorage.setItem('qc_scoringMode', mode);
+  document.getElementById('scoring-modal').classList.remove('open');
+
+  // clear current round input when switching modes
+  state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
+  state.totals = { red:null, blue:null };
+ state.pendingBreakdown = null;
+ renderTotalBtns();
+  state.pendingBreakdown = null;
+
+  updateScoringUI();
+  render();
+ }
+
+ function updateScoringUI() {
+  const isTotal = state.scoringMode === 'total';
+  const bagCols = document.querySelector('.bag-cols');
+  const totalCols = document.getElementById('total-cols');
+  if (bagCols) bagCols.classList.toggle('hidden', isTotal);
+  if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
+ }
+
+ // TOTAL NUMBER selection buttons
+ const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
+
+ function renderTotalBtns() {
+  ['red','blue'].forEach(team => {
+   const sel = state.totals[team];
+   const p = team === 'red' ? 'r' : 'b';
+   TOTAL_VALUES.forEach(v => {
+    const el = document.getElementById(`${p}-pt-${v}`);
+    if (!el) return;
+    el.className = 'bag-btn pt-btn' + (sel === v ? ` selected-${team}` : '');
+   });
+  });
+ }
+
+ function selectTotal(team, pts) {
+  if (state.scoringMode !== 'total') return;
+  state.totals[team] = pts;
+
+  const options = calcInOnOptions(pts);
+  if (!options.length) {
+   // should never happen (we don't show invalid numbers like 11)
+   state.bags[team] = { in:0, on:0 };
+  } else if (options.length === 1) {
+   state.bags[team] = { in: options[0].in, on: options[0].on };
+  } else {
+   // ambiguous totals: ask the user (e.g., 3,4,6,7)
+   openBreakdown(team, pts, options);
+  }
+
+  renderTotalBtns();
+  renderNetScore();
+ }
+
+ function calcInOnOptions(totalPts) {
+  const opts = [];
+  for (let i = 0; i <= 4; i++) {
+   for (let o = 0; o <= 4; o++) {
+    if (i + o > 4) continue;
+    if (i*3 + o === totalPts) opts.push({in:i, on:o});
+   }
+  }
+  return opts;
+ }
+
+ function openBreakdown(team, pts, options) {
+  state.pendingBreakdown = { team, pts, options };
+  const title = document.getElementById('breakdown-title');
+  const sub = document.getElementById('breakdown-subtitle');
+  const actions = document.getElementById('breakdown-actions');
+
+  title.textContent = `${team.toUpperCase()} — ${pts} POINTS`;
+  sub.textContent = 'How did you score them?';
+  actions.innerHTML = '';
+
+  options.forEach(opt => {
+   const btn = document.createElement('button');
+   btn.className = 'btn-save';
+   btn.textContent = `${opt.in} IN, ${opt.on} ON`;
+   btn.onclick = () => chooseBreakdown(opt.in, opt.on);
+   actions.appendChild(btn);
+  });
+
+  document.getElementById('breakdown-modal').classList.add('open');
+ }
+
+ function closeBreakdown() {
+  document.getElementById('breakdown-modal').classList.remove('open');
+  state.pendingBreakdown = null;
+ }
+
+ function chooseBreakdown(inCount, onCount) {
+  const pb = state.pendingBreakdown;
+  if (!pb) return;
+  state.bags[pb.team] = { in: inCount, on: onCount };
+  closeBreakdown();
+  renderTotalBtns();
+  renderNetScore();
+ }
+
 
 
   function selectBag(team, type, val) {
@@ -509,7 +707,9 @@
     state.redTotal = rt; state.blueTotal = bt;
     state.currentRound = state.rounds.length + 1;
     state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
-    render();
+  state.totals = { red:null, blue:null };
+ render();
+ if (state.scoringMode === 'total') renderTotalBtns();
     checkWin();
   }
 
@@ -644,10 +844,12 @@
     if (state.editingRound === i) {
       state.editingRound = null;
       state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
+  state.totals = { red:null, blue:null };
     } else {
       state.editingRound = i;
       const r = state.rounds[i];
       state.bags = { red:{in:r.redIn,on:r.redOn}, blue:{in:r.blueIn,on:r.blueOn} };
+  state.totals = { red:(r.redIn*3 + r.redOn), blue:(r.blueIn*3 + r.blueOn) };
     }
     render();
   }
@@ -696,11 +898,8 @@
     }
     closeModal(); render();
   }
-
  render();
-
-
-  render();
+ initScoringMode();
 </script>
 </body>
 </html>
