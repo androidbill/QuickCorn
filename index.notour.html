@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickCorn</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e8332a; --red-dark: #c0281f;
+    --blue: #1a6fe8; --blue-dark: #1458c0;
+    --bg: #0d1b2a; --bg2: #142233; --bg3: #1c2e42;
+    --btn-bg: #1e2f42;
+    --green: #6abf45; --green-dark: #529933;
+    --text: #ffffff; --muted: #7a9ab5; --border: #1e3450;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px 16px; width: 92%; max-width: 360px;
+  }
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    letter-spacing: 2px; margin-bottom: 10px; text-align: center;
+  }
+  .modal-field { margin-bottom: 9px; }
+  .modal-field label {
+    display: block; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;
+  }
+  .modal-field input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+    padding: 7px 10px; outline: none;
+  }
+  .modal-field input:focus { border-color: var(--blue); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .modal-actions button {
+    flex: 1; padding: 10px; border: none; border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 17px;
+    letter-spacing: 1px; cursor: pointer;
+  }
+  .btn-cancel { background: var(--btn-bg); color: var(--muted); }
+  .btn-restart { background: #7a3030; color: #ffaaaa; }
+  .btn-save { background: var(--green); color: #fff; }
+
+  /* ── DROPDOWN MENU ── */
+  .menu-dropdown {
+    display: none; position: absolute; top: 32px; right: 10px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; z-index: 150;
+    min-width: 140px; box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .menu-dropdown.open { display: block; }
+  .menu-dropdown button {
+    display: block; width: 100%; padding: 11px 16px;
+    background: none; border: none; color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+    font-weight: 600; text-align: left; cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .menu-dropdown button:hover { background: var(--bg3); }
+  .menu-dropdown button + button { border-top: 1px solid var(--border); }
+
+  /* ── ABOUT MODAL ── */
+  .about-body { text-align: center; padding: 10px 0 4px; }
+  .about-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    letter-spacing: 4px; color: var(--text); line-height: 1;
+  }
+  .about-version { font-size: 14px; color: var(--muted); margin: 6px 0 4px; letter-spacing: 1px; }
+  .about-credit  { font-size: 14px; color: var(--muted); }
+
+  /* ── MODE TOGGLE ── */
+  .mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+  .mode-btn {
+    flex: 1; padding: 8px; border: 2px solid var(--border);
+    border-radius: 8px; background: var(--bg3); color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+    letter-spacing: 1px; cursor: pointer;
+  }
+  .mode-btn.active { border-color: var(--green); color: var(--text); background: var(--bg2); }
+
+  /* ── WIN MODAL ── */
+  .win-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 200;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .win-overlay.open { display: flex; }
+  .win-modal {
+    background: var(--bg2); border-radius: 20px;
+    width: 100%; max-width: 400px; overflow: hidden;
+    border: 2px solid var(--border);
+  }
+  .win-banner { padding: 16px 16px 12px; text-align: center; }
+  .win-banner.red { background: var(--red); }
+  .win-banner.blue { background: var(--blue); }
+  .win-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 4px; opacity: 0.85; }
+  .win-team { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 2px; line-height: 1; }
+  .win-players { font-size: 15px; opacity: 0.8; margin-top: 2px; }
+  .win-score-line { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; opacity: 0.9; margin-top: 4px; }
+  .win-stats { padding: 10px 16px 4px; }
+  .stats-title { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 3px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+  .ppr-list { display: flex; flex-direction: column; gap: 6px; }
+  .ppr-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg3); border-radius: 8px; padding: 6px 12px;
+  }
+  .ppr-name { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; }
+  .ppr-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; }
+  .ppr-row.team-red .ppr-val  { color: #ff7a74; }
+  .ppr-row.team-blue .ppr-val { color: #74b3ff; }
+  .play-again-btn {
+    display: block; width: calc(100% - 24px); margin: 8px 12px 12px;
+    background: var(--green); border: none; border-radius: 12px;
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2px; padding: 11px 0;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .play-again-btn:active { background: var(--green-dark); transform: scale(0.97); }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 12px 3px; flex-shrink: 0;
+  }
+  .app-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--muted); }
+  .menu-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 6px; }
+
+  /* ── SCOREBOARDS ── */
+  .scoreboards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 5px; padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .team-card { border-radius: 10px; padding: 5px 10px 4px; cursor: pointer; }
+  .team-card.red { background: var(--red); }
+  .team-card.blue { background: var(--blue); }
+  .team-name {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    letter-spacing: 1px; line-height: 1.1; transition: opacity 0.2s;
+  }
+  .team-player2 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    letter-spacing: 1px; line-height: 1.1;
+    color: rgba(255,255,255,0.75); transition: opacity 0.2s;
+  }
+  .team-name.active-player   { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+  .team-name.inactive-player { opacity: 0.4; }
+  .team-player2.active-player   { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+  .team-player2.inactive-player { opacity: 0.3; }
+
+  .score-box {
+    border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; padding: 2px 4px;
+    overflow: hidden; height: clamp(80px, 16vh, 130px);
+  }
+  .score-box.red { background: var(--red); }
+  .score-box.blue { background: var(--blue); }
+  .score-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(50px, 18vh, 110px);
+    line-height: 1; text-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    white-space: nowrap; overflow: hidden;
+    width: 100%; text-align: center;
+  }
+
+  /* ── BAG SECTION — flex:1 so it fills all remaining space ── */
+  .bag-section {
+    flex: 1 1 0;       /* grow AND shrink */
+    min-height: 0;     /* critical: allows shrinking below content */
+    padding: 3px 8px 0;
+    display: flex; flex-direction: column;
+  }
+  .bag-cols { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; gap: 5px; flex: 1; min-height: 0; }
+  .bag-team { display: flex; gap: 4px; height: 100%; min-height: 0; }
+  .bag-col { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .bag-col-label {
+    text-align: center; font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 2px; flex-shrink: 0;
+  }
+  .bag-btn {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    background: var(--btn-bg); border: 2px solid transparent;
+    border-radius: 8px; color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(16px, 4vh, 40px);
+    overflow: hidden;
+    cursor: pointer; margin-bottom: 3px;
+    transition: background 0.1s, border-color 0.1s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bag-btn:last-child { margin-bottom: 0; }
+  .bag-btn:active { transform: scale(0.91); }
+  .bag-btn.selected-red  { background: var(--red-dark);  border-color: var(--red); }
+  .bag-btn.selected-blue { background: var(--blue-dark); border-color: var(--blue); }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr 2fr 1fr;
+    align-items: center; padding: 4px 12px; gap: 8px; flex-shrink: 0;
+  }
+  .stat-box { text-align: center; }
+  .stat-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 24px; line-height: 1.1; }
+  .submit-btn {
+    background: var(--green); border: none; border-radius: 10px;
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2px; padding: 10px 0;
+    cursor: pointer; width: 100%;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .submit-btn:active { background: var(--green-dark); transform: scale(0.97); }
+  .submit-btn.update-mode { background: var(--blue); }
+  .submit-btn.update-mode:active { background: var(--blue-dark); transform: scale(0.97); }
+  .submit-btn:disabled { background: #2e4055; color: var(--muted); cursor: not-allowed; transform: none; opacity: 0.6; }
+
+  /* ── ROUND HISTORY ── */
+  .round-history {
+    border-top: 1px solid var(--border);
+    padding: 4px 8px 6px; flex-shrink: 0;
+  }
+  .rounds-header {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .rounds-grid {
+    display: flex; gap: 5px;
+    overflow-x: auto; padding-bottom: 2px;
+    min-height: 50px;
+  }
+  .rounds-grid::-webkit-scrollbar { height: 3px; }
+  .rounds-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .round-col {
+    min-width: 44px; border-radius: 8px; overflow: hidden;
+    cursor: pointer; border: 2px solid transparent;
+    transition: border-color 0.15s; flex-shrink: 0;
+  }
+  .round-col.selected { border-color: var(--green); }
+  .round-col-label {
+    background: var(--bg3); text-align: center;
+    font-size: 10px; letter-spacing: 1px; color: var(--muted);
+    padding: 2px 0; font-weight: 700;
+  }
+  .round-score {
+    text-align: center; font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; padding: 2px 0;
+  }
+  .round-score.red  { background: rgba(232,51,42,0.22);  color: #ff7a74; }
+  .round-score.blue { background: rgba(26,111,232,0.22); color: #74b3ff; }
+
+  #game-screen { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+  .bracket-champion { background: linear-gradient(135deg, #b8860b, #ffd700); border-radius: 12px; padding: 14px; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: #1a1a00; }
+  .bracket-section { background: var(--bg2); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .bracket-section-label { font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px; color: var(--muted); padding: 5px 12px; background: var(--bg3); text-transform: uppercase; }
+  .match-card { padding: 8px 10px; border-top: 1px solid var(--border); }
+  .match-round-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+  .match-teams { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; }
+  .match-team-btn { padding: 8px 4px; border: 2px solid var(--border); border-radius: 8px; background: var(--btn-bg); color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; cursor: pointer; width: 100%; transition: all 0.15s; }
+  .match-team-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .match-team-btn.winner { background: var(--green-dark); border-color: var(--green); color: #fff; }
+  .match-team-btn.loser  { opacity: 0.3; }
+  .match-vs { color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- NAMES MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Edit Teams</h2>
+    <div class="mode-toggle">
+      <button class="mode-btn" id="btn-1v1" onclick="setModalMode('1v1')">1 vs 1</button>
+      <button class="mode-btn" id="btn-2v2" onclick="setModalMode('2v2')">2 vs 2</button>
+    </div>
+    <div class="modal-field"><label>🔴 Red — Player 1</label><input id="in-red1" type="text" maxlength="12" placeholder="Player 1"></div>
+    <div class="modal-field" id="field-red2"><label>🔴 Red — Player 2</label><input id="in-red2" type="text" maxlength="12" placeholder="Player 2"></div>
+    <div class="modal-field"><label>🔵 Blue — Player 1</label><input id="in-blue1" type="text" maxlength="12" placeholder="Player 3"></div>
+    <div class="modal-field" id="field-blue2"><label>🔵 Blue — Player 2</label><input id="in-blue2" type="text" maxlength="12" placeholder="Player 4"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-restart" onclick="restartGame()">Restart</button>
+      <button class="btn-save" onclick="saveNames()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- WIN MODAL -->
+<div class="win-overlay" id="win-modal">
+  <div class="win-modal">
+    <div class="win-banner" id="win-banner">
+      <div class="win-label">🏆 WINNER 🏆</div>
+      <div class="win-team" id="win-team-name">—</div>
+      <div class="win-players" id="win-players">—</div>
+      <div class="win-score-line" id="win-score-line">—</div>
+    </div>
+    <div class="win-stats">
+      <div class="stats-title">Avg Points Per Round</div>
+      <div class="ppr-list" id="ppr-list"></div>
+    </div>
+    <button class="play-again-btn" onclick="playAgain()">▶ PLAY AGAIN</button>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="about-modal">
+  <div class="modal">
+    <div class="about-body">
+      <div class="about-title">QuickCorn</div>
+      <div class="about-version">Version 1.0</div>
+      <div class="about-credit">Created by: Bill Parsons</div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-save" onclick="document.getElementById('about-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" style="position:relative">
+  <div class="app-title">QuickCorn</div>
+  <button class="menu-btn" onclick="toggleDropdown(event)">⋮</button>
+  <div class="menu-dropdown" id="main-dropdown">
+    <button onclick="closeDropdown()">Home</button>
+    <button onclick="closeDropdown();openModal()">Edit Teams</button>
+    <button onclick="closeDropdown();document.getElementById('about-modal').classList.add('open')">About</button>
+  </div>
+</div>
+
+  <div id="bracket-container"></div>
+</div>
+
+<div id="game-screen">
+<!-- SCOREBOARDS -->
+<div class="scoreboards">
+  <div class="team-card red" onclick="openModal()">
+    <div class="team-name" id="red-p1">Player 1</div>
+    <div class="team-player2" id="red-p2">Player 2</div>
+  </div>
+  <div class="team-card blue" onclick="openModal()">
+    <div class="team-name" id="blue-p1">Player 3</div>
+    <div class="team-player2" id="blue-p2">Player 4</div>
+  </div>
+  <div class="score-box red"><div class="score-num" id="score-red">0</div></div>
+  <div class="score-box blue"><div class="score-num" id="score-blue">0</div></div>
+</div>
+
+<!-- BAG INPUT -->
+<div class="bag-section">
+  <div class="bag-cols">
+    <!-- RED -->
+    <div class="bag-team">
+      <div class="bag-col">
+        <div class="bag-col-label">IN</div>
+        <button class="bag-btn" id="r-in-1" onclick="selectBag('red','in',1)">1</button>
+        <button class="bag-btn" id="r-in-2" onclick="selectBag('red','in',2)">2</button>
+        <button class="bag-btn" id="r-in-3" onclick="selectBag('red','in',3)">3</button>
+        <button class="bag-btn" id="r-in-4" onclick="selectBag('red','in',4)">4</button>
+      </div>
+      <div class="bag-col">
+        <div class="bag-col-label">ON</div>
+        <button class="bag-btn" id="r-on-1" onclick="selectBag('red','on',1)">1</button>
+        <button class="bag-btn" id="r-on-2" onclick="selectBag('red','on',2)">2</button>
+        <button class="bag-btn" id="r-on-3" onclick="selectBag('red','on',3)">3</button>
+        <button class="bag-btn" id="r-on-4" onclick="selectBag('red','on',4)">4</button>
+      </div>
+    </div>
+    <!-- BLUE -->
+    <div class="bag-team">
+      <div class="bag-col">
+        <div class="bag-col-label">IN</div>
+        <button class="bag-btn" id="b-in-1" onclick="selectBag('blue','in',1)">1</button>
+        <button class="bag-btn" id="b-in-2" onclick="selectBag('blue','in',2)">2</button>
+        <button class="bag-btn" id="b-in-3" onclick="selectBag('blue','in',3)">3</button>
+        <button class="bag-btn" id="b-in-4" onclick="selectBag('blue','in',4)">4</button>
+      </div>
+      <div class="bag-col">
+        <div class="bag-col-label">ON</div>
+        <button class="bag-btn" id="b-on-1" onclick="selectBag('blue','on',1)">1</button>
+        <button class="bag-btn" id="b-on-2" onclick="selectBag('blue','on',2)">2</button>
+        <button class="bag-btn" id="b-on-3" onclick="selectBag('blue','on',3)">3</button>
+        <button class="bag-btn" id="b-on-4" onclick="selectBag('blue','on',4)">4</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="stat-box">
+    <div class="stat-label">Score</div>
+    <div class="stat-val" id="round-net">0</div>
+  </div>
+  <button class="submit-btn" onclick="submitRound()">SUBMIT</button>
+  <div class="stat-box">
+    <div class="stat-label">Round</div>
+    <div class="stat-val" id="round-num">1</div>
+  </div>
+</div>
+
+<!-- ROUND HISTORY -->
+<div class="round-history">
+  <div class="rounds-header">Round History</div>
+  <div class="rounds-grid" id="rounds-grid"></div>
+</div>
+</div><!-- /game-screen -->
+
+<script>
+  const state = {
+    mode: '2v2',
+    redP1:'Player 1', redP2:'Player 2',
+    blueP1:'Player 3', blueP2:'Player 4',
+    redTotal:0, blueTotal:0,
+    bags:{ red:{in:0,on:0}, blue:{in:0,on:0} },
+    rounds:[], editingRound:null, currentRound:1,
+  };
+
+  function selectBag(team, type, val) {
+    const cur = state.bags[team][type];
+    state.bags[team][type] = (cur === val) ? 0 : val;
+    renderBagBtns();
+    renderNetScore();
+  }
+
+  function renderBagBtns() {
+    ['red','blue'].forEach(team => {
+      ['in','on'].forEach(type => {
+        const val = state.bags[team][type];
+        const p = team === 'red' ? 'r' : 'b';
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById(`${p}-${type}-${i}`).className =
+            'bag-btn' + (i === val ? ` selected-${team}` : '');
+        }
+      });
+    });
+  }
+
+  function renderNetScore() {
+    const rb = state.bags.red, bb = state.bags.blue;
+    const net = (rb.in*3 + rb.on) - (bb.in*3 + bb.on);
+    document.getElementById('round-net').textContent = net > 0 ? '+'+net : net;
+    const over = rb.in + rb.on > 4 || bb.in + bb.on > 4;
+    const btn = document.querySelector('.submit-btn');
+    if (over) {
+      btn.disabled = true;
+      btn.textContent = 'EXCEEDED';
+    } else {
+      btn.disabled = false;
+      btn.textContent = state.editingRound !== null ? 'UPDATE' : 'SUBMIT';
+    }
+  }
+
+  function submitRound() {
+    const rb = state.bags.red, bb = state.bags.blue;
+    const redPts = rb.in*3 + rb.on, bluePts = bb.in*3 + bb.on;
+    const net = redPts - bluePts;
+    const roundData = {
+      redIn:rb.in, redOn:rb.on, blueIn:bb.in, blueOn:bb.on,
+      redPts, bluePts,
+      redNet: net > 0 ? net : 0,
+      blueNet: net < 0 ? -net : 0,
+    };
+    if (state.editingRound !== null) {
+      state.rounds[state.editingRound] = roundData;
+      state.editingRound = null;
+    } else {
+      state.rounds.push(roundData);
+    }
+    let rt = 0, bt = 0;
+    state.rounds.forEach(r => { rt += r.redNet; bt += r.blueNet; });
+    state.redTotal = rt; state.blueTotal = bt;
+    state.currentRound = state.rounds.length + 1;
+    state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
+    render();
+    checkWin();
+  }
+
+  function checkWin() {
+    const WIN = 21;
+    const redWon = state.redTotal >= WIN, blueWon = state.blueTotal >= WIN;
+    if (!redWon && !blueWon) return;
+    const winner = (redWon && blueWon)
+      ? (state.redTotal >= state.blueTotal ? 'red' : 'blue')
+      : (redWon ? 'red' : 'blue');
+
+    document.getElementById('win-banner').className = 'win-banner ' + winner;
+    const wp1 = winner === 'red' ? state.redP1  : state.blueP1;
+    const wp2 = winner === 'red' ? state.redP2  : state.blueP2;
+    const teamLine = (state.mode === '2v2' && wp2) ? wp1 + ' & ' + wp2 : wp1;
+    document.getElementById('win-team-name').textContent = teamLine;
+    document.getElementById('win-players').style.display = 'none';
+    document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
+
+    const rounds = state.rounds, n = rounds.length;
+    const pprList = document.getElementById('ppr-list');
+    pprList.innerHTML = '';
+
+    const players = [];
+    if (state.mode === '1v1') {
+      players.push({ color:'red',  name:state.redP1,  pts:rounds.map(r=>r.redNet) });
+      players.push({ color:'blue', name:state.blueP1, pts:rounds.map(r=>r.blueNet) });
+    } else {
+      const p1Rounds = rounds.filter((_,i)=>i%2===0);
+      const p2Rounds = rounds.filter((_,i)=>i%2===1);
+      players.push({ color:'red',  name:state.redP1,  pts:p1Rounds.map(r=>r.redNet) });
+      if (state.redP2)  players.push({ color:'red',  name:state.redP2,  pts:p2Rounds.map(r=>r.redNet) });
+      players.push({ color:'blue', name:state.blueP1, pts:p1Rounds.map(r=>r.blueNet) });
+      if (state.blueP2) players.push({ color:'blue', name:state.blueP2, pts:p2Rounds.map(r=>r.blueNet) });
+    }
+    players.forEach(p => {
+      const tot = p.pts.reduce((a,b)=>a+b,0);
+      const avg = p.pts.length ? (tot/p.pts.length).toFixed(1) : '0.0';
+      pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${avg}</span></div>`;
+    });
+
+    document.getElementById('win-modal').classList.add('open');
+  }
+
+  function playAgain() {
+    document.getElementById('win-modal').classList.remove('open');
+    Object.assign(state, { redTotal:0, blueTotal:0, bags:{red:{in:0,on:0},blue:{in:0,on:0}}, rounds:[], editingRound:null, currentRound:1 });
+    render();
+  }
+
+  function restartGame() {
+    closeModal();
+    Object.assign(state, { redTotal:0, blueTotal:0, bags:{red:{in:0,on:0},blue:{in:0,on:0}}, rounds:[], editingRound:null, currentRound:1 });
+    render();
+  }
+
+  function render() {
+    document.getElementById('score-red').textContent = state.redTotal;
+    document.getElementById('score-blue').textContent = state.blueTotal;
+    const roundNum = state.editingRound !== null ? state.editingRound + 1 : state.currentRound;
+    document.getElementById('round-num').textContent = roundNum;
+
+    document.getElementById('red-p1').textContent  = state.redP1;
+    document.getElementById('red-p2').textContent  = state.redP2;
+    document.getElementById('blue-p1').textContent = state.blueP1;
+    document.getElementById('blue-p2').textContent = state.blueP2;
+
+    const rp1 = document.getElementById('red-p1'),  rp2 = document.getElementById('red-p2');
+    const bp1 = document.getElementById('blue-p1'), bp2 = document.getElementById('blue-p2');
+
+    if (state.mode === '1v1') {
+      rp2.style.display = 'none'; bp2.style.display = 'none';
+      rp1.className = 'team-name'; bp1.className = 'team-name';
+    } else {
+      rp2.style.display = ''; bp2.style.display = '';
+      const isP1 = roundNum % 2 === 1;
+      if (state.redP2) {
+        rp1.className = 'team-name '    + (isP1 ? 'active-player' : 'inactive-player');
+        rp2.className = 'team-player2 ' + (isP1 ? 'inactive-player' : 'active-player');
+      } else {
+        rp1.className = 'team-name'; rp2.className = 'team-player2';
+      }
+      if (state.blueP2) {
+        bp1.className = 'team-name '    + (isP1 ? 'active-player' : 'inactive-player');
+        bp2.className = 'team-player2 ' + (isP1 ? 'inactive-player' : 'active-player');
+      } else {
+        bp1.className = 'team-name'; bp2.className = 'team-player2';
+      }
+    }
+
+    renderBagBtns();
+    renderNetScore();
+    renderRounds();
+    const btn = document.querySelector('.submit-btn');
+    if (state.editingRound !== null) {
+      btn.classList.add('update-mode');
+      btn.textContent = 'UPDATE';
+    } else {
+      btn.classList.remove('update-mode');
+      btn.textContent = 'SUBMIT';
+    }
+  }
+
+  function renderRounds() {
+    const grid = document.getElementById('rounds-grid');
+    grid.innerHTML = '';
+    let redRunning = 0, blueRunning = 0;
+    state.rounds.forEach((r, i) => {
+      redRunning  += r.redNet;
+      blueRunning += r.blueNet;
+      const col = document.createElement('div');
+      col.className = 'round-col' + (state.editingRound === i ? ' selected' : '');
+      col.onclick = () => selectRound(i);
+      col.innerHTML = `<div class="round-col-label">R${i+1}</div><div class="round-score red">${redRunning}</div><div class="round-score blue">${blueRunning}</div>`;
+      grid.appendChild(col);
+    });
+  }
+
+  function selectRound(i) {
+    if (state.editingRound === i) {
+      state.editingRound = null;
+      state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
+    } else {
+      state.editingRound = i;
+      const r = state.rounds[i];
+      state.bags = { red:{in:r.redIn,on:r.redOn}, blue:{in:r.blueIn,on:r.blueOn} };
+    }
+    render();
+  }
+
+  function toggleDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('main-dropdown').classList.toggle('open');
+  }
+  function closeDropdown() {
+    document.getElementById('main-dropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function() { closeDropdown(); });
+
+  function openModal() {
+    document.getElementById('in-red1').value  = state.redP1;
+    document.getElementById('in-red2').value  = state.redP2;
+    document.getElementById('in-blue1').value = state.blueP1;
+    document.getElementById('in-blue2').value = state.blueP2;
+    setModalMode(state.mode);
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function setModalMode(m) {
+    document.getElementById('btn-1v1').classList.toggle('active', m === '1v1');
+    document.getElementById('btn-2v2').classList.toggle('active', m === '2v2');
+    const hide = m === '1v1';
+    document.getElementById('field-red2').style.display  = hide ? 'none' : '';
+    document.getElementById('field-blue2').style.display = hide ? 'none' : '';
+    document.getElementById('modal').dataset.mode = m;
+  }
+  function saveNames() {
+    const m = document.getElementById('modal').dataset.mode || '2v2';
+    state.mode   = m;
+    state.redP1  = document.getElementById('in-red1').value  || 'Player 1';
+    state.blueP1 = document.getElementById('in-blue1').value || (m === '1v1' ? 'Player 2' : 'Player 3');
+    if (m === '2v2') {
+      state.redP2  = document.getElementById('in-red2').value  || '';
+      state.blueP2 = document.getElementById('in-blue2').value || '';
+    } else {
+      state.redP2 = ''; state.blueP2 = '';
+    }
+    closeModal(); render();
+  }
+
+ render();
+
+
+  render();
+</script>
+</body>
+</html>
