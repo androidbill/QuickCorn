@@ -34,6 +34,7 @@ button, input, select { font: inherit; }
 button { cursor: pointer; }
 .hidden { display: none !important; }
 #app {
+  height: 100dvh;
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -41,6 +42,7 @@ button { cursor: pointer; }
   max-width: 540px;
   margin: 0 auto;
   background: var(--bg);
+  overflow: hidden;
 }
 .header {
   display: flex;
@@ -105,13 +107,12 @@ button { cursor: pointer; }
 }
 #game-screen {
   display: grid;
-  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
   gap: 6px;
   padding: 6px;
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
 }
 #tournament-screen {
   display: none;
@@ -333,9 +334,10 @@ button { cursor: pointer; }
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 6px;
+  align-self: stretch;
 }
 .history-scroller {
   display: flex;
@@ -343,16 +345,17 @@ button { cursor: pointer; }
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  flex: 1;
+  min-height: 0;
+  height: 100%;
   align-items: flex-start;
-  padding-bottom: 2px;
+  padding-bottom: 0;
 }
 .round-chip {
-  min-width:66px;
-  border-radius:14px;
-  overflow:hidden;
-  border:2px solid transparent;
-  flex:0 0 auto;
+  min-width: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  flex: 0 0 auto;
 }
 .round-chip.selected { border-color: var(--green); }
 .round-chip-head {
@@ -364,11 +367,11 @@ button { cursor: pointer; }
   font-weight: 800;
 }
 .round-chip-score {
-  text-align:center;
-  font-size:19px;
-  font-weight:900;
-  padding:10px 0;
-  line-height:1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 900;
+  padding: 7px 0;
+  line-height: 1;
 }
 .round-chip-score.red { background: rgba(232,51,42,0.18); color: #ff9a95; }
 .round-chip-score.blue { background: rgba(26,111,232,0.18); color: #97c7ff; }
@@ -551,7 +554,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 5px;
     padding: 5px;
-    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
   }
   #tournament-screen { padding: 6px; }
 
@@ -624,18 +627,18 @@ button { cursor: pointer; }
     gap: 5px;
   }
   .round-chip {
-    min-width: 60px;
+    min-width: 58px;
     border-radius: 14px;
   }
-  .round-chip-label { font-size: 11px; padding: 6px 0; }
-  .round-chip-score { font-size: 17px; padding: 9px 0; }
+  .round-chip-label { font-size: 10px; padding: 5px 0; }
+  .round-chip-score { font-size: 16px; padding: 6px 0; }
 }
 
 @media (max-width: 360px) {
   #game-screen {
     gap: 4px;
     padding: 4px;
-    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
   }
   .scoreboards, .score-boxes, .entry-panels, .entry-card, .entry-mode { gap: 4px; }
   .team-card { padding: 6px; }
@@ -669,15 +672,15 @@ button { cursor: pointer; }
     padding: 4px;
   }
   .round-chip { min-width: 52px; }
-  .round-chip-score { font-size: 15px; padding: 8px 0; }
+  .round-chip-label { font-size: 9px; padding: 4px 0; }
+  .round-chip-score { font-size: 14px; padding: 6px 0; }
 }
 
 @media (max-height: 760px) {
   #game-screen {
     gap: 4px;
     padding: 4px;
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
   }
   .header { padding-bottom: 4px; }
   .brand-title { font-size: 15px; }
@@ -710,8 +713,8 @@ button { cursor: pointer; }
     gap: 4px;
   }
   .round-chip { min-width: 48px; }
-  .round-chip-label { font-size: 9px; padding: 5px 0; }
-  .round-chip-score { font-size: 14px; padding: 7px 0; }
+  .round-chip-label { font-size: 9px; padding: 4px 0; }
+  .round-chip-score { font-size: 13px; padding: 5px 0; }
 }
 
 @media (max-height: 690px) {
