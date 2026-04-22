@@ -583,10 +583,17 @@
 
  function initScoringMode() {
   const saved = localStorage.getItem('qc_scoringMode');
+
   if (saved === 'acl' || saved === 'total') {
-   state.scoringMode = saved;
-   updateScoringUI();
+    state.scoringMode = saved;
   } else {
+    state.scoringMode = 'acl';
+  }
+
+  updateScoringUI();
+  updateScoreBoxStyles();
+}
+ else {
    openScoringModal();
   }
  }
