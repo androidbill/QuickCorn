@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QuickCorn</title>
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --red: #e8332a; --red-dark: #c0281f;
     --blue: #1a6fe8; --blue-dark: #1458c0;
-    --bg: #0d1b2a; --bg2: #142233; --bg3: #1c2e42;
+    
+ --team-red: var(--red); --team-red-dark: var(--red-dark);
+ --team-blue: var(--blue); --team-blue-dark: var(--blue-dark);
+--bg: #0d1b2a; --bg2: #142233; --bg3: #1c2e42;
     --btn-bg: #1e2f42;
     --green: #6abf45; --green-dark: #529933;
     --text: #ffffff; --muted: #7a9ab5; --border: #1e3450;
@@ -117,8 +121,8 @@
     border: 2px solid var(--border);
   }
   .win-banner { padding: 16px 16px 12px; text-align: center; }
-  .win-banner.red { background: var(--red); }
-  .win-banner.blue { background: var(--blue); }
+  .win-banner.red { background: var(--team-red); }
+  .win-banner.blue { background: var(--team-blue); }
   .win-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 4px; opacity: 0.85; }
   .win-team { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 2px; line-height: 1; }
   .win-players { font-size: 15px; opacity: 0.8; margin-top: 2px; }
@@ -152,6 +156,15 @@
   .menu-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 6px; }
 
   /* ── SCOREBOARDS ── */
+ .team-line{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+ .team-color-btn{ width:26px; height:26px; flex:0 0 26px; border-radius:8px; border:1px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.20); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; }
+ .team-color-btn:active{ transform: scale(0.94); }
+ .team-color-input{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+ .bag-col-label.red{ background: color-mix(in srgb, var(--team-red) 22%, transparent); border-radius: 6px; padding: 2px 0; border: 1px solid color-mix(in srgb, var(--team-red) 45%, var(--border)); color:#fff; }
+ .bag-col-label.blue{ background: color-mix(in srgb, var(--team-blue) 22%, transparent); border-radius: 6px; padding: 2px 0; border: 1px solid color-mix(in srgb, var(--team-blue) 45%, var(--border)); color:#fff; }
+ .total-col-label.red{ background: color-mix(in srgb, var(--team-red) 30%, transparent); color:#fff; border-radius: 8px; padding: 4px 0; border: 1px solid color-mix(in srgb, var(--team-red) 55%, var(--border)); }
+ .total-col-label.blue{ background: color-mix(in srgb, var(--team-blue) 30%, transparent); color:#fff; border-radius: 8px; padding: 4px 0; border: 1px solid color-mix(in srgb, var(--team-blue) 55%, var(--border)); }
+
   .scoreboards {
     display: grid; grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
@@ -159,8 +172,8 @@
     flex-shrink: 0;
   }
   .team-card { border-radius: 10px; padding: 5px 10px 4px; cursor: pointer; }
-  .team-card.red { background: var(--red); }
-  .team-card.blue { background: var(--blue); }
+  .team-card.red { background: var(--team-red); }
+  .team-card.blue { background: var(--team-blue); }
   .team-name {
     font-family: 'Bebas Neue', sans-serif; font-size: 20px;
     letter-spacing: 1px; line-height: 1.1; transition: opacity 0.2s;
@@ -180,8 +193,32 @@
     align-items: center; justify-content: center; padding: 2px 4px;
     overflow: hidden; height: clamp(80px, 16vh, 130px);
   }
-  .score-box.red { background: var(--red); }
-  .score-box.blue { background: var(--blue); }
+  /* base handled by mode classes */
+.score-box.red { }
+  /* base handled by mode classes */
+.score-box.blue { }
+
+ /* Score boxes follow scoring mode */
+ body.mode-acl .score-box{ border: 1px solid transparent; }
+ body.mode-acl .score-box.red{
+   background: color-mix(in srgb, var(--team-red) 22%, transparent);
+   border-color: color-mix(in srgb, var(--team-red) 45%, var(--border));
+ }
+ body.mode-acl .score-box.blue{
+   background: color-mix(in srgb, var(--team-blue) 22%, transparent);
+   border-color: color-mix(in srgb, var(--team-blue) 45%, var(--border));
+ }
+
+ body.mode-total .score-box{ border: 1px solid transparent; }
+ body.mode-total .score-box.red{
+   background: color-mix(in srgb, var(--team-red) 30%, transparent);
+   border-color: color-mix(in srgb, var(--team-red) 55%, var(--border));
+ }
+ body.mode-total .score-box.blue{
+   background: color-mix(in srgb, var(--team-blue) 30%, transparent);
+   border-color: color-mix(in srgb, var(--team-blue) 55%, var(--border));
+ }
+
   .score-num {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(50px, 18vh, 110px);
@@ -220,8 +257,8 @@
   }
   .bag-btn:last-child { margin-bottom: 0; }
   .bag-btn:active { transform: scale(0.91); }
-  .bag-btn.selected-red  { background: var(--red-dark);  border-color: var(--red); }
-  .bag-btn.selected-blue { background: var(--blue-dark); border-color: var(--blue); }
+  .bag-btn.selected-red { background: var(--team-red-dark); border-color: var(--team-red); }
+  .bag-btn.selected-blue { background: var(--team-blue-dark); border-color: var(--team-blue); }
 
   /* ── BOTTOM BAR ── */
   .bottom-bar {
@@ -299,8 +336,8 @@
  .total-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex: 1; min-height: 0; }
  .pt-btn { margin-bottom: 0; font-size: clamp(18px, 4.5vh, 40px); }
  .pt-btn:active { transform: scale(0.93); }
- .pt-btn.selected-red { background: var(--red-dark); border-color: var(--red); }
- .pt-btn.selected-blue { background: var(--blue-dark); border-color: var(--blue); }
+ .pt-btn.selected-red { background: var(--team-red-dark); border-color: var(--team-red); }
+ .pt-btn.selected-blue { background: var(--team-blue-dark); border-color: var(--team-blue); }
  .modal-subtitle { font-size: 12px; color: var(--muted); text-align:center; margin-bottom: 10px; letter-spacing: 1px; }
 
 </style>
@@ -391,6 +428,7 @@
     <button onclick="closeDropdown()">Home</button>
     <button onclick="closeDropdown();openModal()">Edit Teams</button>
  <button onclick="closeDropdown();openScoringModal()">Scoring Mode</button>
+ <button onclick="closeDropdown();resetTeamColors()">Reset Team Colors</button>
   <button onclick="closeDropdown();restartGame()">Restart</button>
     <button onclick="closeDropdown();document.getElementById('about-modal').classList.add('open')">About</button>
   </div>
@@ -402,14 +440,22 @@
 <div id="game-screen">
 <!-- SCOREBOARDS -->
 <div class="scoreboards">
-  <div class="team-card red" onclick="openModal()">
+  <div class="team-card red" onclick="openTeamCard(event)">
+  <input class="team-color-input" id="pick-red" type="color" aria-label="Choose red team color" onclick="event.stopPropagation();">
+  <div class="team-line">
     <div class="team-name" id="red-p1">Player 1</div>
-    <div class="team-player2" id="red-p2">Player 2</div>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();openColorPicker('red', event);">🎨</button>
   </div>
-  <div class="team-card blue" onclick="openModal()">
+  <div class="team-player2" id="red-p2">Player 2</div>
+</div>
+  <div class="team-card blue" onclick="openTeamCard(event)">
+  <input class="team-color-input" id="pick-blue" type="color" aria-label="Choose blue team color" onclick="event.stopPropagation();">
+  <div class="team-line">
     <div class="team-name" id="blue-p1">Player 3</div>
-    <div class="team-player2" id="blue-p2">Player 4</div>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();openColorPicker('blue', event);">🎨</button>
   </div>
+  <div class="team-player2" id="blue-p2">Player 4</div>
+</div>
   <div class="score-box red"><div class="score-num" id="score-red">0</div></div>
   <div class="score-box blue"><div class="score-num" id="score-blue">0</div></div>
 </div>
@@ -420,14 +466,14 @@
     <!-- RED -->
     <div class="bag-team">
       <div class="bag-col">
-        <div class="bag-col-label">IN</div>
+        <div class="bag-col-label red">IN</div>
         <button class="bag-btn" id="r-in-1" onclick="selectBag('red','in',1)">1</button>
         <button class="bag-btn" id="r-in-2" onclick="selectBag('red','in',2)">2</button>
         <button class="bag-btn" id="r-in-3" onclick="selectBag('red','in',3)">3</button>
         <button class="bag-btn" id="r-in-4" onclick="selectBag('red','in',4)">4</button>
       </div>
       <div class="bag-col">
-        <div class="bag-col-label">ON</div>
+        <div class="bag-col-label red">ON</div>
         <button class="bag-btn" id="r-on-1" onclick="selectBag('red','on',1)">1</button>
         <button class="bag-btn" id="r-on-2" onclick="selectBag('red','on',2)">2</button>
         <button class="bag-btn" id="r-on-3" onclick="selectBag('red','on',3)">3</button>
@@ -437,14 +483,14 @@
     <!-- BLUE -->
     <div class="bag-team">
       <div class="bag-col">
-        <div class="bag-col-label">IN</div>
+        <div class="bag-col-label blue">IN</div>
         <button class="bag-btn" id="b-in-1" onclick="selectBag('blue','in',1)">1</button>
         <button class="bag-btn" id="b-in-2" onclick="selectBag('blue','in',2)">2</button>
         <button class="bag-btn" id="b-in-3" onclick="selectBag('blue','in',3)">3</button>
         <button class="bag-btn" id="b-in-4" onclick="selectBag('blue','in',4)">4</button>
       </div>
       <div class="bag-col">
-        <div class="bag-col-label">ON</div>
+        <div class="bag-col-label blue">ON</div>
         <button class="bag-btn" id="b-on-1" onclick="selectBag('blue','on',1)">1</button>
         <button class="bag-btn" id="b-on-2" onclick="selectBag('blue','on',2)">2</button>
         <button class="bag-btn" id="b-on-3" onclick="selectBag('blue','on',3)">3</button>
@@ -455,7 +501,7 @@
   <!-- TOTAL NUMBER INPUT (alternative to ACL IN/ON) -->
   <div class="total-cols hidden" id="total-cols">
     <div class="total-team">
-      <div class="total-col-label">RED POINTS</div>
+      <div class="total-col-label red" id="label-red-total">RED</div>
       <div class="total-grid">
       <button class="bag-btn pt-btn" id="r-pt-0" onclick="selectTotal('red',0)">0</button>
       <button class="bag-btn pt-btn" id="r-pt-1" onclick="selectTotal('red',1)">1</button>
@@ -472,7 +518,7 @@
       </div>
     </div>
     <div class="total-team">
-      <div class="total-col-label">BLUE POINTS</div>
+      <div class="total-col-label blue" id="label-blue-total">BLUE</div>
       <div class="total-grid">
       <button class="bag-btn pt-btn" id="b-pt-0" onclick="selectTotal('blue',0)">0</button>
       <button class="bag-btn pt-btn" id="b-pt-1" onclick="selectTotal('blue',1)">1</button>
@@ -514,11 +560,14 @@
 
 <script>
   const state = {
+ teamColors:{ red:null, blue:null },
     mode: '2v2',
     redP1:'Player 1', redP2:'Player 2',
     blueP1:'Player 3', blueP2:'Player 4',
     redTotal:0, blueTotal:0,
-    bags:{ red:{in:0,on:0}, blue:{in:0,on:0} },
+    bags:{ red:{in:0,on:0}, 
+ totals:{ red:null, blue:null },
+blue:{in:0,on:0} },
     rounds:[], editingRound:null, currentRound:1,
   };
 
@@ -536,17 +585,32 @@
 
  function initScoringMode() {
   const saved = localStorage.getItem('qc_scoringMode');
+
   if (saved === 'acl' || saved === 'total') {
-   state.scoringMode = saved;
-   updateScoringUI();
+    state.scoringMode = saved;
   } else {
-   openScoringModal();
+    // First run – ask the user
+    openScoringModal();
+    // Default so the app still works behind the modal
+    state.scoringMode = 'acl';
   }
- }
+
+  // Ensure totals exists (prevents total-mode click crashes on first load)
+  if (!state.totals) state.totals = { red: null, blue: null };
+
+  updateScoringUI();
+
+  // When starting in Total mode, draw selected states correctly
+  if (state.scoringMode === 'total') {
+    renderTotalBtns();
+  }
+}
+
 
  function setScoringMode(mode) {
   state.scoringMode = mode;
   localStorage.setItem('qc_scoringMode', mode);
+  if (!state.totals) state.totals = { red: null, blue: null };
   document.getElementById('scoring-modal').classList.remove('open');
 
   // clear current round input when switching modes
@@ -566,7 +630,21 @@
   const totalCols = document.getElementById('total-cols');
   if (bagCols) bagCols.classList.toggle('hidden', isTotal);
   if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
- }
+
+  // Safety: totals must exist in Total mode
+  if (!state.totals) state.totals = { red: null, blue: null };
+
+  updateScoreBoxStyles();
+  updateTotalLabels();
+
+  // Keep selection visuals in sync
+  if (isTotal) {
+    renderTotalBtns();
+  } else {
+    renderBagBtns();
+  }
+}
+
 
  // TOTAL NUMBER selection buttons
  const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
@@ -863,7 +941,18 @@
   }
   document.addEventListener('click', function() { closeDropdown(); });
 
-  function openModal() {
+  
+
+ // Open Edit Teams ONLY when tapping the card (not the color picker)
+ function openTeamCard(e){
+   // If the tap is on the paint button or the hidden color input, ignore
+   if(e && e.target && (e.target.closest('.team-color-btn') || e.target.closest('.team-color-input'))){
+     return;
+   }
+   openModal();
+ }
+
+function openModal() {
 
   ['in-red1','in-red2','in-blue1','in-blue2'].forEach(id => {
     const el = document.getElementById(id);
@@ -898,8 +987,229 @@
     }
     closeModal(); render();
   }
- render();
+ 
+
+ // ── TEAM COLORS (picker) ──
+ function hexToRgb(hex){
+   const h = (hex||'').replace('#','').trim();
+   if(h.length !== 6) return null;
+   return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) };
+ }
+ function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+ function rgbToHex(r,g,b){
+   const to = x => x.toString(16).padStart(2,'0');
+   return '#'+to(r)+to(g)+to(b);
+ }
+ function darken(hex, amt=0.16){
+   const c = hexToRgb(hex);
+   if(!c) return hex;
+   return rgbToHex(
+     clamp(Math.round(c.r*(1-amt)),0,255),
+     clamp(Math.round(c.g*(1-amt)),0,255),
+     clamp(Math.round(c.b*(1-amt)),0,255)
+   );
+ }
+ function applyTeamColors(){
+   const root = document.documentElement;
+   const baseRed  = getComputedStyle(root).getPropertyValue('--red').trim()  || '#e8332a';
+   const baseBlue = getComputedStyle(root).getPropertyValue('--blue').trim() || '#1a6fe8';
+   const red  = state.teamColors.red  || baseRed;
+   const blue = state.teamColors.blue || baseBlue;
+
+   root.style.setProperty('--team-red', red);
+   root.style.setProperty('--team-red-dark', darken(red));
+   root.style.setProperty('--team-blue', blue);
+   root.style.setProperty('--team-blue-dark', darken(blue));
+
+   const pr = document.getElementById('pick-red');
+   const pb = document.getElementById('pick-blue');
+   if(pr) pr.value = red;
+   if(pb) pb.value = blue;
+  updateTotalLabels();
+  updateScoreBoxStyles();
+ }
+ 
+ // ── COLOR NAME (for Total labels) ──
+ function rgbToHsl(r,g,b){
+   r/=255; g/=255; b/=255;
+   const max=Math.max(r,g,b), min=Math.min(r,g,b);
+   let h=0, s=0, l=(max+min)/2;
+   const d=max-min;
+   if(d!==0){
+     s = d/(1-Math.abs(2*l-1));
+     switch(max){
+       case r: h=((g-b)/d)%6; break;
+       case g: h=((b-r)/d)+2; break;
+       case b: h=((r-g)/d)+4; break;
+     }
+     h = Math.round(h*60);
+     if(h<0) h+=360;
+   }
+   return {h, s, l};
+ }
+ function colorNameFromHex(hex, fallback){
+   if(!hex) return fallback;
+   const h = hex.replace('#','').trim();
+   if(h.length!==6) return fallback;
+   const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+   const {h:hh, s, l} = rgbToHsl(r,g,b);
+   // low saturation = gray-ish
+   if(s < 0.15){
+     if(l > 0.85) return 'WHITE';
+     if(l < 0.15) return 'BLACK';
+     return 'GRAY';
+   }
+   if(hh < 15 || hh >= 345) return 'RED';
+   if(hh < 40) return 'ORANGE';
+   if(hh < 70) return 'YELLOW';
+   if(hh < 150) return 'GREEN';
+   if(hh < 190) return 'TEAL';
+   if(hh < 215) return 'CYAN';
+   if(hh < 260) return 'BLUE';
+   if(hh < 290) return 'PURPLE';
+   if(hh < 330) return 'MAGENTA';
+   return fallback;
+ }
+ function updateTotalLabels(){
+   const lr = document.getElementById('label-red-total');
+   const lb = document.getElementById('label-blue-total');
+   // Use chosen colors if set, otherwise defaults
+   const redHex = state.teamColors && state.teamColors.red ? state.teamColors.red : null;
+   const blueHex = state.teamColors && state.teamColors.blue ? state.teamColors.blue : null;
+   if(lr) lr.textContent = colorNameFromHex(redHex, 'RED');
+   if(lb) lb.textContent = colorNameFromHex(blueHex, 'BLUE');
+ }
+ 
+function updateScoreBoxStyles(){
+  const isTotal = state.scoringMode === 'total';
+  document.body.classList.remove('mode-acl','mode-total');
+  document.body.classList.add(isTotal ? 'mode-total' : 'mode-acl');
+}
+
+
+
+
+ // ── MOBILE-FRIENDLY COLOR PICKER (iro.js) ──
+ let iroPicker = null;
+ let pendingTeam = null;
+ let pendingColor = null;
+ function isLikelyMobile(){
+   return (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 900;
+ }
+ function ensureIroPicker(initialHex){
+   const container = document.getElementById('iro-container');
+   if(!container) return;
+   container.innerHTML = '';
+   iroPicker = new iro.ColorPicker(container, {
+     width: Math.min(320, Math.max(240, Math.floor(window.innerWidth * 0.75))),
+     color: initialHex || '#ffffff',
+     layout: [
+       { component: iro.ui.Box },
+       { component: iro.ui.Slider, options: { sliderType: 'hue' } }
+     ]
+   });
+   iroPicker.on('color:change', function(color){
+     pendingColor = color.hexString;
+     // live preview while dragging
+     if(pendingTeam){
+       state.teamColors[pendingTeam] = pendingColor;
+       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+       applyTeamColors();
+     }
+   });
+ }
+ function openColorPicker(team, e){
+   if(e){ e.preventDefault(); e.stopPropagation(); }
+   // Desktop: keep native picker (it already looks great)
+   if(!isLikelyMobile()){
+     const id = team === 'red' ? 'pick-red' : 'pick-blue';
+     const input = document.getElementById(id);
+     if(input) input.click();
+     return;
+   }
+   pendingTeam = team;
+   const title = document.getElementById('colorpick-title');
+   if(title) title.textContent = team.toUpperCase() + ' TEAM COLOR';
+   const current = (state.teamColors && state.teamColors[team]) ? state.teamColors[team] : (team === 'red' ? getComputedStyle(document.documentElement).getPropertyValue('--team-red').trim() : getComputedStyle(document.documentElement).getPropertyValue('--team-blue').trim());
+   pendingColor = current || (team==='red' ? '#e8332a' : '#1a6fe8');
+   ensureIroPicker(pendingColor);
+   document.getElementById('colorpick-overlay').classList.add('open');
+ }
+ function closeColorPicker(){
+   document.getElementById('colorpick-overlay').classList.remove('open');
+   pendingTeam = null;
+   pendingColor = null;
+ }
+ function saveColorPicker(){
+   if(pendingTeam && pendingColor){
+     state.teamColors[pendingTeam] = pendingColor;
+     localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+     applyTeamColors();
+   }
+   closeColorPicker();
+ }
+ // Rebuild picker size on rotate
+ window.addEventListener('resize', function(){
+   const overlay = document.getElementById('colorpick-overlay');
+   if(overlay && overlay.classList.contains('open') && iroPicker && pendingColor){
+     ensureIroPicker(pendingColor);
+   }
+ });
+
+function initTeamColors(){
+   const saved = localStorage.getItem('qc_teamColors');
+   if(saved){
+     try{
+       const obj = JSON.parse(saved);
+       if(obj && obj.red) state.teamColors.red = obj.red;
+       if(obj && obj.blue) state.teamColors.blue = obj.blue;
+     }catch(e){}
+   }
+
+   const pr = document.getElementById('pick-red');
+   const pb = document.getElementById('pick-blue');
+
+   if(pr){
+     pr.addEventListener('input', (e)=>{
+       state.teamColors.red = e.target.value;
+       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+       applyTeamColors();
+     });
+   }
+   if(pb){
+     pb.addEventListener('input', (e)=>{
+       state.teamColors.blue = e.target.value;
+       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+       applyTeamColors();
+     });
+   }
+
+   applyTeamColors();
+ }
+ function resetTeamColors(){
+   state.teamColors = { red:null, blue:null };
+   localStorage.removeItem('qc_teamColors');
+   applyTeamColors();
+  updateTotalLabels();
+  updateScoreBoxStyles();
+ }
+
+render();
+ initTeamColors();
  initScoringMode();
 </script>
+
+<!-- COLOR PICKER MODAL (mobile-friendly) -->
+<div class="modal-overlay" id="colorpick-overlay">
+  <div class="modal" style="max-width:380px">
+    <h2 id="colorpick-title">Pick a Color</h2>
+    <div id="iro-container" style="display:flex; justify-content:center; padding:8px 0 4px;"></div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-cancel" onclick="closeColorPicker()">Cancel</button>
+      <button class="btn-save" onclick="saveColorPicker()">Done</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
