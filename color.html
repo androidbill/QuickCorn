@@ -285,7 +285,10 @@
   .round-history {
     border-top: 1px solid var(--border);
     padding: 4px 8px 6px; flex-shrink: 0; max-height: 110px; overflow-y: auto;
-  }
+  
+  max-height: 120px;
+  overflow-y: auto;
+}
   .rounds-header {
     font-size: 10px; font-weight: 700; letter-spacing: 2px;
     color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
@@ -360,19 +363,27 @@
 
 
 
-/* ── CENTER DIVIDER (white, flush with points boxes only) ── */
-#game-screen { position: relative; }
-#game-screen::before {
+
+/* ── CENTER DIVIDER (white, locked to points boxes) ── */
+#game-screen {
+  position: relative;
+}
+
+.bag-section {
+  position: relative;
+}
+
+.bag-section::after {
   content: '';
   position: absolute;
   top: 0;
-  height: var(--divider-height, 0px);
+  bottom: 0;
   left: 50%;
   width: 4px;
   background: #ffffff;
   transform: translateX(-50%);
   pointer-events: none;
-  z-index: 5;
+  z-index: 4;
 }
 
 </style>
