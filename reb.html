@@ -114,6 +114,14 @@ button { cursor: pointer; }
   height: 100%;
   overflow: hidden;
 }
+#game-history-screen {
+  display: none;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px;
+}
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -479,6 +487,47 @@ button { cursor: pointer; }
   line-height: 1.45;
   margin-top: 8px;
 }
+.screen-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.history-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+.game-history-card {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.game-history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.game-history-winner {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+.game-history-date {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.game-history-sub {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
 
 
 @media (max-width: 430px) {
@@ -492,6 +541,7 @@ button { cursor: pointer; }
     padding: 5px;
     grid-template-rows: auto auto auto auto auto;
   }
+  #game-history-screen { padding: 5px; }
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
 
   .team-card { padding: 7px; border-radius: 14px; }
@@ -799,6 +849,7 @@ button { cursor: pointer; }
     </div>
     <button class="icon-btn" id="menu-btn">⋮</button>
     <div class="dropdown" id="menu-dropdown">
+      <button data-action="history">Game History</button>
       <button data-action="restart">Restart Game</button>
       <button data-action="about">About</button>
     </div>
@@ -873,6 +924,17 @@ button { cursor: pointer; }
       <div class="section-title">Round History</div>
       <div class="history-scroller" id="round-history"></div>
     </div>
+  </div>
+
+  <div id="game-history-screen" class="screen">
+    <div class="screen-top">
+      <div>
+        <div class="section-title">Game History</div>
+        <div class="note">Swipe left from the game screen to open this view.</div>
+      </div>
+      <button class="pill" id="close-history-btn">Back</button>
+    </div>
+    <div class="history-stack" id="game-history-list"></div>
   </div>
 </div>
 
@@ -976,6 +1038,7 @@ button { cursor: pointer; }
     menuBtn: document.getElementById('menu-btn'),
     menuDropdown: document.getElementById('menu-dropdown'),
     gameScreen: document.getElementById('game-screen'),
+    gameHistoryScreen: document.getElementById('game-history-screen'),
     redP1: document.getElementById('red-p1'), redP2: document.getElementById('red-p2'),
     blueP1: document.getElementById('blue-p1'), blueP2: document.getElementById('blue-p2'),
     scoreRed: document.getElementById('score-red'), scoreBlue: document.getElementById('score-blue'),
@@ -998,6 +1061,8 @@ button { cursor: pointer; }
     blueColorPreview: document.getElementById('blue-color-preview'),
     colorHexReadout: document.getElementById('color-hex-readout'),
     resetColorsBtn: document.getElementById('reset-colors-btn'),
+    closeHistoryBtn: document.getElementById('close-history-btn'),
+    gameHistoryList: document.getElementById('game-history-list'),
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
     winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'),
     aboutModalWrap: document.getElementById('about-modal-wrap'),
@@ -1018,11 +1083,13 @@ button { cursor: pointer; }
         targetScore: 21,
         rounds: [],
         editingRound: null,
+        historyEntryId: null,
         currentEntry: {
           red: { in: 0, on: 0, total: null },
           blue: { in: 0, on: 0, total: null }
         },
       },
+      gameHistory: [],
       ui: {
         breakdown: null,
         draftTeamMode: '2v2'
@@ -1223,6 +1290,43 @@ button { cursor: pointer; }
     const rounds = gross.length;
     return { name: safeText(name, 'Player'), color, total, rounds, ppr: rounds ? (total / rounds).toFixed(2) : '0.00' };
   }
+  function formatPlayedDate(isoString) {
+    try {
+      return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(isoString));
+    } catch {
+      return isoString;
+    }
+  }
+  function buildCurrentGameHistoryRecord() {
+    const winnerSide = getWinnerSide();
+    if (!winnerSide) return null;
+    const totals = getTotals();
+    const existing = state.game.historyEntryId ? state.gameHistory.find(entry => entry.id === state.game.historyEntryId) : null;
+    const playedAt = existing && existing.playedAt ? existing.playedAt : new Date().toISOString();
+    return {
+      id: state.game.historyEntryId || `game-${Date.now()}`,
+      playedAt,
+      winnerSide,
+      winnerTeam: getTeamDisplay(winnerSide),
+      score: `${totals.red} - ${totals.blue}`,
+      stats: computePlayerStats().map(row => ({
+        name: row.name,
+        total: row.total,
+        rounds: row.rounds,
+        ppr: row.ppr
+      }))
+    };
+  }
+  function upsertGameHistory() {
+    const record = buildCurrentGameHistoryRecord();
+    if (!record) return;
+    setState(s => {
+      s.game.historyEntryId = record.id;
+      const index = s.gameHistory.findIndex(entry => entry.id === record.id);
+      if (index >= 0) s.gameHistory[index] = record;
+      else s.gameHistory.unshift(record);
+    });
+  }
 
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1230,6 +1334,7 @@ button { cursor: pointer; }
   function showScreen(screen) {
     state.screen = screen;
     els.gameScreen.style.display = screen === 'game' ? 'grid' : 'none';
+    els.gameHistoryScreen.style.display = screen === 'history' ? 'block' : 'none';
     persist();
   }
 
@@ -1269,6 +1374,7 @@ button { cursor: pointer; }
     setState(s => {
       s.game.rounds = [];
       s.game.editingRound = null;
+      s.game.historyEntryId = null;
       s.game.currentEntry.red = { in: 0, on: 0, total: null };
       s.game.currentEntry.blue = { in: 0, on: 0, total: null };
     });
@@ -1358,7 +1464,10 @@ button { cursor: pointer; }
       s.game.currentEntry.red = { in: 0, on: 0, total: null };
       s.game.currentEntry.blue = { in: 0, on: 0, total: null };
     });
-    if (getWinnerSide()) openWinModal();
+    if (getWinnerSide()) {
+      upsertGameHistory();
+      openWinModal();
+    }
   }
   function openWinModal() {
     const winner = getWinnerSide();
@@ -1462,9 +1571,41 @@ button { cursor: pointer; }
     els.submitBtn.textContent = state.game.editingRound != null ? 'UPDATE' : 'SUBMIT';
     renderHistory();
   }
+  function renderGameHistory() {
+    if (!els.gameHistoryList) return;
+    els.gameHistoryList.innerHTML = '';
+    if (!state.gameHistory.length) {
+      const empty = document.createElement('div');
+      empty.className = 'card game-history-card';
+      empty.innerHTML = `<div class="section-title" style="margin-bottom:4px;">No games yet</div><div class="note">Finish a game to save the winner, player stats, and date played here.</div>`;
+      els.gameHistoryList.appendChild(empty);
+      return;
+    }
+    state.gameHistory.forEach(entry => {
+      const card = document.createElement('div');
+      card.className = 'card game-history-card';
+      const statsHtml = (entry.stats || []).map(row =>
+        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${row.total} pts · ${row.rounds} rds · ${row.ppr}</span></div>`
+      ).join('');
+      card.innerHTML = `
+        <div class="game-history-head">
+          <div>
+            <div class="section-title" style="margin-bottom:6px;">Winner</div>
+            <div class="game-history-winner">${escapeHtml(entry.winnerTeam || 'Unknown')}</div>
+            <div class="game-history-sub" style="margin-top:6px;">Final Score: ${escapeHtml(entry.score || '')}</div>
+          </div>
+          <div class="game-history-date">${escapeHtml(formatPlayedDate(entry.playedAt))}</div>
+        </div>
+        <div class="section-title">Points · Rounds · PPR</div>
+        <div class="stat-list">${statsHtml}</div>
+      `;
+      els.gameHistoryList.appendChild(card);
+    });
+  }
   function render() {
     applyTheme();
     renderGame();
+    renderGameHistory();
     showScreen(state.screen);
   }
 
@@ -1478,6 +1619,7 @@ button { cursor: pointer; }
     if (!btn) return;
     const action = btn.dataset.action;
     closeAllMenus();
+    if (action === 'history') showScreen('history');
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -1504,10 +1646,51 @@ button { cursor: pointer; }
     setState(s => { s.teamColors.red = '#E8332A'; s.teamColors.blue = '#1A6FE8'; });
     syncColorPickerUI();
   });
+  els.closeHistoryBtn.addEventListener('click', () => showScreen('game'));
   els.submitBtn.addEventListener('click', submitRound);
   els.playAgainBtn.addEventListener('click', playAgain);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
   els.teamBlueCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let swipeEligible = false;
+  els.gameScreen.addEventListener('touchstart', (e) => {
+    if (state.screen !== 'game') return;
+    if (document.querySelector('.modal-wrap.open')) return;
+    if (e.target.closest('#round-history')) return;
+    const touch = e.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    swipeEligible = true;
+  }, { passive: true });
+  els.gameScreen.addEventListener('touchend', (e) => {
+    if (!swipeEligible || state.screen !== 'game') return;
+    swipeEligible = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      showScreen('history');
+    }
+  }, { passive: true });
+  els.gameHistoryScreen.addEventListener('touchstart', (e) => {
+    if (state.screen !== 'history') return;
+    if (document.querySelector('.modal-wrap.open')) return;
+    const touch = e.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    swipeEligible = true;
+  }, { passive: true });
+  els.gameHistoryScreen.addEventListener('touchend', (e) => {
+    if (!swipeEligible || state.screen !== 'history') return;
+    swipeEligible = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      showScreen('game');
+    }
+  }, { passive: true });
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-entry-team]');
     if (btn) setBagValue(btn.dataset.entryTeam, btn.dataset.entryType, Number(btn.dataset.entryVal));
