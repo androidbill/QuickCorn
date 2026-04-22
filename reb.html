@@ -233,13 +233,6 @@ button { cursor: pointer; }
   flex-direction: column;
   gap: 8px;
 }
-.entry-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 0 2px;
-}
 .section-title {
   font-size: 11px;
   text-transform: uppercase;
@@ -928,14 +921,6 @@ button { cursor: pointer; }
     </div>
 
     <div class="entry-card">
-      <div class="entry-header">
-        <div class="section-title">Round Entry</div>
-        <div class="pill-row">
-          <button class="pill" id="open-scoring-btn"></button>
-          <button class="pill" id="edit-state-pill"></button>
-        </div>
-      </div>
-
       <div class="entry-mode">
         <button id="mode-acl-btn">IN / ON</button>
         <button id="mode-total-btn">TOTAL</button>
@@ -1092,7 +1077,6 @@ button { cursor: pointer; }
     redEntryContent: document.getElementById('red-entry-content'), blueEntryContent: document.getElementById('blue-entry-content'),
     redEntryLabel: document.getElementById('red-entry-label'), blueEntryLabel: document.getElementById('blue-entry-label'),
     modeAclBtn: document.getElementById('mode-acl-btn'), modeTotalBtn: document.getElementById('mode-total-btn'),
-    openScoringBtn: document.getElementById('open-scoring-btn'), editStatePill: document.getElementById('edit-state-pill'),
     redColorBtn: document.getElementById('red-color-btn'), blueColorBtn: document.getElementById('blue-color-btn'),
     teamsModalWrap: document.getElementById('teams-modal-wrap'),
     inRed1: document.getElementById('in-red1'), inRed2: document.getElementById('in-red2'),
@@ -1603,8 +1587,6 @@ button { cursor: pointer; }
     const net = entryToPoints(state.game.currentEntry.red) - entryToPoints(state.game.currentEntry.blue);
     els.roundNet.textContent = net > 0 ? `+${net}` : String(net);
     els.roundNum.textContent = String(state.game.rounds.length + 1);
-    els.openScoringBtn.textContent = state.scoringMode === 'acl' ? 'IN / ON' : 'TOTAL';
-    els.editStatePill.textContent = state.game.editingRound != null ? `Editing R${state.game.editingRound + 1}` : 'Live';
     els.redEntryLabel.textContent = getTeamDisplay('red').toUpperCase();
     els.blueEntryLabel.textContent = getTeamDisplay('blue').toUpperCase();
     els.redEntryContent.innerHTML = renderEntryButtons('red');
@@ -1676,7 +1658,6 @@ button { cursor: pointer; }
   els.setTotalBtn.addEventListener('click', () => setScoringMode('total'));
   els.modeAclBtn.addEventListener('click', () => setScoringMode('acl'));
   els.modeTotalBtn.addEventListener('click', () => setScoringMode('total'));
-  els.openScoringBtn.addEventListener('click', () => showModal('settings-modal-wrap'));
   els.redColorBtn.addEventListener('click', () => openColorsModal('red'));
   els.blueColorBtn.addEventListener('click', () => openColorsModal('blue'));
   els.redColorPreview.addEventListener('click', () => {
