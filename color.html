@@ -358,7 +358,8 @@
 }
 
 
-/* ── CENTER DIVIDER (white, flush with points boxes) ── */
+
+/* ── CENTER DIVIDER (dynamic, flush with bottom of points boxes) ── */
 #game-screen {
   position: relative;
 }
@@ -367,8 +368,7 @@
   content: '';
   position: absolute;
   top: 0;
-  /* stop exactly at the top of the bottom bar (submit button) */
-  bottom: 72px; 
+  height: var(--divider-height, 0px);
   left: 50%;
   width: 4px;
   background: #ffffff;
@@ -1247,6 +1247,22 @@ render();
     </div>
   </div>
 </div>
+
+
+<script>
+function updateDividerHeight() {
+  const game = document.getElementById('game-screen');
+  const bottomBar = document.querySelector('.bottom-bar');
+  if (!game || !bottomBar) return;
+  const gameRect = game.getBoundingClientRect();
+  const bottomRect = bottomBar.getBoundingClientRect();
+  const height = bottomRect.top - gameRect.top;
+  game.style.setProperty('--divider-height', height + 'px');
+}
+
+window.addEventListener('load', updateDividerHeight);
+window.addEventListener('resize', updateDividerHeight);
+</script>
 
 </body>
 </html>
