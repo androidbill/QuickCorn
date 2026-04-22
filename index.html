@@ -283,9 +283,13 @@
 
   /* ── ROUND HISTORY ── */
   .round-history {
-    border-top: 1px solid var(--border);
-    padding: 4px 8px 6px; flex-shrink: 0;
-  }
+  border-top: 1px solid var(--border);
+  padding: 4px 8px 6px;
+  flex-shrink: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
   .rounds-header {
     font-size: 10px; font-weight: 700; letter-spacing: 2px;
     color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
@@ -339,6 +343,26 @@
  .pt-btn.selected-red { background: var(--team-red-dark); border-color: var(--team-red); }
  .pt-btn.selected-blue { background: var(--team-blue-dark); border-color: var(--team-blue); }
  .modal-subtitle { font-size: 12px; color: var(--muted); text-align:center; margin-bottom: 10px; letter-spacing: 1px; }
+
+
+
+
+
+
+/* ── CENTER DIVIDER (white, only through points area) ── */
+.bag-section { position: relative; }
+.bag-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background: #ffffff;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 4;
+}
 
 </style>
 </head>
@@ -558,648 +582,15 @@
 </div>
 </div><!-- /game-screen -->
 
-<script>
-  const state = {
- teamColors:{ red:null, blue:null },
-    mode: '2v2',
-    redP1:'Player 1', redP2:'Player 2',
-    blueP1:'Player 3', blueP2:'Player 4',
-    redTotal:0, blueTotal:0,
-    bags:{ red:{in:0,on:0}, 
- totals:{ red:null, blue:null },
-blue:{in:0,on:0} },
-    rounds:[], editingRound:null, currentRound:1,
-  };
 
- function clearOnFirstFocus(input) {
-  if (!input.dataset.touched) {
-    input.value = '';
-    input.dataset.touched = 'true';
-  }
- }
 
- // ── SCORING MODE (ACL vs TOTAL NUMBER) ──
- function openScoringModal() {
-  document.getElementById('scoring-modal').classList.add('open');
- }
 
- function initScoringMode() {
-  const saved = localStorage.getItem('qc_scoringMode');
 
-  if (saved === 'acl' || saved === 'total') {
-    state.scoringMode = saved;
-  } else {
-    // First run – ask the user
-    openScoringModal();
-    // Default so the app still works behind the modal
-    state.scoringMode = 'acl';
-  }
 
-  // Ensure totals exists (prevents total-mode click crashes on first load)
-  if (!state.totals) state.totals = { red: null, blue: null };
 
-  updateScoringUI();
 
-  // When starting in Total mode, draw selected states correctly
-  if (state.scoringMode === 'total') {
-    renderTotalBtns();
-  }
-}
 
-
- function setScoringMode(mode) {
-  state.scoringMode = mode;
-  localStorage.setItem('qc_scoringMode', mode);
-  if (!state.totals) state.totals = { red: null, blue: null };
-  document.getElementById('scoring-modal').classList.remove('open');
-
-  // clear current round input when switching modes
-  state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
-  state.totals = { red:null, blue:null };
- state.pendingBreakdown = null;
- renderTotalBtns();
-  state.pendingBreakdown = null;
-
-  updateScoringUI();
-  render();
- }
-
- function updateScoringUI() {
-  const isTotal = state.scoringMode === 'total';
-  const bagCols = document.querySelector('.bag-cols');
-  const totalCols = document.getElementById('total-cols');
-  if (bagCols) bagCols.classList.toggle('hidden', isTotal);
-  if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
-
-  // Safety: totals must exist in Total mode
-  if (!state.totals) state.totals = { red: null, blue: null };
-
-  updateScoreBoxStyles();
-  updateTotalLabels();
-
-  // Keep selection visuals in sync
-  if (isTotal) {
-    renderTotalBtns();
-  } else {
-    renderBagBtns();
-  }
-}
-
-
- // TOTAL NUMBER selection buttons
- const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
-
- function renderTotalBtns() {
-  ['red','blue'].forEach(team => {
-   const sel = state.totals[team];
-   const p = team === 'red' ? 'r' : 'b';
-   TOTAL_VALUES.forEach(v => {
-    const el = document.getElementById(`${p}-pt-${v}`);
-    if (!el) return;
-    el.className = 'bag-btn pt-btn' + (sel === v ? ` selected-${team}` : '');
-   });
-  });
- }
-
- function selectTotal(team, pts) {
-  if (state.scoringMode !== 'total') return;
-  state.totals[team] = pts;
-
-  const options = calcInOnOptions(pts);
-  if (!options.length) {
-   // should never happen (we don't show invalid numbers like 11)
-   state.bags[team] = { in:0, on:0 };
-  } else if (options.length === 1) {
-   state.bags[team] = { in: options[0].in, on: options[0].on };
-  } else {
-   // ambiguous totals: ask the user (e.g., 3,4,6,7)
-   openBreakdown(team, pts, options);
-  }
-
-  renderTotalBtns();
-  renderNetScore();
- }
-
- function calcInOnOptions(totalPts) {
-  const opts = [];
-  for (let i = 0; i <= 4; i++) {
-   for (let o = 0; o <= 4; o++) {
-    if (i + o > 4) continue;
-    if (i*3 + o === totalPts) opts.push({in:i, on:o});
-   }
-  }
-  return opts;
- }
-
- function openBreakdown(team, pts, options) {
-  state.pendingBreakdown = { team, pts, options };
-  const title = document.getElementById('breakdown-title');
-  const sub = document.getElementById('breakdown-subtitle');
-  const actions = document.getElementById('breakdown-actions');
-
-  title.textContent = `${team.toUpperCase()} — ${pts} POINTS`;
-  sub.textContent = 'How did you score them?';
-  actions.innerHTML = '';
-
-  options.forEach(opt => {
-   const btn = document.createElement('button');
-   btn.className = 'btn-save';
-   btn.textContent = `${opt.in} IN, ${opt.on} ON`;
-   btn.onclick = () => chooseBreakdown(opt.in, opt.on);
-   actions.appendChild(btn);
-  });
-
-  document.getElementById('breakdown-modal').classList.add('open');
- }
-
- function closeBreakdown() {
-  document.getElementById('breakdown-modal').classList.remove('open');
-  state.pendingBreakdown = null;
- }
-
- function chooseBreakdown(inCount, onCount) {
-  const pb = state.pendingBreakdown;
-  if (!pb) return;
-  state.bags[pb.team] = { in: inCount, on: onCount };
-  closeBreakdown();
-  renderTotalBtns();
-  renderNetScore();
- }
-
-
-
-  function selectBag(team, type, val) {
-    const cur = state.bags[team][type];
-    state.bags[team][type] = (cur === val) ? 0 : val;
-    renderBagBtns();
-    renderNetScore();
-  }
-
-  function renderBagBtns() {
-    ['red','blue'].forEach(team => {
-      ['in','on'].forEach(type => {
-        const val = state.bags[team][type];
-        const p = team === 'red' ? 'r' : 'b';
-        for (let i = 1; i <= 4; i++) {
-          document.getElementById(`${p}-${type}-${i}`).className =
-            'bag-btn' + (i === val ? ` selected-${team}` : '');
-        }
-      });
-    });
-  }
-
-  function renderNetScore() {
-    const rb = state.bags.red, bb = state.bags.blue;
-    const net = (rb.in*3 + rb.on) - (bb.in*3 + bb.on);
-    document.getElementById('round-net').textContent = net > 0 ? '+'+net : net;
-    const over = rb.in + rb.on > 4 || bb.in + bb.on > 4;
-    const btn = document.querySelector('.submit-btn');
-    if (over) {
-      btn.disabled = true;
-      btn.textContent = 'EXCEEDED';
-    } else {
-      btn.disabled = false;
-      btn.textContent = state.editingRound !== null ? 'UPDATE' : 'SUBMIT';
-    }
-  }
-
-  function submitRound() {
-    const rb = state.bags.red, bb = state.bags.blue;
-    const redPts = rb.in*3 + rb.on, bluePts = bb.in*3 + bb.on;
-    const net = redPts - bluePts;
-    const roundData = {
-      redIn:rb.in, redOn:rb.on, blueIn:bb.in, blueOn:bb.on,
-      redPts, bluePts,
- redGross: redPts, blueGross: bluePts,
-      redNet: net > 0 ? net : 0,
-      blueNet: net < 0 ? -net : 0,
-    };
-    if (state.editingRound !== null) {
-      state.rounds[state.editingRound] = roundData;
-      state.editingRound = null;
-    } else {
-      state.rounds.push(roundData);
-    }
-    let rt = 0, bt = 0;
-    state.rounds.forEach(r => { rt += r.redNet; bt += r.blueNet; });
-    state.redTotal = rt; state.blueTotal = bt;
-    state.currentRound = state.rounds.length + 1;
-    state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
-  state.totals = { red:null, blue:null };
- render();
- if (state.scoringMode === 'total') renderTotalBtns();
-    checkWin();
-  }
-
-  function checkWin() {
-    const WIN = 21;
-    const redWon = state.redTotal >= WIN, blueWon = state.blueTotal >= WIN;
-    if (!redWon && !blueWon) return;
-    const winner = (redWon && blueWon)
-      ? (state.redTotal >= state.blueTotal ? 'red' : 'blue')
-      : (redWon ? 'red' : 'blue');
-
-    document.getElementById('win-banner').className = 'win-banner ' + winner;
-    const wp1 = winner === 'red' ? state.redP1  : state.blueP1;
-    const wp2 = winner === 'red' ? state.redP2  : state.blueP2;
-    const teamLine = (state.mode === '2v2' && wp2) ? wp1 + ' & ' + wp2 : wp1;
-    document.getElementById('win-team-name').textContent = teamLine;
-    document.getElementById('win-players').style.display = 'none';
-    document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
-
-    const rounds = state.rounds, n = rounds.length;
- const pprList = document.getElementById('ppr-list');
- pprList.innerHTML = '';
-
- // ── CORNHOLE PPR (GROSS POINTS / ROUNDS THROWN) ──
- const players = [];
-
- function buildPlayer(name, color, grossArr) {
-  const roundsThrown = grossArr.length;
-  const total = grossArr.reduce((a,b)=>a+b,0);
-  const ppr = roundsThrown ? (total / roundsThrown).toFixed(2) : '0.00';
-  return { name, color, total, roundsThrown, ppr };
- }
-
- if (state.mode === '1v1') {
-  players.push(
-   buildPlayer(state.redP1, 'red', rounds.map(r => r.redGross ?? r.redPts ?? 0)),
-   buildPlayer(state.blueP1, 'blue', rounds.map(r => r.blueGross ?? r.bluePts ?? 0))
-  );
- } else {
-  const p1Rounds = rounds.filter((_, i) => i % 2 === 0);
-  const p2Rounds = rounds.filter((_, i) => i % 2 === 1);
-
-  players.push(buildPlayer(state.redP1, 'red', p1Rounds.map(r => r.redGross ?? r.redPts ?? 0)));
-  if (state.redP2) players.push(buildPlayer(state.redP2, 'red', p2Rounds.map(r => r.redGross ?? r.redPts ?? 0)));
-
-  players.push(buildPlayer(state.blueP1, 'blue', p1Rounds.map(r => r.blueGross ?? r.bluePts ?? 0)));
-  if (state.blueP2) players.push(buildPlayer(state.blueP2, 'blue', p2Rounds.map(r => r.blueGross ?? r.bluePts ?? 0)));
- }
-
- players.forEach(p => {
-  pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${p.total} pts · ${p.roundsThrown} rds · ${p.ppr}</span></div>`;
- });
-
- document.getElementById('win-modal').classList.add('open');
-  }
-
-  function playAgain() {
-    document.getElementById('win-modal').classList.remove('open');
-    Object.assign(state, { redTotal:0, blueTotal:0, bags:{red:{in:0,on:0},blue:{in:0,on:0}}, rounds:[], editingRound:null, currentRound:1 });
-    render();
-  }
-
-  function restartGame() {
-    closeModal();
-    Object.assign(state, { redTotal:0, blueTotal:0, bags:{red:{in:0,on:0},blue:{in:0,on:0}}, rounds:[], editingRound:null, currentRound:1 });
-    render();
-  }
-
-  function render() {
-    document.getElementById('score-red').textContent = state.redTotal;
-    document.getElementById('score-blue').textContent = state.blueTotal;
-    const roundNum = state.editingRound !== null ? state.editingRound + 1 : state.currentRound;
-    document.getElementById('round-num').textContent = roundNum;
-
-    document.getElementById('red-p1').textContent  = state.redP1;
-    document.getElementById('red-p2').textContent  = state.redP2;
-    document.getElementById('blue-p1').textContent = state.blueP1;
-    document.getElementById('blue-p2').textContent = state.blueP2;
-
-    const rp1 = document.getElementById('red-p1'),  rp2 = document.getElementById('red-p2');
-    const bp1 = document.getElementById('blue-p1'), bp2 = document.getElementById('blue-p2');
-
-    if (state.mode === '1v1') {
-      rp2.style.display = 'none'; bp2.style.display = 'none';
-      rp1.className = 'team-name'; bp1.className = 'team-name';
-    } else {
-      rp2.style.display = ''; bp2.style.display = '';
-      const isP1 = roundNum % 2 === 1;
-      if (state.redP2) {
-        rp1.className = 'team-name '    + (isP1 ? 'active-player' : 'inactive-player');
-        rp2.className = 'team-player2 ' + (isP1 ? 'inactive-player' : 'active-player');
-      } else {
-        rp1.className = 'team-name'; rp2.className = 'team-player2';
-      }
-      if (state.blueP2) {
-        bp1.className = 'team-name '    + (isP1 ? 'active-player' : 'inactive-player');
-        bp2.className = 'team-player2 ' + (isP1 ? 'inactive-player' : 'active-player');
-      } else {
-        bp1.className = 'team-name'; bp2.className = 'team-player2';
-      }
-    }
-
-    renderBagBtns();
-    renderNetScore();
-    renderRounds();
-    const btn = document.querySelector('.submit-btn');
-    if (state.editingRound !== null) {
-      btn.classList.add('update-mode');
-      btn.textContent = 'UPDATE';
-    } else {
-      btn.classList.remove('update-mode');
-      btn.textContent = 'SUBMIT';
-    }
-  }
-
-  function renderRounds() {
-    const grid = document.getElementById('rounds-grid');
-    grid.innerHTML = '';
-    let redRunning = 0, blueRunning = 0;
-    state.rounds.forEach((r, i) => {
-      redRunning  += r.redNet;
-      blueRunning += r.blueNet;
-      const col = document.createElement('div');
-      col.className = 'round-col' + (state.editingRound === i ? ' selected' : '');
-      col.onclick = () => selectRound(i);
-      col.innerHTML = `<div class="round-col-label">R${i+1}</div><div class="round-score red">${redRunning}</div><div class="round-score blue">${blueRunning}</div>`;
-      grid.appendChild(col);
-    });
-  }
-
-  function selectRound(i) {
-    if (state.editingRound === i) {
-      state.editingRound = null;
-      state.bags = { red:{in:0,on:0}, blue:{in:0,on:0} };
-  state.totals = { red:null, blue:null };
-    } else {
-      state.editingRound = i;
-      const r = state.rounds[i];
-      state.bags = { red:{in:r.redIn,on:r.redOn}, blue:{in:r.blueIn,on:r.blueOn} };
-  state.totals = { red:(r.redIn*3 + r.redOn), blue:(r.blueIn*3 + r.blueOn) };
-    }
-    render();
-  }
-
-  function toggleDropdown(e) {
-    e.stopPropagation();
-    document.getElementById('main-dropdown').classList.toggle('open');
-  }
-  function closeDropdown() {
-    document.getElementById('main-dropdown').classList.remove('open');
-  }
-  document.addEventListener('click', function() { closeDropdown(); });
-
-  
-
- // Open Edit Teams ONLY when tapping the card (not the color picker)
- function openTeamCard(e){
-   // If the tap is on the paint button or the hidden color input, ignore
-   if(e && e.target && (e.target.closest('.team-color-btn') || e.target.closest('.team-color-input'))){
-     return;
-   }
-   openModal();
- }
-
-function openModal() {
-
-  ['in-red1','in-red2','in-blue1','in-blue2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) delete el.dataset.touched;
-  });
-    document.getElementById('in-red1').value  = state.redP1;
-    document.getElementById('in-red2').value  = state.redP2;
-    document.getElementById('in-blue1').value = state.blueP1;
-    document.getElementById('in-blue2').value = state.blueP2;
-    setModalMode(state.mode);
-    document.getElementById('modal').classList.add('open');
-  }
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
-  function setModalMode(m) {
-    document.getElementById('btn-1v1').classList.toggle('active', m === '1v1');
-    document.getElementById('btn-2v2').classList.toggle('active', m === '2v2');
-    const hide = m === '1v1';
-    document.getElementById('field-red2').style.display  = hide ? 'none' : '';
-    document.getElementById('field-blue2').style.display = hide ? 'none' : '';
-    document.getElementById('modal').dataset.mode = m;
-  }
-  function saveNames() {
-    const m = document.getElementById('modal').dataset.mode || '2v2';
-    state.mode   = m;
-    state.redP1  = document.getElementById('in-red1').value  || 'Player 1';
-    state.blueP1 = document.getElementById('in-blue1').value || (m === '1v1' ? 'Player 2' : 'Player 3');
-    if (m === '2v2') {
-      state.redP2  = document.getElementById('in-red2').value  || '';
-      state.blueP2 = document.getElementById('in-blue2').value || '';
-    } else {
-      state.redP2 = ''; state.blueP2 = '';
-    }
-    closeModal(); render();
-  }
- 
-
- // ── TEAM COLORS (picker) ──
- function hexToRgb(hex){
-   const h = (hex||'').replace('#','').trim();
-   if(h.length !== 6) return null;
-   return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) };
- }
- function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
- function rgbToHex(r,g,b){
-   const to = x => x.toString(16).padStart(2,'0');
-   return '#'+to(r)+to(g)+to(b);
- }
- function darken(hex, amt=0.16){
-   const c = hexToRgb(hex);
-   if(!c) return hex;
-   return rgbToHex(
-     clamp(Math.round(c.r*(1-amt)),0,255),
-     clamp(Math.round(c.g*(1-amt)),0,255),
-     clamp(Math.round(c.b*(1-amt)),0,255)
-   );
- }
- function applyTeamColors(){
-   const root = document.documentElement;
-   const baseRed  = getComputedStyle(root).getPropertyValue('--red').trim()  || '#e8332a';
-   const baseBlue = getComputedStyle(root).getPropertyValue('--blue').trim() || '#1a6fe8';
-   const red  = state.teamColors.red  || baseRed;
-   const blue = state.teamColors.blue || baseBlue;
-
-   root.style.setProperty('--team-red', red);
-   root.style.setProperty('--team-red-dark', darken(red));
-   root.style.setProperty('--team-blue', blue);
-   root.style.setProperty('--team-blue-dark', darken(blue));
-
-   const pr = document.getElementById('pick-red');
-   const pb = document.getElementById('pick-blue');
-   if(pr) pr.value = red;
-   if(pb) pb.value = blue;
-  updateTotalLabels();
-  updateScoreBoxStyles();
- }
- 
- // ── COLOR NAME (for Total labels) ──
- function rgbToHsl(r,g,b){
-   r/=255; g/=255; b/=255;
-   const max=Math.max(r,g,b), min=Math.min(r,g,b);
-   let h=0, s=0, l=(max+min)/2;
-   const d=max-min;
-   if(d!==0){
-     s = d/(1-Math.abs(2*l-1));
-     switch(max){
-       case r: h=((g-b)/d)%6; break;
-       case g: h=((b-r)/d)+2; break;
-       case b: h=((r-g)/d)+4; break;
-     }
-     h = Math.round(h*60);
-     if(h<0) h+=360;
-   }
-   return {h, s, l};
- }
- function colorNameFromHex(hex, fallback){
-   if(!hex) return fallback;
-   const h = hex.replace('#','').trim();
-   if(h.length!==6) return fallback;
-   const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
-   const {h:hh, s, l} = rgbToHsl(r,g,b);
-   // low saturation = gray-ish
-   if(s < 0.15){
-     if(l > 0.85) return 'WHITE';
-     if(l < 0.15) return 'BLACK';
-     return 'GRAY';
-   }
-   if(hh < 15 || hh >= 345) return 'RED';
-   if(hh < 40) return 'ORANGE';
-   if(hh < 70) return 'YELLOW';
-   if(hh < 150) return 'GREEN';
-   if(hh < 190) return 'TEAL';
-   if(hh < 215) return 'CYAN';
-   if(hh < 260) return 'BLUE';
-   if(hh < 290) return 'PURPLE';
-   if(hh < 330) return 'MAGENTA';
-   return fallback;
- }
- function updateTotalLabels(){
-   const lr = document.getElementById('label-red-total');
-   const lb = document.getElementById('label-blue-total');
-   // Use chosen colors if set, otherwise defaults
-   const redHex = state.teamColors && state.teamColors.red ? state.teamColors.red : null;
-   const blueHex = state.teamColors && state.teamColors.blue ? state.teamColors.blue : null;
-   if(lr) lr.textContent = colorNameFromHex(redHex, 'RED');
-   if(lb) lb.textContent = colorNameFromHex(blueHex, 'BLUE');
- }
- 
-function updateScoreBoxStyles(){
-  const isTotal = state.scoringMode === 'total';
-  document.body.classList.remove('mode-acl','mode-total');
-  document.body.classList.add(isTotal ? 'mode-total' : 'mode-acl');
-}
-
-
-
-
- // ── MOBILE-FRIENDLY COLOR PICKER (iro.js) ──
- let iroPicker = null;
- let pendingTeam = null;
- let pendingColor = null;
- function isLikelyMobile(){
-   return (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 900;
- }
- function ensureIroPicker(initialHex){
-   const container = document.getElementById('iro-container');
-   if(!container) return;
-   container.innerHTML = '';
-   iroPicker = new iro.ColorPicker(container, {
-     width: Math.min(320, Math.max(240, Math.floor(window.innerWidth * 0.75))),
-     color: initialHex || '#ffffff',
-     layout: [
-       { component: iro.ui.Box },
-       { component: iro.ui.Slider, options: { sliderType: 'hue' } }
-     ]
-   });
-   iroPicker.on('color:change', function(color){
-     pendingColor = color.hexString;
-     // live preview while dragging
-     if(pendingTeam){
-       state.teamColors[pendingTeam] = pendingColor;
-       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
-       applyTeamColors();
-     }
-   });
- }
- function openColorPicker(team, e){
-   if(e){ e.preventDefault(); e.stopPropagation(); }
-   // Desktop: keep native picker (it already looks great)
-   if(!isLikelyMobile()){
-     const id = team === 'red' ? 'pick-red' : 'pick-blue';
-     const input = document.getElementById(id);
-     if(input) input.click();
-     return;
-   }
-   pendingTeam = team;
-   const title = document.getElementById('colorpick-title');
-   if(title) title.textContent = team.toUpperCase() + ' TEAM COLOR';
-   const current = (state.teamColors && state.teamColors[team]) ? state.teamColors[team] : (team === 'red' ? getComputedStyle(document.documentElement).getPropertyValue('--team-red').trim() : getComputedStyle(document.documentElement).getPropertyValue('--team-blue').trim());
-   pendingColor = current || (team==='red' ? '#e8332a' : '#1a6fe8');
-   ensureIroPicker(pendingColor);
-   document.getElementById('colorpick-overlay').classList.add('open');
- }
- function closeColorPicker(){
-   document.getElementById('colorpick-overlay').classList.remove('open');
-   pendingTeam = null;
-   pendingColor = null;
- }
- function saveColorPicker(){
-   if(pendingTeam && pendingColor){
-     state.teamColors[pendingTeam] = pendingColor;
-     localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
-     applyTeamColors();
-   }
-   closeColorPicker();
- }
- // Rebuild picker size on rotate
- window.addEventListener('resize', function(){
-   const overlay = document.getElementById('colorpick-overlay');
-   if(overlay && overlay.classList.contains('open') && iroPicker && pendingColor){
-     ensureIroPicker(pendingColor);
-   }
- });
-
-function initTeamColors(){
-   const saved = localStorage.getItem('qc_teamColors');
-   if(saved){
-     try{
-       const obj = JSON.parse(saved);
-       if(obj && obj.red) state.teamColors.red = obj.red;
-       if(obj && obj.blue) state.teamColors.blue = obj.blue;
-     }catch(e){}
-   }
-
-   const pr = document.getElementById('pick-red');
-   const pb = document.getElementById('pick-blue');
-
-   if(pr){
-     pr.addEventListener('input', (e)=>{
-       state.teamColors.red = e.target.value;
-       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
-       applyTeamColors();
-     });
-   }
-   if(pb){
-     pb.addEventListener('input', (e)=>{
-       state.teamColors.blue = e.target.value;
-       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
-       applyTeamColors();
-     });
-   }
-
-   applyTeamColors();
- }
- function resetTeamColors(){
-   state.teamColors = { red:null, blue:null };
-   localStorage.removeItem('qc_teamColors');
-   applyTeamColors();
-  updateTotalLabels();
-  updateScoreBoxStyles();
- }
-
-render();
- initTeamColors();
- initScoringMode();
-</script>
-
-<!-- COLOR PICKER MODAL (mobile-friendly) -->
+<!-- COLOR PICKER MODAL (mobile-friendly, full spectrum) -->
 <div class="modal-overlay" id="colorpick-overlay">
   <div class="modal" style="max-width:380px">
     <h2 id="colorpick-title">Pick a Color</h2>
@@ -1210,6 +601,612 @@ render();
     </div>
   </div>
 </div>
+
+
+<script>
+// ===== QuickCorn Core Logic (stable) =====
+
+const state = {
+  // teams / UI
+  mode: '2v2',
+  redP1: 'Player 1', redP2: 'Player 2',
+  blueP1: 'Player 3', blueP2: 'Player 4',
+
+  // colors
+  teamColors: { red: null, blue: null },
+
+  // scoring
+  scoringMode: 'acl',
+  bags: { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } },
+  totals: { red: null, blue: null },
+
+  // game
+  rounds: [],
+  editingRound: null,
+  currentRound: 1,
+  redTotal: 0,
+  blueTotal: 0,
+
+  // breakdown modal state
+  pendingBreakdown: null,
+};
+
+function clearOnFirstFocus(input) {
+  if (!input.dataset.touched) {
+    input.value = '';
+    input.dataset.touched = 'true';
+  }
+}
+
+// ── Dropdown ──
+function toggleDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('main-dropdown').classList.toggle('open');
+}
+function closeDropdown() {
+  document.getElementById('main-dropdown').classList.remove('open');
+}
+document.addEventListener('click', () => closeDropdown());
+
+// ── Scoring mode modal ──
+function openScoringModal() {
+  document.getElementById('scoring-modal').classList.add('open');
+}
+
+function initScoringMode() {
+  const saved = localStorage.getItem('qc_scoringMode');
+  if (saved === 'acl' || saved === 'total') {
+    state.scoringMode = saved;
+  } else {
+    state.scoringMode = 'acl';
+    openScoringModal();
+  }
+  updateScoringUI();
+}
+
+function setScoringMode(mode) {
+  state.scoringMode = mode;
+  localStorage.setItem('qc_scoringMode', mode);
+  document.getElementById('scoring-modal').classList.remove('open');
+
+  state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
+  state.totals = { red: null, blue: null };
+  state.pendingBreakdown = null;
+
+  updateScoringUI();
+  render();
+}
+
+function updateScoreBoxStyles() {
+  const isTotal = state.scoringMode === 'total';
+  document.body.classList.remove('mode-acl', 'mode-total');
+  document.body.classList.add(isTotal ? 'mode-total' : 'mode-acl');
+}
+
+function updateScoringUI() {
+  const isTotal = state.scoringMode === 'total';
+  const bagCols = document.querySelector('.bag-cols');
+  const totalCols = document.getElementById('total-cols');
+  if (bagCols) bagCols.classList.toggle('hidden', isTotal);
+  if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
+
+  updateScoreBoxStyles();
+  updateTotalLabels();
+
+  if (isTotal) renderTotalBtns();
+  else renderBagBtns();
+
+  renderNetScore();
+}
+
+// ── Total mode buttons ──
+const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
+
+function renderTotalBtns() {
+  ['red','blue'].forEach(team => {
+    const sel = state.totals[team];
+    const p = team === 'red' ? 'r' : 'b';
+    TOTAL_VALUES.forEach(v => {
+      const el = document.getElementById(`${p}-pt-${v}`);
+      if (!el) return;
+      el.className = 'bag-btn pt-btn' + (sel === v ? ` selected-${team}` : '');
+    });
+  });
+}
+
+function selectTotal(team, pts) {
+  if (state.scoringMode !== 'total') return;
+  state.totals[team] = pts;
+
+  const options = calcInOnOptions(pts);
+  if (options.length === 1) {
+    state.bags[team] = { in: options[0].in, on: options[0].on };
+    renderTotalBtns();
+    renderNetScore();
+    return;
+  }
+  if (options.length > 1) {
+    openBreakdown(team, pts, options);
+  }
+
+  renderTotalBtns();
+  renderNetScore();
+}
+
+function calcInOnOptions(totalPts) {
+  const opts = [];
+  for (let i=0;i<=4;i++) {
+    for (let o=0;o<=4;o++) {
+      if (i+o>4) continue;
+      if (i*3 + o === totalPts) opts.push({in:i,on:o});
+    }
+  }
+  return opts;
+}
+
+function openBreakdown(team, pts, options) {
+  state.pendingBreakdown = { team, pts, options };
+  document.getElementById('breakdown-title').textContent = `${team.toUpperCase()} — ${pts} POINTS`;
+  document.getElementById('breakdown-subtitle').textContent = 'How did you score them?';
+  const actions = document.getElementById('breakdown-actions');
+  actions.innerHTML = '';
+
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-save';
+    btn.textContent = `${opt.in} IN, ${opt.on} ON`;
+    btn.onclick = () => chooseBreakdown(opt.in, opt.on);
+    actions.appendChild(btn);
+  });
+
+  document.getElementById('breakdown-modal').classList.add('open');
+}
+
+function closeBreakdown() {
+  document.getElementById('breakdown-modal').classList.remove('open');
+  state.pendingBreakdown = null;
+}
+
+function chooseBreakdown(inCount, onCount) {
+  const pb = state.pendingBreakdown;
+  if (!pb) return;
+  state.bags[pb.team] = { in: inCount, on: onCount };
+  closeBreakdown();
+  renderTotalBtns();
+  renderNetScore();
+}
+
+// ── ACL mode buttons ──
+function selectBag(team, type, val) {
+  if (state.scoringMode !== 'acl') return;
+  const cur = state.bags[team][type];
+  state.bags[team][type] = (cur === val) ? 0 : val;
+  renderBagBtns();
+  renderNetScore();
+}
+
+function renderBagBtns() {
+  ['red','blue'].forEach(team => {
+    ['in','on'].forEach(type => {
+      const val = state.bags[team][type];
+      const p = team === 'red' ? 'r' : 'b';
+      for (let i=1;i<=4;i++) {
+        const el = document.getElementById(`${p}-${type}-${i}`);
+        if (!el) continue;
+        el.className = 'bag-btn' + (i === val ? ` selected-${team}` : '');
+      }
+    });
+  });
+}
+
+function renderNetScore() {
+  const rb = state.bags.red, bb = state.bags.blue;
+  const net = (rb.in*3 + rb.on) - (bb.in*3 + bb.on);
+  document.getElementById('round-net').textContent = net > 0 ? '+'+net : net;
+
+  const over = (rb.in + rb.on > 4) || (bb.in + bb.on > 4);
+  const btn = document.querySelector('.submit-btn');
+  if (over) {
+    btn.disabled = true;
+    btn.textContent = 'EXCEEDED';
+  } else {
+    btn.disabled = false;
+    btn.textContent = state.editingRound !== null ? 'UPDATE' : 'SUBMIT';
+  }
+}
+
+function submitRound() {
+  const rb = state.bags.red, bb = state.bags.blue;
+  const redPts = rb.in*3 + rb.on;
+  const bluePts = bb.in*3 + bb.on;
+  const net = redPts - bluePts;
+
+  const roundData = {
+    redIn: rb.in, redOn: rb.on,
+    blueIn: bb.in, blueOn: bb.on,
+    redPts, bluePts,
+    redGross: redPts, blueGross: bluePts,
+    redNet: net > 0 ? net : 0,
+    blueNet: net < 0 ? -net : 0,
+  };
+
+  if (state.editingRound !== null) {
+    state.rounds[state.editingRound] = roundData;
+    state.editingRound = null;
+  } else {
+    state.rounds.push(roundData);
+  }
+
+  let rt=0, bt=0;
+  state.rounds.forEach(r => { rt += r.redNet; bt += r.blueNet; });
+  state.redTotal = rt;
+  state.blueTotal = bt;
+
+  state.currentRound = state.rounds.length + 1;
+  state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
+  state.totals = { red: null, blue: null };
+
+  render();
+  if (state.scoringMode === 'total') renderTotalBtns();
+  checkWin();
+}
+
+function renderRounds() {
+  const grid = document.getElementById('rounds-grid');
+  grid.innerHTML = '';
+  let redRunning = 0, blueRunning = 0;
+
+  state.rounds.forEach((r, i) => {
+    redRunning += r.redNet;
+    blueRunning += r.blueNet;
+
+    const col = document.createElement('div');
+    col.className = 'round-col' + (state.editingRound === i ? ' selected' : '');
+    col.onclick = () => selectRound(i);
+    col.innerHTML = `<div class="round-col-label">R${i+1}</div>`+
+                    `<div class="round-score red">${redRunning}</div>`+
+                    `<div class="round-score blue">${blueRunning}</div>`;
+    grid.appendChild(col);
+  });
+}
+
+function selectRound(i) {
+  if (state.editingRound === i) {
+    state.editingRound = null;
+    state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
+    state.totals = { red: null, blue: null };
+  } else {
+    state.editingRound = i;
+    const r = state.rounds[i];
+    state.bags = { red: { in: r.redIn, on: r.redOn }, blue: { in: r.blueIn, on: r.blueOn } };
+    state.totals = { red: (r.redIn*3 + r.redOn), blue: (r.blueIn*3 + r.blueOn) };
+  }
+  render();
+}
+
+// ── Team edit modal ──
+function openModal() {
+  ['in-red1','in-red2','in-blue1','in-blue2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) delete el.dataset.touched;
+  });
+
+  document.getElementById('in-red1').value = state.redP1;
+  document.getElementById('in-red2').value = state.redP2;
+  document.getElementById('in-blue1').value = state.blueP1;
+  document.getElementById('in-blue2').value = state.blueP2;
+
+  setModalMode(state.mode);
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+function setModalMode(m) {
+  document.getElementById('btn-1v1').classList.toggle('active', m === '1v1');
+  document.getElementById('btn-2v2').classList.toggle('active', m === '2v2');
+  const hide = m === '1v1';
+  document.getElementById('field-red2').style.display = hide ? 'none' : '';
+  document.getElementById('field-blue2').style.display = hide ? 'none' : '';
+  document.getElementById('modal').dataset.mode = m;
+}
+function saveNames() {
+  const m = document.getElementById('modal').dataset.mode || '2v2';
+  state.mode = m;
+  state.redP1 = document.getElementById('in-red1').value || 'Player 1';
+  state.blueP1 = document.getElementById('in-blue1').value || (m === '1v1' ? 'Player 2' : 'Player 3');
+
+  if (m === '2v2') {
+    state.redP2 = document.getElementById('in-red2').value || '';
+    state.blueP2 = document.getElementById('in-blue2').value || '';
+  } else {
+    state.redP2 = '';
+    state.blueP2 = '';
+  }
+
+  closeModal();
+  render();
+}
+
+function openTeamCard(e) {
+  if (e && e.target && (e.target.closest('.team-color-btn') || e.target.closest('.team-color-input'))) return;
+  openModal();
+}
+
+// ── Win modal ──
+function checkWin() {
+  const WIN = 21;
+  const redWon = state.redTotal >= WIN;
+  const blueWon = state.blueTotal >= WIN;
+  if (!redWon && !blueWon) return;
+
+  const winner = (redWon && blueWon) ? (state.redTotal >= state.blueTotal ? 'red' : 'blue') : (redWon ? 'red' : 'blue');
+  document.getElementById('win-banner').className = 'win-banner ' + winner;
+
+  const wp1 = winner === 'red' ? state.redP1 : state.blueP1;
+  const wp2 = winner === 'red' ? state.redP2 : state.blueP2;
+  const teamLine = (state.mode === '2v2' && wp2) ? (wp1 + ' & ' + wp2) : wp1;
+
+  document.getElementById('win-team-name').textContent = teamLine;
+  document.getElementById('win-players').style.display = 'none';
+  document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
+
+  document.getElementById('win-modal').classList.add('open');
+}
+
+function playAgain() {
+  document.getElementById('win-modal').classList.remove('open');
+  state.redTotal = 0;
+  state.blueTotal = 0;
+  state.rounds = [];
+  state.editingRound = null;
+  state.currentRound = 1;
+  state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
+  state.totals = { red: null, blue: null };
+  render();
+}
+
+function restartGame() {
+  closeModal();
+  state.redTotal = 0;
+  state.blueTotal = 0;
+  state.rounds = [];
+  state.editingRound = null;
+  state.currentRound = 1;
+  state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
+  state.totals = { red: null, blue: null };
+  render();
+}
+
+// ── Team colors ──
+function hexToRgb(hex){
+  const h = (hex||'').replace('#','').trim();
+  if (h.length !== 6) return null;
+  return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+}
+function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+function rgbToHex(r,g,b){
+  const to = x => x.toString(16).padStart(2,'0');
+  return '#'+to(r)+to(g)+to(b);
+}
+function darken(hex, amt=0.16){
+  const c = hexToRgb(hex);
+  if (!c) return hex;
+  return rgbToHex(
+    clamp(Math.round(c.r*(1-amt)),0,255),
+    clamp(Math.round(c.g*(1-amt)),0,255),
+    clamp(Math.round(c.b*(1-amt)),0,255)
+  );
+}
+
+function applyTeamColors(){
+  const root = document.documentElement;
+  const baseRed  = getComputedStyle(root).getPropertyValue('--red').trim()  || '#e8332a';
+  const baseBlue = getComputedStyle(root).getPropertyValue('--blue').trim() || '#1a6fe8';
+
+  const red  = state.teamColors.red  || baseRed;
+  const blue = state.teamColors.blue || baseBlue;
+
+  root.style.setProperty('--team-red', red);
+  root.style.setProperty('--team-red-dark', darken(red));
+  root.style.setProperty('--team-blue', blue);
+  root.style.setProperty('--team-blue-dark', darken(blue));
+
+  const pr = document.getElementById('pick-red');
+  const pb = document.getElementById('pick-blue');
+  if (pr) pr.value = red;
+  if (pb) pb.value = blue;
+
+  updateTotalLabels();
+}
+
+function initTeamColors(){
+  const saved = localStorage.getItem('qc_teamColors');
+  if (saved) {
+    try {
+      const obj = JSON.parse(saved);
+      if (obj && obj.red)  state.teamColors.red  = obj.red;
+      if (obj && obj.blue) state.teamColors.blue = obj.blue;
+    } catch(e) {}
+  }
+
+  const pr = document.getElementById('pick-red');
+  const pb = document.getElementById('pick-blue');
+  if (pr) {
+    pr.addEventListener('input', (e)=>{
+      state.teamColors.red = e.target.value;
+      localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+      applyTeamColors();
+    });
+  }
+  if (pb) {
+    pb.addEventListener('input', (e)=>{
+      state.teamColors.blue = e.target.value;
+      localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+      applyTeamColors();
+    });
+  }
+
+  applyTeamColors();
+}
+
+function resetTeamColors(){
+  state.teamColors = { red: null, blue: null };
+  localStorage.removeItem('qc_teamColors');
+  applyTeamColors();
+}
+
+// ── Color name for labels ──
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  const d=max-min;
+  if(d!==0){
+    s = d/(1-Math.abs(2*l-1));
+    switch(max){
+      case r: h=((g-b)/d)%6; break;
+      case g: h=((b-r)/d)+2; break;
+      case b: h=((r-g)/d)+4; break;
+    }
+    h = Math.round(h*60);
+    if(h<0) h+=360;
+  }
+  return {h, s, l};
+}
+
+function colorNameFromHex(hex, fallback){
+  if(!hex) return fallback;
+  const h = hex.replace('#','').trim();
+  if(h.length!==6) return fallback;
+  const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+  const {h:hh, s, l} = rgbToHsl(r,g,b);
+  if(s < 0.15){
+    if(l > 0.85) return 'WHITE';
+    if(l < 0.15) return 'BLACK';
+    return 'GRAY';
+  }
+  if(hh < 15 || hh >= 345) return 'RED';
+  if(hh < 40) return 'ORANGE';
+  if(hh < 70) return 'YELLOW';
+  if(hh < 150) return 'GREEN';
+  if(hh < 190) return 'TEAL';
+  if(hh < 215) return 'CYAN';
+  if(hh < 260) return 'BLUE';
+  if(hh < 290) return 'PURPLE';
+  if(hh < 330) return 'MAGENTA';
+  return fallback;
+}
+
+function updateTotalLabels(){
+  const lr = document.getElementById('label-red-total');
+  const lb = document.getElementById('label-blue-total');
+  const redHex = state.teamColors.red;
+  const blueHex = state.teamColors.blue;
+  if (lr) lr.textContent = colorNameFromHex(redHex, 'RED');
+  if (lb) lb.textContent = colorNameFromHex(blueHex, 'BLUE');
+}
+
+// ── Mobile-friendly picker (iro.js) ──
+let iroPicker = null;
+let pendingTeam = null;
+let pendingColor = null;
+
+function isLikelyMobile(){
+  return (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 900;
+}
+
+function ensureIroPicker(initialHex){
+  const container = document.getElementById('iro-container');
+  if(!container || !window.iro) return;
+  container.innerHTML = '';
+  iroPicker = new iro.ColorPicker(container, {
+    width: Math.min(320, Math.max(240, Math.floor(window.innerWidth * 0.75))),
+    color: initialHex || '#ffffff',
+    layout: [
+      { component: iro.ui.Box },
+      { component: iro.ui.Slider, options: { sliderType: 'hue' } },
+    ]
+  });
+  iroPicker.on('color:change', function(color){
+    pendingColor = color.hexString;
+    if(pendingTeam){
+      state.teamColors[pendingTeam] = pendingColor;
+      localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+      applyTeamColors();
+    }
+  });
+}
+
+function openColorPicker(team, e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  // Desktop: use native picker (it has lots of choices there)
+  if(!isLikelyMobile()){
+    const id = team === 'red' ? 'pick-red' : 'pick-blue';
+    const input = document.getElementById(id);
+    if(input) input.click();
+    return;
+  }
+
+  pendingTeam = team;
+  const title = document.getElementById('colorpick-title');
+  if(title) title.textContent = team.toUpperCase() + ' TEAM COLOR';
+  pendingColor = state.teamColors[team] || (team==='red' ? '#e8332a' : '#1a6fe8');
+
+  ensureIroPicker(pendingColor);
+  document.getElementById('colorpick-overlay').classList.add('open');
+}
+
+function closeColorPicker(){
+  document.getElementById('colorpick-overlay').classList.remove('open');
+  pendingTeam = null;
+  pendingColor = null;
+}
+
+function saveColorPicker(){
+  if(pendingTeam && pendingColor){
+    state.teamColors[pendingTeam] = pendingColor;
+    localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+    applyTeamColors();
+  }
+  closeColorPicker();
+}
+
+// ── Render ──
+function render(){
+  document.getElementById('score-red').textContent = state.redTotal;
+  document.getElementById('score-blue').textContent = state.blueTotal;
+
+  const roundNum = state.editingRound !== null ? state.editingRound + 1 : state.currentRound;
+  document.getElementById('round-num').textContent = roundNum;
+
+  document.getElementById('red-p1').textContent = state.redP1;
+  document.getElementById('red-p2').textContent = state.redP2;
+  document.getElementById('blue-p1').textContent = state.blueP1;
+  document.getElementById('blue-p2').textContent = state.blueP2;
+
+  renderNetScore();
+  renderRounds();
+
+  if (state.scoringMode === 'total') renderTotalBtns();
+  else renderBagBtns();
+
+  const btn = document.querySelector('.submit-btn');
+  if (state.editingRound !== null) {
+    btn.classList.add('update-mode');
+    btn.textContent = 'UPDATE';
+  } else {
+    btn.classList.remove('update-mode');
+    btn.textContent = 'SUBMIT';
+  }
+}
+
+// ===== Boot =====
+render();
+initTeamColors();
+initScoringMode();
+
+</script>
 
 </body>
 </html>
