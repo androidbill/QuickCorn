@@ -198,11 +198,12 @@ button { cursor: pointer; }
   padding: 0 2px;
 }
 .section-title {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.3px;
   color: var(--muted);
   font-weight: 800;
+  line-height: 1;
 }
 .pill-row {
   display: flex;
@@ -330,13 +331,13 @@ button { cursor: pointer; }
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 6px;
+  padding: 4px;
   min-height: 0;
   height: 100%;
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 6px;
+  gap: 4px;
   align-self: stretch;
 }
 .history-scroller {
@@ -719,9 +720,21 @@ button { cursor: pointer; }
 
 @media (max-height: 690px) {
   .brand-sub { display: none; }
-  .history-card { min-height: 54px; max-height: 68px; }
-  .round-chip { min-width: 36px; }
-  .round-chip-score { font-size: 11px; }
+  #game-screen {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  }
+  .history-card {
+    min-height: 0;
+    height: 100%;
+    max-height: none;
+  }
+  .history-scroller {
+    min-height: 0;
+    height: 100%;
+  }
+  .round-chip { min-width: 46px; }
+  .round-chip-head { font-size: 9px; padding: 4px 0; }
+  .round-chip-score { font-size: 13px; padding: 5px 0; }
 }
 
 
