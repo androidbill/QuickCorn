@@ -753,6 +753,26 @@ button { cursor: pointer; }
   }
 }
 
+
+#colors-modal-wrap .modal{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+#colors-modal-wrap .modal-actions{
+  position:sticky;
+  bottom:0;
+  background:linear-gradient(180deg, rgba(20,34,51,0), rgba(20,34,51,0.96) 22%, rgba(20,34,51,1));
+  padding-top:10px;
+  margin-top:2px;
+}
+#colors-modal-wrap .sub{
+  margin-bottom:0;
+}
+#iro-picker{
+  flex:0 0 auto;
+}
+
 </style>
 </head>
 <body>
@@ -1104,8 +1124,7 @@ button { cursor: pointer; }
     mutator(state);
     syncTournament();
     applyTheme();
-    applyTheme();
-  render();
+    render();
     persist();
   }
 
@@ -1730,7 +1749,6 @@ button { cursor: pointer; }
 
   function render() {
     applyTheme();
-    applyTheme();
     renderGame();
     renderTournament();
     showScreen(state.screen);
@@ -1768,8 +1786,6 @@ button { cursor: pointer; }
   els.openScoringBtn.addEventListener('click', () => showModal('settings-modal-wrap'));
   els.redColorBtn.addEventListener('click', () => openColorsModal('red'));
   els.blueColorBtn.addEventListener('click', () => openColorsModal('blue'));
-  els.redColorInput.addEventListener('input', e => setState(s => { s.teamColors.red = e.target.value; }));
-  els.blueColorInput.addEventListener('input', e => setState(s => { s.teamColors.blue = e.target.value; }));
   els.pickRedTeamBtn.addEventListener('click', () => {
     activeColorTeam = 'red';
     syncColorPickerUI();
