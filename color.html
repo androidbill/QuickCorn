@@ -192,8 +192,10 @@
     align-items: center; justify-content: center; padding: 2px 4px;
     overflow: hidden; height: clamp(80px, 16vh, 130px);
   }
-  .score-box.red { background: var(--team-red); }
-  .score-box.blue { background: var(--team-blue); }
+  /* base handled by mode classes */
+.score-box.red { }
+  /* base handled by mode classes */
+.score-box.blue { }
 
  /* Score boxes follow scoring mode */
  body.mode-acl .score-box{ border: 1px solid transparent; }
@@ -1047,11 +1049,13 @@ function openModal() {
    if(lr) lr.textContent = colorNameFromHex(redHex, 'RED');
    if(lb) lb.textContent = colorNameFromHex(blueHex, 'BLUE');
  }
- function updateScoreBoxStyles(){
-   const isTotal = state.scoringMode === 'total';
-   document.body.classList.toggle('mode-total', isTotal);
-   document.body.classList.toggle('mode-acl', !isTotal);
- }
+ 
+function updateScoreBoxStyles(){
+  const isTotal = state.scoringMode === 'total';
+  document.body.classList.remove('mode-acl','mode-total');
+  document.body.classList.add(isTotal ? 'mode-total' : 'mode-acl');
+}
+
 
 function initTeamColors(){
    const saved = localStorage.getItem('qc_teamColors');
