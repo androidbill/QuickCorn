@@ -27,15 +27,16 @@
   --shadow: 0 10px 26px rgba(0,0,0,0.24);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+html, body { min-height: 100%; background: var(--bg); color: var(--text); overflow-x: hidden; }
 body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 .hidden { display: none !important; }
 #app {
-  height: 100dvh;
+  min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
+  width: 100%;
   max-width: 540px;
   margin: 0 auto;
   background: var(--bg);
@@ -103,10 +104,13 @@ button { cursor: pointer; }
 }
 #game-screen {
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
-  gap: 8px;
-  padding: 8px;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 6px;
+  padding: 6px;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
 }
 #tournament-screen {
   display: none;
@@ -178,7 +182,6 @@ button { cursor: pointer; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;
 }
 .entry-header {
   display: flex;
@@ -211,7 +214,6 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  min-height: 0;
 }
 .entry-panel {
   background: var(--panel);
@@ -221,7 +223,6 @@ button { cursor: pointer; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;
 }
 .entry-panel.red { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-red) 35%, transparent); }
 .entry-panel.blue { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-blue) 35%, transparent); }
@@ -304,12 +305,16 @@ button { cursor: pointer; }
 .primary-btn.alt { background: var(--blue); }
 .primary-btn:disabled { background: #3f556c; color: #a1b6c8; }
 .history-card {
-  min-height: 112px;
-  max-height: 126px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  min-height: 84px;
+  max-height: 108px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 8px;
 }
 .history-scroller {
   display: flex;
@@ -510,10 +515,167 @@ button { cursor: pointer; }
   line-height: 1.45;
   margin-top: 8px;
 }
-@media (max-height: 760px) {
-  .score-box { min-height: 90px; font-size: clamp(54px, 14vw, 84px); }
-  .entry-btn { min-height: 52px; }
+
+
+@media (max-width: 430px) {
+  .header { padding: 8px 10px 6px; }
+  .brand-title { font-size: 16px; }
+  .brand-sub { font-size: 10px; letter-spacing: 1px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 10px; }
+
+  #game-screen { gap: 5px; padding: 5px; }
+  #tournament-screen { padding: 6px; }
+
+  .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
+
+  .team-card { padding: 7px; border-radius: 14px; }
+  .team-player { font-size: 15px; line-height: 1.05; }
+  .team-player2 { font-size: 13px; margin-top: 1px; line-height: 1.05; }
+  .mini-btn { min-width: 30px; height: 30px; }
+
+  .score-box {
+    min-height: 70px;
+    border-radius: 16px;
+    font-size: clamp(38px, 11vw, 60px);
+    letter-spacing: -1px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 1.4px;
+    margin-bottom: 1px;
+  }
+
+  .pill {
+    min-height: 30px;
+    padding: 0 8px;
+    font-size: 12px;
+    border-radius: 999px;
+  }
+
+  .entry-card { gap: 5px; }
+  .entry-mode { gap: 5px; }
+  .entry-mode button {
+    min-height: 34px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+
+  .entry-panel { padding: 5px; gap: 5px; border-radius: 14px; }
+  .entry-label { font-size: 10px; }
+  .entry-grid { gap: 4px; }
+  .entry-btn {
+    min-height: 36px;
+    font-size: 18px;
+    border-radius: 9px;
+  }
+
+  .bottom-bar {
+    grid-template-columns: 56px 1fr 56px;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 16px;
+  }
+  .stat-label { font-size: 8px; letter-spacing: 1.1px; }
+  .stat-value { font-size: 20px; }
+  .primary-btn {
+    min-height: 42px;
+    font-size: 16px;
+    letter-spacing: 0.4px;
+    border-radius: 14px;
+  }
+
+  .history-card {
+    min-height: 74px;
+    max-height: 92px;
+    padding: 5px;
+    gap: 5px;
+  }
+  .round-chip {
+    min-width: 46px;
+    border-radius: 12px;
+  }
+  .round-chip-label { font-size: 10px; }
+  .round-chip-score { font-size: 14px; padding: 5px 0; }
 }
+
+@media (max-width: 360px) {
+  #game-screen { gap: 4px; padding: 4px; }
+  .scoreboards, .score-boxes, .entry-panels, .entry-card, .entry-mode { gap: 4px; }
+  .team-card { padding: 6px; }
+  .team-player { font-size: 14px; }
+  .team-player2 { font-size: 12px; }
+  .score-box {
+    min-height: 62px;
+    font-size: clamp(34px, 10.5vw, 54px);
+  }
+  .entry-panel { padding: 4px; }
+  .entry-btn {
+    min-height: 32px;
+    font-size: 16px;
+  }
+  .bottom-bar {
+    grid-template-columns: 50px 1fr 50px;
+    gap: 4px;
+    padding: 4px;
+  }
+  .stat-value { font-size: 18px; }
+  .primary-btn {
+    min-height: 38px;
+    font-size: 15px;
+  }
+  .history-card {
+    min-height: 66px;
+    max-height: 84px;
+    padding: 4px;
+  }
+  .round-chip { min-width: 42px; }
+  .round-chip-score { font-size: 13px; }
+}
+
+@media (max-height: 760px) {
+  #game-screen { gap: 4px; padding: 4px; padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .header { padding-bottom: 4px; }
+  .brand-title { font-size: 15px; }
+  .brand-sub { font-size: 9px; }
+  .team-card { padding: 6px; }
+  .team-player { font-size: 14px; }
+  .team-player2 { font-size: 12px; }
+  .mini-btn { min-width: 28px; height: 28px; }
+  .score-box { min-height: 60px; font-size: clamp(34px, 10vw, 52px); }
+  .section-title { font-size: 9px; }
+  .pill { min-height: 28px; font-size: 11px; }
+  .entry-mode button { min-height: 32px; font-size: 13px; }
+  .entry-panel { padding: 4px; gap: 4px; }
+  .entry-label { font-size: 9px; }
+  .entry-grid { gap: 3px; }
+  .entry-btn { min-height: 30px; font-size: 15px; }
+  .bottom-bar {
+    grid-template-columns: 48px 1fr 48px;
+    gap: 4px;
+    padding: 4px;
+  }
+  .stat-label { font-size: 8px; }
+  .stat-value { font-size: 17px; }
+  .primary-btn { min-height: 36px; font-size: 14px; }
+  .history-card {
+    min-height: 60px;
+    max-height: 76px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .round-chip { min-width: 40px; }
+  .round-chip-label { font-size: 9px; }
+  .round-chip-score { font-size: 12px; padding: 4px 0; }
+}
+
+@media (max-height: 690px) {
+  .brand-sub { display: none; }
+  .history-card { min-height: 54px; max-height: 68px; }
+  .round-chip { min-width: 36px; }
+  .round-chip-score { font-size: 11px; }
+}
+
 </style>
 </head>
 <body>
