@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QuickCorn</title>
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -443,7 +444,7 @@
   <input class="team-color-input" id="pick-red" type="color" aria-label="Choose red team color" onclick="event.stopPropagation();">
   <div class="team-line">
     <div class="team-name" id="red-p1">Player 1</div>
-    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();document.getElementById('pick-red').click();">🎨</button>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();openColorPicker('red', event);">🎨</button>
   </div>
   <div class="team-player2" id="red-p2">Player 2</div>
 </div>
@@ -451,7 +452,7 @@
   <input class="team-color-input" id="pick-blue" type="color" aria-label="Choose blue team color" onclick="event.stopPropagation();">
   <div class="team-line">
     <div class="team-name" id="blue-p1">Player 3</div>
-    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();document.getElementById('pick-blue').click();">🎨</button>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();openColorPicker('blue', event);">🎨</button>
   </div>
   <div class="team-player2" id="blue-p2">Player 4</div>
 </div>
@@ -1057,6 +1058,75 @@ function updateScoreBoxStyles(){
 }
 
 
+
+
+ // ── MOBILE-FRIENDLY COLOR PICKER (iro.js) ──
+ let iroPicker = null;
+ let pendingTeam = null;
+ let pendingColor = null;
+ function isLikelyMobile(){
+   return (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 900;
+ }
+ function ensureIroPicker(initialHex){
+   const container = document.getElementById('iro-container');
+   if(!container) return;
+   container.innerHTML = '';
+   iroPicker = new iro.ColorPicker(container, {
+     width: Math.min(320, Math.max(240, Math.floor(window.innerWidth * 0.75))),
+     color: initialHex || '#ffffff',
+     layout: [
+       { component: iro.ui.Box },
+       { component: iro.ui.Slider, options: { sliderType: 'hue' } }
+     ]
+   });
+   iroPicker.on('color:change', function(color){
+     pendingColor = color.hexString;
+     // live preview while dragging
+     if(pendingTeam){
+       state.teamColors[pendingTeam] = pendingColor;
+       localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+       applyTeamColors();
+     }
+   });
+ }
+ function openColorPicker(team, e){
+   if(e){ e.preventDefault(); e.stopPropagation(); }
+   // Desktop: keep native picker (it already looks great)
+   if(!isLikelyMobile()){
+     const id = team === 'red' ? 'pick-red' : 'pick-blue';
+     const input = document.getElementById(id);
+     if(input) input.click();
+     return;
+   }
+   pendingTeam = team;
+   const title = document.getElementById('colorpick-title');
+   if(title) title.textContent = team.toUpperCase() + ' TEAM COLOR';
+   const current = (state.teamColors && state.teamColors[team]) ? state.teamColors[team] : (team === 'red' ? getComputedStyle(document.documentElement).getPropertyValue('--team-red').trim() : getComputedStyle(document.documentElement).getPropertyValue('--team-blue').trim());
+   pendingColor = current || (team==='red' ? '#e8332a' : '#1a6fe8');
+   ensureIroPicker(pendingColor);
+   document.getElementById('colorpick-overlay').classList.add('open');
+ }
+ function closeColorPicker(){
+   document.getElementById('colorpick-overlay').classList.remove('open');
+   pendingTeam = null;
+   pendingColor = null;
+ }
+ function saveColorPicker(){
+   if(pendingTeam && pendingColor){
+     state.teamColors[pendingTeam] = pendingColor;
+     localStorage.setItem('qc_teamColors', JSON.stringify(state.teamColors));
+     applyTeamColors();
+   }
+   closeColorPicker();
+ }
+ // Rebuild picker size on rotate
+ window.addEventListener('resize', function(){
+   const overlay = document.getElementById('colorpick-overlay');
+   if(overlay && overlay.classList.contains('open') && iroPicker && pendingColor){
+     ensureIroPicker(pendingColor);
+   }
+ });
+
 function initTeamColors(){
    const saved = localStorage.getItem('qc_teamColors');
    if(saved){
@@ -1099,5 +1169,18 @@ render();
  initTeamColors();
  initScoringMode();
 </script>
+
+<!-- COLOR PICKER MODAL (mobile-friendly) -->
+<div class="modal-overlay" id="colorpick-overlay">
+  <div class="modal" style="max-width:380px">
+    <h2 id="colorpick-title">Pick a Color</h2>
+    <div id="iro-container" style="display:flex; justify-content:center; padding:8px 0 4px;"></div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-cancel" onclick="closeColorPicker()">Cancel</button>
+      <button class="btn-save" onclick="saveColorPicker()">Done</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
