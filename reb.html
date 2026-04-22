@@ -1325,6 +1325,11 @@ button { cursor: pointer; }
     if (icon === 'right') return '☛';
     return '—';
   }
+  function iconLabel(icon) {
+    if (icon === 'left') return 'Inside';
+    if (icon === 'right') return 'Outside';
+    return 'None';
+  }
   function oppositeThrowSide(icon) {
     if (icon === 'left') return 'right';
     if (icon === 'right') return 'left';
@@ -1430,7 +1435,8 @@ button { cursor: pointer; }
       rounds,
       defensive,
       ppr: rounds ? (total / rounds).toFixed(2) : '0.00',
-      icon
+      icon,
+      side: iconLabel(icon)
     };
   }
   function formatPlayedDate(isoString) {
@@ -1457,7 +1463,9 @@ button { cursor: pointer; }
         total: row.total,
         rounds: row.rounds,
         ppr: row.ppr,
-        defensive: row.defensive || 0
+        defensive: row.defensive || 0,
+        icon: row.icon || null,
+        side: row.side || 'None'
       }))
     };
   }
@@ -1624,7 +1632,7 @@ button { cursor: pointer; }
     stats.forEach(row => {
       const div = document.createElement('div');
       div.className = 'stat-row';
-      div.innerHTML = `<div class="stat-row-main"><span class="stat-icon">${escapeHtml(iconSymbol(row.icon))}</span><strong>${escapeHtml(row.name)}</strong></div><span>${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span>`;
+      div.innerHTML = `<div class="stat-row-main"><span class="stat-icon">${escapeHtml(iconSymbol(row.icon))}</span><strong>${escapeHtml(row.name)}</strong></div><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span>`;
       els.winStats.appendChild(div);
     });
     showModal('win-modal-wrap');
@@ -1737,7 +1745,7 @@ button { cursor: pointer; }
       const card = document.createElement('div');
       card.className = 'card game-history-card';
       const statsHtml = (entry.stats || []).map(row =>
-        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span></div>`
+        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span></div>`
       ).join('');
       card.innerHTML = `
         <div class="game-history-head">
