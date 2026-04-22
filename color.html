@@ -341,20 +341,25 @@
  .modal-subtitle { font-size: 12px; color: var(--muted); text-align:center; margin-bottom: 10px; letter-spacing: 1px; }
 
 
-/* ── CENTER DIVIDER (thicker, stops at submit bar) ── */
+
+
+/* ── CENTER DIVIDER (solid white, stops above submit) ── */
+#game-screen {
+  position: relative;
+}
+
 #game-screen::before {
   content: '';
   position: absolute;
   top: 0;
-  bottom: 64px; /* stop at bottom bar / submit button */
+  bottom: 180px; /* stops above submit button + rounds */
   left: 50%;
-  width: 3px;
-  background: rgba(255,255,255,0.55);
+  width: 4px;
+  background: #ffffff;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 5;
 }
-#game-screen { position: relative; }
 
 </style>
 </head>
