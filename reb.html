@@ -837,6 +837,26 @@ button { cursor: pointer; }
   flex:0 0 auto;
 }
 
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.entry-grid button:nth-child(1),
+.entry-grid button:nth-child(2),
+.entry-grid button:nth-child(3),
+.entry-grid button:nth-child(4) {
+  grid-column: 1;
+}
+
+.entry-grid button:nth-child(5),
+.entry-grid button:nth-child(6),
+.entry-grid button:nth-child(7),
+.entry-grid button:nth-child(8) {
+  grid-column: 2;
+}
+
 </style>
 </head>
 <body>
