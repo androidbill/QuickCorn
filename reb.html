@@ -163,12 +163,12 @@ button { cursor: pointer; }
   gap: 8px;
 }
 .score-box {
-  min-height:118px;
-  border-radius:18px;
+  min-height: 124px;
+  border-radius: 18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:clamp(60px, 16.5vw, 98px);
+  font-size:clamp(62px, 17vw, 102px);
   font-weight:900;
   line-height:1;
   letter-spacing:-1.5px;
@@ -332,13 +332,13 @@ button { cursor: pointer; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 4px;
-  min-height: 0;
-  height: 100%;
+  min-height: 86px;
+  height: auto;
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 4px;
-  align-self: stretch;
+  align-self: start;
 }
 .history-scroller {
   display: flex;
@@ -346,10 +346,10 @@ button { cursor: pointer; }
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  min-height: 0;
-  height: 100%;
   align-items: flex-start;
   padding-bottom: 0;
+  height: auto;
+  min-height: 0;
 }
 .round-chip {
   min-width: 64px;
@@ -555,7 +555,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 5px;
     padding: 5px;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   #tournament-screen { padding: 6px; }
 
@@ -567,9 +567,9 @@ button { cursor: pointer; }
   .mini-btn { min-width: 30px; height: 30px; }
 
   .score-box {
-    min-height: 108px;
+    min-height: 116px;
     border-radius: 18px;
-    font-size: clamp(58px, 16vw, 84px);
+    font-size: clamp(60px, 16.5vw, 88px);
     letter-spacing: -1.5px;
     padding: 0 6px;
   }
@@ -622,10 +622,10 @@ button { cursor: pointer; }
   }
 
   .history-card {
-    min-height: 0;
-    height: 100%;
-    padding: 5px;
-    gap: 5px;
+    min-height: 86px;
+    height: auto;
+    padding: 4px;
+    gap: 4px;
   }
   .round-chip {
     min-width: 58px;
@@ -639,15 +639,15 @@ button { cursor: pointer; }
   #game-screen {
     gap: 4px;
     padding: 4px;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   .scoreboards, .score-boxes, .entry-panels, .entry-card, .entry-mode { gap: 4px; }
   .team-card { padding: 6px; }
   .team-player { font-size: 14px; }
   .team-player2 { font-size: 12px; }
   .score-box {
-    min-height: 96px;
-    font-size: clamp(52px, 15vw, 74px);
+    min-height: 104px;
+    font-size: clamp(54px, 15.5vw, 78px);
     padding: 0 5px;
   }
   .entry-panel { padding: 4px; }
@@ -668,8 +668,8 @@ button { cursor: pointer; }
     font-size: 13px;
   }
   .history-card {
-    min-height: 0;
-    height: 100%;
+    min-height: 80px;
+    height: auto;
     padding: 4px;
   }
   .round-chip { min-width: 52px; }
@@ -681,7 +681,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 4px;
     padding: 4px;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   .header { padding-bottom: 4px; }
   .brand-title { font-size: 15px; }
@@ -690,7 +690,7 @@ button { cursor: pointer; }
   .team-player { font-size: 14px; }
   .team-player2 { font-size: 12px; }
   .mini-btn { min-width: 28px; height: 28px; }
-  .score-box { min-height: 92px; font-size: clamp(50px, 14.5vw, 70px); }
+  .score-box { min-height: 98px; font-size: clamp(52px, 15vw, 74px); }
   .section-title { font-size: 9px; }
   .pill { min-height: 28px; font-size: 11px; }
   .entry-mode button { min-height: 32px; font-size: 13px; }
@@ -708,8 +708,8 @@ button { cursor: pointer; }
   .stat-value { font-size: 11px; }
   .primary-btn { min-height: 28px; height: 28px; font-size: 12px; }
   .history-card {
-    min-height: 0;
-    height: 100%;
+    min-height: 74px;
+    height: auto;
     padding: 4px;
     gap: 4px;
   }
