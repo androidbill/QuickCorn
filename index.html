@@ -940,16 +940,61 @@ function checkWin() {
   const blueWon = state.blueTotal >= WIN;
   if (!redWon && !blueWon) return;
 
-  const winner = (redWon && blueWon) ? (state.redTotal >= state.blueTotal ? 'red' : 'blue') : (redWon ? 'red' : 'blue');
-  document.getElementById('win-banner').className = 'win-banner ' + winner;
+  const winner =
+    (redWon && blueWon)
+      ? (state.redTotal >= state.blueTotal ? 'red' : 'blue')
+      : (redWon ? 'red' : 'blue');
 
+  // Banner styling
+  const banner = document.getElementById('win-banner');
+  banner.className = 'win-banner ' + winner;
+
+  // Players
   const wp1 = winner === 'red' ? state.redP1 : state.blueP1;
   const wp2 = winner === 'red' ? state.redP2 : state.blueP2;
-  const teamLine = (state.mode === '2v2' && wp2) ? (wp1 + ' & ' + wp2) : wp1;
+  const players =
+    (state.mode === '2v2' && wp2)
+      ? `${wp1} & ${wp2}`
+      : wp1;
 
-  document.getElementById('win-team-name').textContent = teamLine;
+  document.getElementById('win-team-name').textContent = players;
   document.getElementById('win-players').style.display = 'none';
-  document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
+
+  // Score line
+  document.getElementById('win-score-line').textContent =
+    `${state.redTotal} – ${state.blueTotal}`;
+
+  // Rounds played
+  const roundsPlayed = state.rounds.length;
+
+  // Build PPR list
+  const list = document.getElementById('ppr-list');
+  list.innerHTML = '';
+
+  const winningTotal =
+    winner === 'red' ? state.redTotal : state.blueTotal;
+
+  const perPlayer =
+    (state.mode === '2v2' && wp2)
+      ? winningTotal / 2
+      : winningTotal;
+
+  const ppr = roundsPlayed > 0
+    ? (perPlayer / roundsPlayed).toFixed(2)
+    : '0.00';
+
+  function addPprRow(name) {
+    const row = document.createElement('div');
+    row.className = `ppr-row team-${winner}`;
+    row.innerHTML = `
+      <div class="ppr-name">${name}</div>
+      <div class="ppr-val">${ppr}</div>
+    `;
+    list.appendChild(row);
+  }
+
+  addPprRow(wp1);
+  if (state.mode === '2v2' && wp2) addPprRow(wp2);
 
   document.getElementById('win-modal').classList.add('open');
 }
