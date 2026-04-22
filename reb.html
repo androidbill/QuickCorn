@@ -114,13 +114,6 @@ button { cursor: pointer; }
   height: 100%;
   overflow: hidden;
 }
-#tournament-screen {
-  display: none;
-  min-height: 0;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 8px;
-}
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -389,77 +382,6 @@ button { cursor: pointer; }
 }
 .round-chip-score.red { background: rgba(232,51,42,0.18); color: #ff9a95; }
 .round-chip-score.blue { background: rgba(26,111,232,0.18); color: #97c7ff; }
-.tourn-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.tourn-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 28px;
-}
-.tourn-banner {
-  padding: 12px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #c29000, #ffd748);
-  color: #2f2200;
-  font-weight: 900;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,0.4);
-}
-.tourn-section {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-}
-.tourn-section-head {
-  padding: 10px 12px;
-  background: var(--panel-2);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-.match-card {
-  padding: 10px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.match-label {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.match-teams {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-.match-team {
-  min-height: 52px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  text-align: left;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-weight: 800;
-}
-.match-team.pending { opacity: 0.55; }
-.match-team.winner { border-color: var(--green); background: color-mix(in srgb, var(--green) 22%, var(--panel-2)); }
-.match-team.loser { opacity: 0.45; }
 .note {
   color: var(--muted);
   font-size: 12px;
@@ -570,8 +492,6 @@ button { cursor: pointer; }
     padding: 5px;
     grid-template-rows: auto auto auto auto auto;
   }
-  #tournament-screen { padding: 6px; }
-
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
 
   .team-card { padding: 7px; border-radius: 14px; }
@@ -895,7 +815,6 @@ button { cursor: pointer; }
     <div class="dropdown" id="menu-dropdown">
       <button data-action="home">Home</button>
       <button data-action="teams">Edit Teams</button>
-      <button data-action="tournament">Tournament</button>
       <button data-action="settings">Scoring Mode</button>
       <button data-action="colors">Team Colors</button>
       <button data-action="restart">Restart Game</button>
@@ -973,20 +892,6 @@ button { cursor: pointer; }
       <div class="history-scroller" id="round-history"></div>
     </div>
   </div>
-
-  <div id="tournament-screen" class="screen">
-    <div class="tourn-top">
-      <div>
-        <div class="section-title">Tournament</div>
-        <div class="note" id="tournament-note"></div>
-      </div>
-      <div class="pill-row">
-        <button class="pill" id="new-tournament-btn">New</button>
-        <button class="pill" id="close-tournament-btn">Close</button>
-      </div>
-    </div>
-    <div class="tourn-stack" id="tournament-stack"></div>
-  </div>
 </div>
 
 <div class="modal-wrap" id="teams-modal-wrap">
@@ -1004,22 +909,6 @@ button { cursor: pointer; }
     <div class="modal-actions">
       <button class="btn-secondary" data-close="teams-modal-wrap">Cancel</button>
       <button class="btn-primary" id="save-teams-btn">Save</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-wrap" id="tournament-modal-wrap">
-  <div class="modal">
-    <h2>Tournament</h2>
-    <p class="sub">Double elimination for 2 to 8 teams. Built for phones, so matches show as stacked cards.</p>
-    <div class="field">
-      <label>Format</label>
-      <select id="tournament-format"><option value="de8">Double Elimination (up to 8)</option></select>
-    </div>
-    <div id="tournament-team-fields"></div>
-    <div class="modal-actions">
-      <button class="btn-secondary" data-close="tournament-modal-wrap">Cancel</button>
-      <button class="btn-primary" id="save-tournament-btn">Create</button>
     </div>
   </div>
 </div>
@@ -1042,16 +931,16 @@ button { cursor: pointer; }
     <p class="sub">Pick any color for either team. Saved on your phone.</p>
 
     <div class="color-team-toggle">
-      <button class="color-team-btn active" id="pick-red-team-btn" type="button">Red Team</button>
-      <button class="color-team-btn" id="pick-blue-team-btn" type="button">Blue Team</button>
+      <button class="color-team-btn active" id="pick-red-team-btn" type="button">Left Team</button>
+      <button class="color-team-btn" id="pick-blue-team-btn" type="button">Right Team</button>
     </div>
 
     <div id="iro-picker"></div>
     <div class="color-hex" id="color-hex-readout">#E8332A</div>
 
     <div class="color-preview-row">
-      <div class="color-preview" id="red-color-preview">Red Team</div>
-      <div class="color-preview" id="blue-color-preview">Blue Team</div>
+      <div class="color-preview" id="red-color-preview">Left Team</div>
+      <div class="color-preview" id="blue-color-preview">Right Team</div>
     </div>
 
     <div class="modal-actions">
@@ -1093,10 +982,10 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>About QuickCorn</h2>
-    <p class="sub">This rebuild keeps the original idea, but the app logic is now state-driven and the tournament engine is deterministic.</p>
+    <p class="sub">This rebuild keeps the original idea, but the app logic is now state-driven.</p>
     <div class="small-help">
       Built as a single mobile-first HTML file.<br>
-      Features included: 1v1 / 2v2, ACL or total scoring, round editing, team colors, player PPR, and double-elimination tournament play for 2–8 teams.
+      Features included: 1v1 / 2v2, ACL or total scoring, round editing, team colors, and player PPR.
     </div>
     <div class="modal-actions">
       <button class="btn-primary" data-close="about-modal-wrap">Close</button>
@@ -1108,30 +997,11 @@ button { cursor: pointer; }
 (() => {
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
-  const MATCH_ORDER = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','G13','G14','G15'];
-  const MATCH_META = {
-    G1: { section: 'Winners Bracket', label: 'Round 1 — Match 1' },
-    G2: { section: 'Winners Bracket', label: 'Round 1 — Match 2' },
-    G3: { section: 'Winners Bracket', label: 'Round 1 — Match 3' },
-    G4: { section: 'Winners Bracket', label: 'Round 1 — Match 4' },
-    G7: { section: 'Winners Bracket', label: 'Semifinal — W1' },
-    G8: { section: 'Winners Bracket', label: 'Semifinal — W2' },
-    G11:{ section: 'Winners Bracket', label: 'Winners Final' },
-    G5: { section: 'Losers Bracket', label: 'LB Round 1A' },
-    G6: { section: 'Losers Bracket', label: 'LB Round 1B' },
-    G9: { section: 'Losers Bracket', label: 'LB Round 2A' },
-    G10:{ section: 'Losers Bracket', label: 'LB Round 2B' },
-    G12:{ section: 'Losers Bracket', label: 'LB Semifinal' },
-    G13:{ section: 'Losers Bracket', label: 'LB Final' },
-    G14:{ section: 'Grand Final', label: 'Championship' },
-    G15:{ section: 'Grand Final', label: 'If Necessary' },
-  };
 
   const els = {
     menuBtn: document.getElementById('menu-btn'),
     menuDropdown: document.getElementById('menu-dropdown'),
     gameScreen: document.getElementById('game-screen'),
-    tournamentScreen: document.getElementById('tournament-screen'),
     redP1: document.getElementById('red-p1'), redP2: document.getElementById('red-p2'),
     blueP1: document.getElementById('blue-p1'), blueP2: document.getElementById('blue-p2'),
     scoreRed: document.getElementById('score-red'), scoreBlue: document.getElementById('score-blue'),
@@ -1142,16 +1012,12 @@ button { cursor: pointer; }
     modeAclBtn: document.getElementById('mode-acl-btn'), modeTotalBtn: document.getElementById('mode-total-btn'),
     openScoringBtn: document.getElementById('open-scoring-btn'), editStatePill: document.getElementById('edit-state-pill'),
     redColorBtn: document.getElementById('red-color-btn'), blueColorBtn: document.getElementById('blue-color-btn'),
-    tournamentStack: document.getElementById('tournament-stack'), tournamentNote: document.getElementById('tournament-note'),
-    closeTournamentBtn: document.getElementById('close-tournament-btn'), newTournamentBtn: document.getElementById('new-tournament-btn'),
     teamsModalWrap: document.getElementById('teams-modal-wrap'),
     inRed1: document.getElementById('in-red1'), inRed2: document.getElementById('in-red2'),
     inBlue1: document.getElementById('in-blue1'), inBlue2: document.getElementById('in-blue2'),
     fieldRed2: document.getElementById('field-red2'), fieldBlue2: document.getElementById('field-blue2'),
     teamsMode1v1: document.getElementById('teams-mode-1v1'), teamsMode2v2: document.getElementById('teams-mode-2v2'),
     saveTeamsBtn: document.getElementById('save-teams-btn'),
-    tournamentModalWrap: document.getElementById('tournament-modal-wrap'),
-    tournamentTeamFields: document.getElementById('tournament-team-fields'), saveTournamentBtn: document.getElementById('save-tournament-btn'),
     settingsModalWrap: document.getElementById('settings-modal-wrap'), setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
     colorsModalWrap: document.getElementById('colors-modal-wrap'),
     pickRedTeamBtn: document.getElementById('pick-red-team-btn'),
@@ -1185,13 +1051,6 @@ button { cursor: pointer; }
           blue: { in: 0, on: 0, total: null }
         },
       },
-      tournament: {
-        enabled: false,
-        format: 'de8',
-        teams: [],
-        picks: {},
-        matches: {}
-      },
       ui: {
         breakdown: null,
         draftTeamMode: '2v2'
@@ -1207,7 +1066,9 @@ button { cursor: pointer; }
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
       const parsed = JSON.parse(raw);
-      return deepMerge(defaultState(), parsed);
+      const merged = deepMerge(defaultState(), parsed);
+      merged.screen = 'game';
+      return merged;
     } catch {
       return defaultState();
     }
@@ -1231,7 +1092,6 @@ button { cursor: pointer; }
   }
   function setState(mutator) {
     mutator(state);
-    syncTournament();
     applyTheme();
     render();
     persist();
@@ -1320,11 +1180,11 @@ button { cursor: pointer; }
 
     if (els.redColorPreview) {
       els.redColorPreview.style.background = state.teamColors.red;
-      els.redColorPreview.textContent = state.teams.red.players.filter(Boolean).join(' & ') || 'Red Team';
+      els.redColorPreview.textContent = state.teams.red.players.filter(Boolean).join(' & ') || 'Left Team';
     }
     if (els.blueColorPreview) {
       els.blueColorPreview.style.background = state.teamColors.blue;
-      els.blueColorPreview.textContent = state.teams.blue.players.filter(Boolean).join(' & ') || 'Blue Team';
+      els.blueColorPreview.textContent = state.teams.blue.players.filter(Boolean).join(' & ') || 'Right Team';
     }
     syncColorPickerUI();
   }
@@ -1389,151 +1249,12 @@ button { cursor: pointer; }
     return { name: safeText(name, 'Player'), color, total, rounds, ppr: rounds ? (total / rounds).toFixed(2) : '0.00' };
   }
 
-  function seedTo8(teams) {
-    const seeded = teams.slice(0,8);
-    while (seeded.length < 8) seeded.push('BYE');
-    return seeded;
-  }
-  function initTournamentMatches(teams) {
-    const t = seedTo8(teams);
-    return {
-      G1:{id:'G1',a:t[0],b:t[7],winner:null,loser:null},
-      G2:{id:'G2',a:t[3],b:t[4],winner:null,loser:null},
-      G3:{id:'G3',a:t[1],b:t[6],winner:null,loser:null},
-      G4:{id:'G4',a:t[2],b:t[5],winner:null,loser:null},
-      G5:{id:'G5',a:null,b:null,winner:null,loser:null},
-      G6:{id:'G6',a:null,b:null,winner:null,loser:null},
-      G7:{id:'G7',a:null,b:null,winner:null,loser:null},
-      G8:{id:'G8',a:null,b:null,winner:null,loser:null},
-      G9:{id:'G9',a:null,b:null,winner:null,loser:null},
-      G10:{id:'G10',a:null,b:null,winner:null,loser:null},
-      G11:{id:'G11',a:null,b:null,winner:null,loser:null},
-      G12:{id:'G12',a:null,b:null,winner:null,loser:null},
-      G13:{id:'G13',a:null,b:null,winner:null,loser:null},
-      G14:{id:'G14',a:null,b:null,winner:null,loser:null},
-      G15:{id:'G15',a:null,b:null,winner:null,loser:null},
-    };
-  }
-  function isRealTeam(team) { return !!team && team !== 'BYE'; }
-  function matchHasTwoReal(match) { return isRealTeam(match.a) && isRealTeam(match.b); }
-  function setWinnerOnMatch(matches, game, winnerTeam) {
-    const m = matches[game];
-    if (!m) return;
-    const side = m.a === winnerTeam ? 'a' : m.b === winnerTeam ? 'b' : null;
-    if (!side) return;
-    applyResult(matches, game, side);
-  }
-  function placeTeam(matches, game, slot, team) {
-    if (!matches[game] || !team || team === 'BYE') return;
-    matches[game][slot] = team;
-  }
-  function applyResult(matches, game, side) {
-    const m = matches[game];
-    if (!m) return;
-    const winner = m[side];
-    const loser = m[side === 'a' ? 'b' : 'a'];
-    if (!winner) return;
-    m.winner = side;
-    m.loser = side === 'a' ? 'b' : 'a';
-    const winnerReal = isRealTeam(winner);
-    const loserReal = isRealTeam(loser);
-    if (game==='G1') { if (winnerReal) placeTeam(matches,'G7','a',winner); if (loserReal) placeTeam(matches,'G5','a',loser); }
-    if (game==='G2') { if (winnerReal) placeTeam(matches,'G7','b',winner); if (loserReal) placeTeam(matches,'G5','b',loser); }
-    if (game==='G3') { if (winnerReal) placeTeam(matches,'G8','a',winner); if (loserReal) placeTeam(matches,'G6','a',loser); }
-    if (game==='G4') { if (winnerReal) placeTeam(matches,'G8','b',winner); if (loserReal) placeTeam(matches,'G6','b',loser); }
-    if (game==='G5') { if (winnerReal) placeTeam(matches,'G9','a',winner); }
-    if (game==='G6') { if (winnerReal) placeTeam(matches,'G10','b',winner); }
-    if (game==='G7') { if (winnerReal) placeTeam(matches,'G11','a',winner); if (loserReal) placeTeam(matches,'G10','a',loser); }
-    if (game==='G8') { if (winnerReal) placeTeam(matches,'G11','b',winner); if (loserReal) placeTeam(matches,'G9','b',loser); }
-    if (game==='G9') { if (winnerReal) placeTeam(matches,'G12','a',winner); }
-    if (game==='G10') { if (winnerReal) placeTeam(matches,'G12','b',winner); }
-    if (game==='G11') { if (winnerReal) placeTeam(matches,'G14','a',winner); if (loserReal) placeTeam(matches,'G13','a',loser); }
-    if (game==='G12') { if (winnerReal) placeTeam(matches,'G13','b',winner); }
-    if (game==='G13') { if (winnerReal) placeTeam(matches,'G14','b',winner); }
-    if (game==='G14') {
-      const wb = matches.G14.a;
-      const lb = matches.G14.b;
-      if (winner === lb && isRealTeam(lb) && isRealTeam(wb)) {
-        matches.G15.a = wb;
-        matches.G15.b = lb;
-      } else {
-        matches.G15 = { id:'G15', a:null, b:null, winner:null, loser:null };
-      }
-    }
-  }
-  function autoAdvanceByes(matches) {
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const game of MATCH_ORDER) {
-        const m = matches[game];
-        if (!m || m.winner) continue;
-        const aReal = isRealTeam(m.a);
-        const bReal = isRealTeam(m.b);
-        if (aReal && !bReal) { applyResult(matches, game, 'a'); changed = true; }
-        else if (bReal && !aReal) { applyResult(matches, game, 'b'); changed = true; }
-      }
-    }
-  }
-  function computeTournamentMatches() {
-    if (!state.tournament.enabled || !state.tournament.teams.length) {
-      state.tournament.matches = {};
-      return;
-    }
-    const matches = initTournamentMatches(state.tournament.teams);
-    autoAdvanceByes(matches);
-    for (const game of MATCH_ORDER) {
-      const pickedTeam = state.tournament.picks[game];
-      if (!pickedTeam) continue;
-      const m = matches[game];
-      if (!m || !matchHasTwoReal(m)) continue;
-      if (m.a !== pickedTeam && m.b !== pickedTeam) continue;
-      setWinnerOnMatch(matches, game, pickedTeam);
-      autoAdvanceByes(matches);
-    }
-    state.tournament.matches = matches;
-  }
-  function syncTournament() { computeTournamentMatches(); }
-  function tournamentChampion() {
-    const m = state.tournament.matches;
-    if (!m || !m.G14) return null;
-    if (m.G15 && m.G15.winner && m.G15[m.G15.winner]) return m.G15[m.G15.winner];
-    if (m.G14.winner) {
-      const winner = m.G14[m.G14.winner];
-      const losersChamp = m.G14.b;
-      if (winner !== losersChamp) return winner;
-    }
-    return null;
-  }
-  function matchVisibility(match) {
-    if (!match) return false;
-    const aReal = isRealTeam(match.a), bReal = isRealTeam(match.b);
-    if (!aReal && !bReal) return false;
-    if (!aReal || !bReal) {
-      return !!match.winner; // show completed bye info only if you want? false below for cleaner view
-    }
-    return true;
-  }
-  function visibleMatchList() {
-    const list = [];
-    for (const id of MATCH_ORDER) {
-      const match = state.tournament.matches[id];
-      if (!match) continue;
-      const aReal = isRealTeam(match.a), bReal = isRealTeam(match.b);
-      if (!(aReal && bReal)) continue;
-      list.push(match);
-    }
-    return list;
-  }
-
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   function closeAllMenus() { els.menuDropdown.classList.remove('open'); }
   function showScreen(screen) {
     state.screen = screen;
     els.gameScreen.style.display = screen === 'game' ? 'grid' : 'none';
-    els.tournamentScreen.style.display = screen === 'tournament' ? 'block' : 'none';
-    if (screen === 'tournament') els.tournamentScreen.scrollTop = 0;
     persist();
   }
 
@@ -1569,32 +1290,6 @@ button { cursor: pointer; }
     closeModal('teams-modal-wrap');
   }
 
-  function openTournamentModal() {
-    els.tournamentTeamFields.innerHTML = '';
-    const existing = state.tournament.teams.length ? state.tournament.teams : Array.from({length:8}, (_,i)=>'');
-    for (let i=0;i<8;i++) {
-      const wrap = document.createElement('div');
-      wrap.className = 'field';
-      wrap.innerHTML = `<label>Team ${i+1}</label><input maxlength="20" value="${escapeHtml(existing[i] || '')}" id="tournament-team-${i}">`;
-      els.tournamentTeamFields.appendChild(wrap);
-    }
-    showModal('tournament-modal-wrap');
-  }
-  function saveTournament() {
-    const teams = [];
-    for (let i=0;i<8;i++) {
-      const value = safeText(document.getElementById(`tournament-team-${i}`).value, '');
-      if (value) teams.push(value);
-    }
-    if (teams.length < 2) { alert('Enter at least 2 teams.'); return; }
-    setState(s => {
-      s.tournament.enabled = true;
-      s.tournament.teams = teams;
-      s.tournament.picks = {};
-    });
-    closeModal('tournament-modal-wrap');
-    showScreen('tournament');
-  }
   function resetGame() {
     setState(s => {
       s.game.rounds = [];
@@ -1710,14 +1405,6 @@ button { cursor: pointer; }
     closeModal('win-modal-wrap');
     resetGame();
   }
-  function setTournamentWinner(matchId, teamName) {
-    setState(s => {
-      const match = s.tournament.matches[matchId];
-      if (!match || !isRealTeam(teamName)) return;
-      if (match.a !== teamName && match.b !== teamName) return;
-      s.tournament.picks[matchId] = teamName;
-    });
-  }
 
   function renderEntryButtons(team) {
     const entry = state.game.currentEntry[team];
@@ -1800,78 +1487,9 @@ button { cursor: pointer; }
     els.submitBtn.textContent = state.game.editingRound != null ? 'UPDATE' : 'SUBMIT';
     renderHistory();
   }
-  function renderTournament() {
-    const champion = tournamentChampion();
-    const visible = visibleMatchList();
-    const hasByes = state.tournament.enabled && state.tournament.teams.length < 8;
-    els.tournamentNote.textContent = state.tournament.enabled ? `${state.tournament.teams.length} teams · only playable matches are shown` : 'No tournament yet';
-    els.tournamentStack.innerHTML = '';
-    if (!state.tournament.enabled) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.style.padding = '14px';
-      card.innerHTML = `<div class="section-title" style="margin-bottom:8px;">Start a bracket</div><div class="note">Create a double-elimination tournament for 2 to 8 teams.</div>`;
-      els.tournamentStack.appendChild(card);
-      return;
-    }
-    if (champion) {
-      const banner = document.createElement('div');
-      banner.className = 'tourn-banner';
-      banner.textContent = `🏆 Champion: ${champion}`;
-      els.tournamentStack.appendChild(banner);
-    }
-    if (hasByes) {
-      const note = document.createElement('div');
-      note.className = 'note';
-      note.textContent = 'Teams with byes are advanced automatically. Only matches with two live teams are shown.';
-      els.tournamentStack.appendChild(note);
-    }
-    const grouped = {
-      'Winners Bracket': [],
-      'Losers Bracket': [],
-      'Grand Final': []
-    };
-    visible.forEach(match => grouped[MATCH_META[match.id].section].push(match));
-    Object.entries(grouped).forEach(([section, matches]) => {
-      if (!matches.length) return;
-      const block = document.createElement('div');
-      block.className = 'tourn-section';
-      block.innerHTML = `<div class="tourn-section-head">${escapeHtml(section)}</div>`;
-      matches.forEach(match => block.appendChild(renderMatchCard(match)));
-      els.tournamentStack.appendChild(block);
-    });
-    if (state.tournament.matches.G14 && state.tournament.matches.G14.winner && !(state.tournament.matches.G15 && matchHasTwoReal(state.tournament.matches.G15))) {
-      const note = document.createElement('div');
-      note.className = 'note';
-      note.textContent = champion ? 'Game 15 was not needed.' : 'Game 15 only appears if the losers-bracket champion wins the championship.';
-      els.tournamentStack.appendChild(note);
-    }
-  }
-  function renderMatchCard(match) {
-    const meta = MATCH_META[match.id];
-    const wrap = document.createElement('div');
-    wrap.className = 'match-card';
-    wrap.innerHTML = `<div class="match-label">${meta.label}</div>`;
-    const teams = document.createElement('div');
-    teams.className = 'match-teams';
-    ['a','b'].forEach(side => {
-      const team = match[side];
-      const btn = document.createElement('button');
-      const chosen = match.winner === side;
-      const lost = match.loser === side;
-      btn.className = 'match-team' + (chosen ? ' winner' : '') + (lost ? ' loser' : '');
-      btn.innerHTML = `<span>${escapeHtml(team)}</span><span>${chosen ? '✓' : ''}</span>`;
-      btn.addEventListener('click', () => setTournamentWinner(match.id, team));
-      teams.appendChild(btn);
-    });
-    wrap.appendChild(teams);
-    return wrap;
-  }
-
   function render() {
     applyTheme();
     renderGame();
-    renderTournament();
     showScreen(state.screen);
   }
 
@@ -1887,7 +1505,6 @@ button { cursor: pointer; }
     closeAllMenus();
     if (action === 'home') showScreen('game');
     if (action === 'teams') openTeamsModal();
-    if (action === 'tournament') state.tournament.enabled ? showScreen('tournament') : openTournamentModal();
     if (action === 'settings') showModal('settings-modal-wrap');
     if (action === 'colors') openColorsModal(activeColorTeam || 'red');
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
@@ -1897,9 +1514,6 @@ button { cursor: pointer; }
   els.teamsMode1v1.addEventListener('click', () => { state.ui.draftTeamMode = '1v1'; renderTeamModeButtons(); });
   els.teamsMode2v2.addEventListener('click', () => { state.ui.draftTeamMode = '2v2'; renderTeamModeButtons(); });
   els.saveTeamsBtn.addEventListener('click', saveTeams);
-  els.newTournamentBtn.addEventListener('click', openTournamentModal);
-  els.closeTournamentBtn.addEventListener('click', () => showScreen('game'));
-  els.saveTournamentBtn.addEventListener('click', saveTournament);
   els.setAclBtn.addEventListener('click', () => setScoringMode('acl'));
   els.setTotalBtn.addEventListener('click', () => setScoringMode('total'));
   els.modeAclBtn.addEventListener('click', () => setScoringMode('acl'));
@@ -1929,8 +1543,6 @@ button { cursor: pointer; }
     const totalBtn = e.target.closest('[data-total-team]');
     if (totalBtn) setTotalValue(totalBtn.dataset.totalTeam, Number(totalBtn.dataset.totalVal));
   });
-
-  syncTournament();
   applyTheme();
   render();
 })();
