@@ -162,12 +162,12 @@ button { cursor: pointer; }
   gap: 8px;
 }
 .score-box {
-  min-height:96px;
+  min-height:110px;
   border-radius:18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:clamp(54px, 15vw, 88px);
+  font-size:clamp(58px, 16vw, 96px);
   font-weight:900;
   line-height:1;
   letter-spacing:-1.5px;
@@ -281,14 +281,14 @@ button { cursor: pointer; }
 }
 .bottom-bar {
   display:grid;
-  grid-template-columns: 40px 1fr 40px;
-  gap:4px;
-  padding:2px 4px;
+  grid-template-columns: 34px 1fr 34px;
+  gap:2px;
+  padding:0 4px;
   background: var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
   align-items:center;
-  flex:0 0 auto;
+  height:34px;
 }
 .stat-box {
   display:flex;
@@ -311,8 +311,8 @@ button { cursor: pointer; }
   line-height:1;
 }
 .primary-btn {
-  min-height:34px;
   height:34px;
+  min-height:34px;
   border:none;
   border-radius:14px;
   background:var(--green);
@@ -320,7 +320,6 @@ button { cursor: pointer; }
   font-weight:900;
   font-size:15px;
   letter-spacing:.3px;
-  padding:0 10px;
 }
 .primary-btn.alt { background: var(--blue); }
 .primary-btn:disabled { background: #3f556c; color: #a1b6c8; }
@@ -329,8 +328,8 @@ button { cursor: pointer; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 6px;
-  min-height: 96px;
-  max-height: 120px;
+  min-height:120px;
+  max-height:150px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -344,11 +343,11 @@ button { cursor: pointer; }
   padding-bottom: 2px;
 }
 .round-chip {
-  min-width: 54px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 2px solid transparent;
-  flex: 0 0 auto;
+  min-width:64px;
+  border-radius:14px;
+  overflow:hidden;
+  border:2px solid transparent;
+  flex:0 0 auto;
 }
 .round-chip.selected { border-color: var(--green); }
 .round-chip-head {
@@ -360,11 +359,11 @@ button { cursor: pointer; }
   font-weight: 800;
 }
 .round-chip-score {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  padding: 6px 0;
-  line-height: 1;
+  text-align:center;
+  font-size:18px;
+  font-weight:900;
+  padding:8px 0;
+  line-height:1;
 }
 .round-chip-score.red { background: rgba(232,51,42,0.18); color: #ff9a95; }
 .round-chip-score.blue { background: rgba(26,111,232,0.18); color: #97c7ff; }
