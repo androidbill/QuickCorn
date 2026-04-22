@@ -587,8 +587,24 @@
 
 
 
+
+
+
+<!-- COLOR PICKER MODAL (mobile-friendly, full spectrum) -->
+<div class="modal-overlay" id="colorpick-overlay">
+  <div class="modal" style="max-width:380px">
+    <h2 id="colorpick-title">Pick a Color</h2>
+    <div id="iro-container" style="display:flex; justify-content:center; padding:8px 0 4px;"></div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-cancel" onclick="closeColorPicker()">Cancel</button>
+      <button class="btn-save" onclick="saveColorPicker()">Done</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
-// ===== QuickCorn Core Logic (restored) =====
+// ===== QuickCorn Core Logic (stable) =====
 
 const state = {
   // teams / UI
@@ -653,7 +669,6 @@ function setScoringMode(mode) {
   localStorage.setItem('qc_scoringMode', mode);
   document.getElementById('scoring-modal').classList.remove('open');
 
-  // reset current inputs
   state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
   state.totals = { red: null, blue: null };
   state.pendingBreakdown = null;
@@ -913,7 +928,6 @@ function saveNames() {
   render();
 }
 
-// Open Edit Teams ONLY when tapping the card (not the color picker)
 function openTeamCard(e) {
   if (e && e.target && (e.target.closest('.team-color-btn') || e.target.closest('.team-color-input'))) return;
   openModal();
@@ -936,10 +950,6 @@ function checkWin() {
   document.getElementById('win-team-name').textContent = teamLine;
   document.getElementById('win-players').style.display = 'none';
   document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
-
-  // PPR list (simple)
-  const pprList = document.getElementById('ppr-list');
-  pprList.innerHTML = '';
 
   document.getElementById('win-modal').classList.add('open');
 }
@@ -1130,16 +1140,19 @@ function ensureIroPicker(initialHex){
 
 function openColorPicker(team, e){
   if(e){ e.preventDefault(); e.stopPropagation(); }
+  // Desktop: use native picker (it has lots of choices there)
   if(!isLikelyMobile()){
     const id = team === 'red' ? 'pick-red' : 'pick-blue';
     const input = document.getElementById(id);
     if(input) input.click();
     return;
   }
+
   pendingTeam = team;
   const title = document.getElementById('colorpick-title');
   if(title) title.textContent = team.toUpperCase() + ' TEAM COLOR';
   pendingColor = state.teamColors[team] || (team==='red' ? '#e8332a' : '#1a6fe8');
+
   ensureIroPicker(pendingColor);
   document.getElementById('colorpick-overlay').classList.add('open');
 }
@@ -1171,17 +1184,6 @@ function render(){
   document.getElementById('red-p2').textContent = state.redP2;
   document.getElementById('blue-p1').textContent = state.blueP1;
   document.getElementById('blue-p2').textContent = state.blueP2;
-
-  // hide p2 in 1v1
-  const rp2 = document.getElementById('red-p2');
-  const bp2 = document.getElementById('blue-p2');
-  if (state.mode === '1v1') {
-    rp2.style.display = 'none';
-    bp2.style.display = 'none';
-  } else {
-    rp2.style.display = '';
-    bp2.style.display = '';
-  }
 
   renderNetScore();
   renderRounds();
