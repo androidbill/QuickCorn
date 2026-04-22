@@ -4,22 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>QuickCorn Rebuilt</title>
-<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5">
-// Auto-clear player name inputs on first tap
-document.querySelectorAll('.player-input').forEach(input => {
-  input.addEventListener('focus', () => {
-    input.select();
-  });
-
-  input.addEventListener('click', () => {
-    if (!input.dataset.cleared) {
-      input.value = '';
-      input.dataset.cleared = 'true';
-    }
-  });
-});
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1949,6 +1934,31 @@ button { cursor: pointer; }
   applyTheme();
   render();
 })();
+
+// Clear team name fields on first focus after modal opens
+document.addEventListener('focusin', (e) => {
+  const input = e.target;
+  if (!input || !['in-red1','in-red2','in-blue1','in-blue2'].includes(input.id)) return;
+  if (!input.dataset.cleared) {
+    input.value = '';
+    input.dataset.cleared = 'true';
+  }
+});
+
+// Reset the cleared flag each time the Edit Teams modal is opened
+(function() {
+  const originalShowModal = showModal;
+  showModal = function(id) {
+    originalShowModal(id);
+    if (id === 'teams-modal-wrap') {
+      ['in-red1','in-red2','in-blue1','in-blue2'].forEach(fieldId => {
+        const el = document.getElementById(fieldId);
+        if (el) delete el.dataset.cleared;
+      });
+    }
+  };
+})();
+
 </script>
 </body>
 </html>
