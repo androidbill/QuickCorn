@@ -936,68 +936,66 @@ function openTeamCard(e) {
 // ── Win modal ──
 function checkWin() {
   const WIN = 21;
-  const redWon = state.redTotal >= WIN;
-  const blueWon = state.blueTotal >= WIN;
+  const redWon = state.redTotal >= WIN, blueWon = state.blueTotal >= WIN;
   if (!redWon && !blueWon) return;
 
-  const winner =
-    (redWon && blueWon)
-      ? (state.redTotal >= state.blueTotal ? 'red' : 'blue')
-      : (redWon ? 'red' : 'blue');
+  const winner = (redWon && blueWon)
+    ? (state.redTotal >= state.blueTotal ? 'red' : 'blue')
+    : (redWon ? 'red' : 'blue');
 
-  // Banner styling
-  const banner = document.getElementById('win-banner');
-  banner.className = 'win-banner ' + winner;
+  // Banner color
+  document.getElementById('win-banner').className = 'win-banner ' + winner;
 
-  // Players
+  // Winner display name
   const wp1 = winner === 'red' ? state.redP1 : state.blueP1;
   const wp2 = winner === 'red' ? state.redP2 : state.blueP2;
-  const players =
-    (state.mode === '2v2' && wp2)
-      ? `${wp1} & ${wp2}`
-      : wp1;
-
-  document.getElementById('win-team-name').textContent = players;
-  document.getElementById('win-players').style.display = 'none';
+  const teamLine = (state.mode === '2v2' && wp2) ? (wp1 + ' & ' + wp2) : wp1;
+  document.getElementById('win-team-name').textContent = teamLine;
 
   // Score line
-  document.getElementById('win-score-line').textContent =
-    `${state.redTotal} – ${state.blueTotal}`;
+  document.getElementById('win-score-line').textContent = `${state.redTotal} – ${state.blueTotal}`;
 
-  // Rounds played
-  const roundsPlayed = state.rounds.length;
+  // PPR list: PTS · ROUNDS · PPR (gross points / rounds thrown)
+  const rounds = state.rounds || [];
+  const pprList = document.getElementById('ppr-list');
+  if (pprList) pprList.innerHTML = '';
 
-  // Build PPR list
-  const list = document.getElementById('ppr-list');
-  list.innerHTML = '';
+  const players = [];
 
-  const winningTotal =
-    winner === 'red' ? state.redTotal : state.blueTotal;
-
-  const perPlayer =
-    (state.mode === '2v2' && wp2)
-      ? winningTotal / 2
-      : winningTotal;
-
-  const ppr = roundsPlayed > 0
-    ? (perPlayer / roundsPlayed).toFixed(2)
-    : '0.00';
-
-  function addPprRow(name) {
-    const row = document.createElement('div');
-    row.className = `ppr-row team-${winner}`;
-    row.innerHTML = `
-      <div class="ppr-name">${name}</div>
-      <div class="ppr-val">${ppr}</div>
-    `;
-    list.appendChild(row);
+  function buildPlayer(name, color, grossArr) {
+    const roundsThrown = grossArr.length;
+    const total = grossArr.reduce((a, b) => a + b, 0);
+    const ppr = roundsThrown ? (total / roundsThrown).toFixed(2) : '0.00';
+    return { name, color, total, roundsThrown, ppr };
   }
 
-  addPprRow(wp1);
-  if (state.mode === '2v2' && wp2) addPprRow(wp2);
+  if (state.mode === '1v1') {
+    players.push(
+      buildPlayer(state.redP1, 'red', rounds.map(r => (r.redGross ?? r.redPts ?? 0))),
+      buildPlayer(state.blueP1, 'blue', rounds.map(r => (r.blueGross ?? r.bluePts ?? 0)))
+    );
+  } else {
+    // In 2v2, players alternate throws by round index (even/odd)
+    const p1Rounds = rounds.filter((_, i) => i % 2 === 0);
+    const p2Rounds = rounds.filter((_, i) => i % 2 === 1);
 
+    players.push(buildPlayer(state.redP1, 'red', p1Rounds.map(r => (r.redGross ?? r.redPts ?? 0))));
+    if (state.redP2) players.push(buildPlayer(state.redP2, 'red', p2Rounds.map(r => (r.redGross ?? r.redPts ?? 0))));
+
+    players.push(buildPlayer(state.blueP1, 'blue', p1Rounds.map(r => (r.blueGross ?? r.bluePts ?? 0))));
+    if (state.blueP2) players.push(buildPlayer(state.blueP2, 'blue', p2Rounds.map(r => (r.blueGross ?? r.bluePts ?? 0))));
+  }
+
+  if (pprList) {
+    players.forEach(p => {
+      pprList.innerHTML += `<div class="ppr-row team-${p.color}"><span class="ppr-name">${p.name}</span><span class="ppr-val">${p.total} pts · ${p.roundsThrown} rds · ${p.ppr}</span></div>`;
+    });
+  }
+
+  // Show modal
   document.getElementById('win-modal').classList.add('open');
 }
+
 
 function playAgain() {
   document.getElementById('win-modal').classList.remove('open');
