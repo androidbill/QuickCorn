@@ -1312,7 +1312,14 @@ button { cursor: pointer; }
   }
   function setTeamThrowSide(team, icon) {
     setState(s => {
-      s.teamThrowSide[team] = s.teamThrowSide[team] === icon ? null : icon;
+      const otherTeam = team === 'red' ? 'blue' : 'red';
+      if (s.teamThrowSide[team] === icon) {
+        s.teamThrowSide[team] = null;
+        s.teamThrowSide[otherTeam] = null;
+        return;
+      }
+      s.teamThrowSide[team] = icon;
+      s.teamThrowSide[otherTeam] = oppositeThrowSide(icon);
     });
   }
   function setDefensePoints(team) {
