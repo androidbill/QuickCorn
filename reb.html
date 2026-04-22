@@ -4,7 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>QuickCorn Rebuilt</title>
-<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5">
+// Auto-clear player name inputs on first tap
+document.querySelectorAll('.player-input').forEach(input => {
+  input.addEventListener('focus', () => {
+    input.select();
+  });
+
+  input.addEventListener('click', () => {
+    if (!input.dataset.cleared) {
+      input.value = '';
+      input.dataset.cleared = 'true';
+    }
+  });
+});
+
+</script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -870,6 +885,16 @@ button { cursor: pointer; }
   font-size: 12px !important;
   line-height: 1.05 !important;
   opacity: 0.32 !important;
+}
+
+
+/* Make Player 2/4 look identical to primary when active */
+.team-card .team-player2.active {
+  font-size: inherit !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
+  line-height: 1.05 !important;
+  font-family: inherit !important;
 }
 
 </style>
