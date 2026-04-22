@@ -340,6 +340,20 @@
  .pt-btn.selected-blue { background: var(--team-blue-dark); border-color: var(--team-blue); }
  .modal-subtitle { font-size: 12px; color: var(--muted); text-align:center; margin-bottom: 10px; letter-spacing: 1px; }
 
+
+/* ── CENTER DIVIDER ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+  z-index: 10;
+}
+
 </style>
 </head>
 <body>
