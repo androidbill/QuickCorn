@@ -376,7 +376,7 @@
     <h2>Scoring Mode</h2>
     <div class="modal-subtitle">Choose how you want to enter each round.</div>
     <div class="modal-actions" style="margin-top:6px">
-      <button class="btn-save" onclick="setScoringMode('acl')">ACL Scoring</button>
+      <button class="btn-save" onclick="setScoringMode('acl')">IN and ON</button>
       <button class="btn-save" onclick="setScoringMode('total')">Total Number</button>
     </div>
   </div>
@@ -816,6 +816,7 @@ function renderNetScore() {
 }
 
 function submitRound() {
+  // advance active-player highlight after submit
   const rb = state.bags.red, bb = state.bags.blue;
   const redPts = rb.in*3 + rb.on;
   const bluePts = bb.in*3 + bb.on;
@@ -871,6 +872,7 @@ function renderRounds() {
 }
 
 function selectRound(i) {
+  updateActivePlayerHighlight();
   if (state.editingRound === i) {
     state.editingRound = null;
     state.bags = { red: { in: 0, on: 0 }, blue: { in: 0, on: 0 } };
@@ -1216,6 +1218,43 @@ function saveColorPicker(){
 }
 
 // ── Render ──
+
+// --- PLAYER HIGHLIGHT START ---
+function updateActivePlayerHighlight() {
+  const redP1 = document.getElementById('red-p1');
+  const redP2 = document.getElementById('red-p2');
+  const blueP1 = document.getElementById('blue-p1');
+  const blueP2 = document.getElementById('blue-p2');
+
+  [redP1, redP2, blueP1, blueP2].forEach(el => {
+    if (!el) return;
+    el.classList.remove('active-player', 'inactive-player');
+  });
+
+  // Which round are we highlighting for?
+  const idx = (state.editingRound !== null)
+    ? state.editingRound
+    : state.rounds.length;
+
+  // 1v1: both P1s always active
+  if (state.mode === '1v1') {
+    [redP1, blueP1].forEach(el => el && el.classList.add('active-player'));
+    return;
+  }
+
+  // 2v2: cross-team alternation
+  // EVEN rounds: Player 1 (Red P1 + Blue P1)
+  // ODD rounds:  Player 2 (Red P2 + Blue P2)
+  const even = idx % 2 === 0;
+
+  const active = even ? [redP1, blueP1] : [redP2, blueP2];
+  const inactive = even ? [redP2, blueP2] : [redP1, blueP1];
+
+  active.forEach(el => el && el.classList.add('active-player'));
+  inactive.forEach(el => el && el.classList.add('inactive-player'));
+}
+// --- PLAYER HIGHLIGHT END ---
+
 function render(){
   document.getElementById('score-red').textContent = state.redTotal;
   document.getElementById('score-blue').textContent = state.blueTotal;
@@ -1242,6 +1281,7 @@ function render(){
     btn.classList.remove('update-mode');
     btn.textContent = 'SUBMIT';
   }
+  updateActivePlayerHighlight();
 }
 
 // ===== Boot =====
