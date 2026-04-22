@@ -1226,31 +1226,32 @@ function updateActivePlayerHighlight() {
   const blueP1 = document.getElementById('blue-p1');
   const blueP2 = document.getElementById('blue-p2');
 
-  if (!redP1 || !blueP1) return;
-
   [redP1, redP2, blueP1, blueP2].forEach(el => {
     if (!el) return;
     el.classList.remove('active-player', 'inactive-player');
   });
 
-  // Determine which round index is "current"
+  // Which round are we highlighting for?
   const idx = (state.editingRound !== null)
     ? state.editingRound
     : state.rounds.length;
 
-  // Alternate: even rounds = RED, odd rounds = BLUE
-  const activeColor = (idx % 2 === 0) ? 'red' : 'blue';
-
-  function setActive(activeEls, inactiveEls) {
-    activeEls.forEach(el => el && el.classList.add('active-player'));
-    inactiveEls.forEach(el => el && el.classList.add('inactive-player'));
+  // 1v1: both P1s always active
+  if (state.mode === '1v1') {
+    [redP1, blueP1].forEach(el => el && el.classList.add('active-player'));
+    return;
   }
 
-  if (activeColor === 'red') {
-    setActive([redP1, redP2], [blueP1, blueP2]);
-  } else {
-    setActive([blueP1, blueP2], [redP1, redP2]);
-  }
+  // 2v2: cross-team alternation
+  // EVEN rounds: Player 1 (Red P1 + Blue P1)
+  // ODD rounds:  Player 2 (Red P2 + Blue P2)
+  const even = idx % 2 === 0;
+
+  const active = even ? [redP1, blueP1] : [redP2, blueP2];
+  const inactive = even ? [redP2, blueP2] : [redP1, blueP1];
+
+  active.forEach(el => el && el.classList.add('active-player'));
+  inactive.forEach(el => el && el.classList.add('inactive-player'));
 }
 // --- PLAYER HIGHLIGHT END ---
 
