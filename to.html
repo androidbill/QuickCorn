@@ -20,18 +20,21 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
   body {
     font-family: 'Barlow Condensed', sans-serif;
     background: var(--bg);
     color: var(--text);
+    min-height: 100dvh;
     height: 100dvh;
     display: flex;
     flex-direction: column;
     max-width: 480px;
     margin: 0 auto;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* ── MODALS ── */
@@ -358,7 +361,7 @@
 
 
 /* ── TOURNAMENT BRACKET (basic) ── */
-#bracket-container{ padding: 6px 8px; display:none; flex-direction:column; gap:8px; flex:1; min-height:0; overflow-y:auto; }
+#bracket-container{ padding: 6px 8px 24px; display:none; flex-direction:column; gap:8px; flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y; }
 .bracket-grid{ display:grid; grid-template-columns: 1fr; gap:8px; }
 @media (min-width: 900px){
   body{ max-width: 920px; }
@@ -908,9 +911,16 @@ function matchShouldShow(game){
 
   const aReal = isRealTeam(match.a);
   const bReal = isRealTeam(match.b);
+  const bothReal = aReal && bReal;
 
   if (!aReal && !bReal) return false;
-  if (match.winner && (aReal !== bReal)) return false;
+
+  // Hide one-sided pending matches until the opponent is actually known.
+  // This is what made 5-team and some 8-team states look broken on mobile.
+  if (!bothReal && !match.winner) return false;
+
+  // Hide completed auto-bye / one-sided matches once they have advanced.
+  if (!bothReal && match.winner) return false;
 
   return true;
 }
@@ -970,6 +980,7 @@ function renderTournament(){
   const byeNote = hasByes
     ? '<div class="bracket-note" style="margin-bottom:4px;">Teams with first-round byes advance automatically.</div>'
     : '';
+  const waitingNote = '<div class="bracket-note" style="margin-bottom:4px;">Only ready-to-play matches are shown.</div>';
 
   const championshipPlayed = state.tournament.matches.G14 && state.tournament.matches.G14.winner;
   const game15Html = matchShouldShow('G15')
@@ -988,6 +999,7 @@ function renderTournament(){
     </div>
     ${championHtml}
     ${byeNote}
+    ${waitingNote}
     <div class="bracket-section">
       <div class="bracket-section-label">Winner's Bracket</div>
       ${cardIfVisible('G1','Round 1 — Match 1')}
