@@ -215,17 +215,26 @@ button { cursor: pointer; }
   border: 1px solid var(--border);
   background: var(--panel);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  font-size: 18px;
+  align-items: center;
+  gap: 1px;
+  font-size: 16px;
   line-height: 1;
   color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
   cursor: pointer;
+  padding: 4px 2px;
 }
 .icon-chip.active {
   border-color: rgba(255,255,255,0.35);
   box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset;
+}
+.icon-chip-label {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 .icon-row.red .icon-chip {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-red) 35%, transparent);
@@ -598,7 +607,8 @@ button { cursor: pointer; }
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
   .team-icons { gap: 5px; }
   .icon-row { gap: 5px; }
-  .icon-chip { min-height: 30px; font-size: 16px; border-radius: 10px; }
+  .icon-chip { min-height: 30px; font-size: 14px; border-radius: 10px; }
+  .icon-chip-label { font-size: 8px; }
 
   .team-card { padding: 7px; border-radius: 14px; }
   .team-player { font-size: 15px; line-height: 1.05; }
@@ -940,14 +950,26 @@ button { cursor: pointer; }
 
     <div class="team-icons">
       <div class="icon-row red" aria-label="Left team icons">
-        <button class="icon-chip" type="button" data-team-throw="red" data-icon="left" aria-label="Throwing on the left side of the board">☚</button>
-        <button class="icon-chip" type="button" data-team-throw="red" data-icon="right" aria-label="Throwing on the right side of the board">☛</button>
-        <button class="icon-chip" type="button" data-defense-team="red" aria-label="Defensive points this round">⊘</button>
+        <button class="icon-chip" type="button" data-team-throw="red" data-icon="left" aria-label="Inside lane">
+          <span>☚</span><span class="icon-chip-label">Inside</span>
+        </button>
+        <button class="icon-chip" type="button" data-team-throw="red" data-icon="right" aria-label="Outside lane">
+          <span>☛</span><span class="icon-chip-label">Outside</span>
+        </button>
+        <button class="icon-chip" type="button" data-defense-team="red" aria-label="Defensive points this round">
+          <span>⊘</span><span class="icon-chip-label">Defense</span>
+        </button>
       </div>
       <div class="icon-row blue" aria-label="Right team icons">
-        <button class="icon-chip" type="button" data-team-throw="blue" data-icon="left" aria-label="Throwing on the left side of the board">☚</button>
-        <button class="icon-chip" type="button" data-team-throw="blue" data-icon="right" aria-label="Throwing on the right side of the board">☛</button>
-        <button class="icon-chip" type="button" data-defense-team="blue" aria-label="Defensive points this round">⊘</button>
+        <button class="icon-chip" type="button" data-team-throw="blue" data-icon="left" aria-label="Inside lane">
+          <span>☚</span><span class="icon-chip-label">Inside</span>
+        </button>
+        <button class="icon-chip" type="button" data-team-throw="blue" data-icon="right" aria-label="Outside lane">
+          <span>☛</span><span class="icon-chip-label">Outside</span>
+        </button>
+        <button class="icon-chip" type="button" data-defense-team="blue" aria-label="Defensive points this round">
+          <span>⊘</span><span class="icon-chip-label">Defense</span>
+        </button>
       </div>
     </div>
 
@@ -1289,14 +1311,12 @@ button { cursor: pointer; }
       els.blueColorPreview.style.background = state.teamColors.blue;
       els.blueColorPreview.textContent = blueTeamName;
     }
-    document.querySelectorAll('[data-team-throw]').forEach(btn => {
-      btn.classList.toggle('active', state.teamThrowSide[btn.dataset.teamThrow] === btn.dataset.icon);
-    });
     document.querySelectorAll('[data-defense-team]').forEach(btn => {
       const team = btn.dataset.defenseTeam;
       const value = state.game.currentEntry[team]?.defense || 0;
       btn.classList.toggle('defense-set', value > 0);
-      btn.textContent = value > 0 ? `⊘ ${value}` : '⊘';
+      const symbol = btn.querySelector('span');
+      if (symbol) symbol.textContent = value > 0 ? `⊘ ${value}` : '⊘';
     });
     syncColorPickerUI();
   }
@@ -1661,6 +1681,10 @@ button { cursor: pointer; }
       els.blueP2.textContent = '';
       els.redP1.classList.add('active');
       els.blueP1.classList.add('active');
+      document.querySelectorAll('[data-team-throw]').forEach(btn => {
+        const selected = state.teamThrowSide[btn.dataset.teamThrow];
+        btn.classList.toggle('active', !!selected && btn.dataset.icon === selected);
+      });
       return;
     }
 
@@ -1673,6 +1697,12 @@ button { cursor: pointer; }
     blueActive.classList.add('active');
     if (redInactive.textContent.trim()) redInactive.classList.add('inactive');
     if (blueInactive.textContent.trim()) blueInactive.classList.add('inactive');
+
+    document.querySelectorAll('[data-team-throw]').forEach(btn => {
+      const selected = state.teamThrowSide[btn.dataset.teamThrow];
+      const activeIcon = activeThrower === 0 ? selected : oppositeThrowSide(selected);
+      btn.classList.toggle('active', !!activeIcon && btn.dataset.icon === activeIcon);
+    });
   }
   function renderGame() {
     renderPlayers();
