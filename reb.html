@@ -162,14 +162,19 @@ button { cursor: pointer; }
   gap: 8px;
 }
 .score-box {
-  min-height: 104px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(62px, 15vw, 92px);
-  font-weight: 900;
-  letter-spacing: -2px;
-  border-radius: var(--radius);
+  min-height:84px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(48px, 14vw, 82px);
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-1.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-align:center;
+  padding:0 6px;
 }
 .score-box.red {
   background: color-mix(in srgb, var(--team-red) 28%, var(--panel));
@@ -275,33 +280,38 @@ button { cursor: pointer; }
   border-color: var(--green);
 }
 .bottom-bar {
-  display: grid;
-  grid-template-columns: 72px 1fr 72px;
-  gap: 8px;
-  align-items: center;
+  display:grid;
+  grid-template-columns: 50px 1fr 50px;
+  gap:4px;
+  padding:4px;
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  align-items:center;
+  flex:0 0 auto;
 }
 .stat-box { text-align: center; }
 .stat-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  font-weight: 800;
+  font-size:8px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--muted);
+  line-height:1;
 }
-.stat-value { font-size: 28px; font-weight: 900; margin-top: 2px; }
+.stat-value {
+  font-size:16px;
+  font-weight:900;
+  line-height:1;
+}
 .primary-btn {
-  min-height: 54px;
-  border-radius: 14px;
-  border: 0;
-  background: var(--green);
-  color: #fff;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1px;
+  min-height:36px;
+  border:none;
+  border-radius:14px;
+  background:var(--green);
+  color:#fff;
+  font-weight:900;
+  font-size:15px;
+  letter-spacing:.3px;
 }
 .primary-btn.alt { background: var(--blue); }
 .primary-btn:disabled { background: #3f556c; color: #a1b6c8; }
@@ -535,10 +545,11 @@ button { cursor: pointer; }
   .mini-btn { min-width: 30px; height: 30px; }
 
   .score-box {
-    min-height: 70px;
-    border-radius: 16px;
-    font-size: clamp(38px, 11vw, 60px);
-    letter-spacing: -1px;
+    min-height: 88px;
+    border-radius: 18px;
+    font-size: clamp(52px, 15vw, 78px);
+    letter-spacing: -1.5px;
+    padding: 0 5px;
   }
 
   .section-title {
@@ -572,23 +583,23 @@ button { cursor: pointer; }
   }
 
   .bottom-bar {
-    grid-template-columns: 56px 1fr 56px;
-    gap: 5px;
-    padding: 5px;
-    border-radius: 16px;
+    grid-template-columns: 46px 1fr 46px;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 15px;
   }
-  .stat-label { font-size: 8px; letter-spacing: 1.1px; }
-  .stat-value { font-size: 20px; }
+  .stat-label { font-size: 8px; letter-spacing: 1px; }
+  .stat-value { font-size: 15px; }
   .primary-btn {
-    min-height: 42px;
-    font-size: 16px;
-    letter-spacing: 0.4px;
-    border-radius: 14px;
+    min-height: 34px;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    border-radius: 13px;
   }
 
   .history-card {
-    min-height: 74px;
-    max-height: 92px;
+    min-height: 70px;
+    max-height: 88px;
     padding: 5px;
     gap: 5px;
   }
@@ -607,8 +618,9 @@ button { cursor: pointer; }
   .team-player { font-size: 14px; }
   .team-player2 { font-size: 12px; }
   .score-box {
-    min-height: 62px;
-    font-size: clamp(34px, 10.5vw, 54px);
+    min-height: 80px;
+    font-size: clamp(46px, 14vw, 68px);
+    padding: 0 4px;
   }
   .entry-panel { padding: 4px; }
   .entry-btn {
@@ -616,18 +628,18 @@ button { cursor: pointer; }
     font-size: 16px;
   }
   .bottom-bar {
-    grid-template-columns: 50px 1fr 50px;
+    grid-template-columns: 44px 1fr 44px;
     gap: 4px;
     padding: 4px;
   }
-  .stat-value { font-size: 18px; }
+  .stat-value { font-size: 14px; }
   .primary-btn {
-    min-height: 38px;
-    font-size: 15px;
+    min-height: 32px;
+    font-size: 13px;
   }
   .history-card {
-    min-height: 66px;
-    max-height: 84px;
+    min-height: 64px;
+    max-height: 82px;
     padding: 4px;
   }
   .round-chip { min-width: 42px; }
@@ -643,7 +655,7 @@ button { cursor: pointer; }
   .team-player { font-size: 14px; }
   .team-player2 { font-size: 12px; }
   .mini-btn { min-width: 28px; height: 28px; }
-  .score-box { min-height: 60px; font-size: clamp(34px, 10vw, 52px); }
+  .score-box { min-height: 76px; font-size: clamp(44px, 13vw, 64px); }
   .section-title { font-size: 9px; }
   .pill { min-height: 28px; font-size: 11px; }
   .entry-mode button { min-height: 32px; font-size: 13px; }
@@ -652,16 +664,16 @@ button { cursor: pointer; }
   .entry-grid { gap: 3px; }
   .entry-btn { min-height: 30px; font-size: 15px; }
   .bottom-bar {
-    grid-template-columns: 48px 1fr 48px;
+    grid-template-columns: 42px 1fr 42px;
     gap: 4px;
-    padding: 4px;
+    padding: 3px;
   }
-  .stat-label { font-size: 8px; }
-  .stat-value { font-size: 17px; }
-  .primary-btn { min-height: 36px; font-size: 14px; }
+  .stat-label { font-size: 7px; }
+  .stat-value { font-size: 13px; }
+  .primary-btn { min-height: 30px; font-size: 13px; }
   .history-card {
-    min-height: 60px;
-    max-height: 76px;
+    min-height: 58px;
+    max-height: 74px;
     padding: 4px;
     gap: 4px;
   }
