@@ -565,7 +565,9 @@
     redP1:'Player 1', redP2:'Player 2',
     blueP1:'Player 3', blueP2:'Player 4',
     redTotal:0, blueTotal:0,
-    bags:{ red:{in:0,on:0}, blue:{in:0,on:0} },
+    bags:{ red:{in:0,on:0}, 
+ totals:{ red:null, blue:null },
+blue:{in:0,on:0} },
     rounds:[], editingRound:null, currentRound:1,
   };
 
@@ -587,20 +589,28 @@
   if (saved === 'acl' || saved === 'total') {
     state.scoringMode = saved;
   } else {
+    // First run – ask the user
+    openScoringModal();
+    // Default so the app still works behind the modal
     state.scoringMode = 'acl';
   }
 
+  // Ensure totals exists (prevents total-mode click crashes on first load)
+  if (!state.totals) state.totals = { red: null, blue: null };
+
   updateScoringUI();
-  updateScoreBoxStyles();
-}
- else {
-   openScoringModal();
+
+  // When starting in Total mode, draw selected states correctly
+  if (state.scoringMode === 'total') {
+    renderTotalBtns();
   }
- }
+}
+
 
  function setScoringMode(mode) {
   state.scoringMode = mode;
   localStorage.setItem('qc_scoringMode', mode);
+  if (!state.totals) state.totals = { red: null, blue: null };
   document.getElementById('scoring-modal').classList.remove('open');
 
   // clear current round input when switching modes
@@ -620,9 +630,21 @@
   const totalCols = document.getElementById('total-cols');
   if (bagCols) bagCols.classList.toggle('hidden', isTotal);
   if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
+
+  // Safety: totals must exist in Total mode
+  if (!state.totals) state.totals = { red: null, blue: null };
+
   updateScoreBoxStyles();
   updateTotalLabels();
- }
+
+  // Keep selection visuals in sync
+  if (isTotal) {
+    renderTotalBtns();
+  } else {
+    renderBagBtns();
+  }
+}
+
 
  // TOTAL NUMBER selection buttons
  const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
