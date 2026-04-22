@@ -194,6 +194,28 @@
   }
   .score-box.red { background: var(--team-red); }
   .score-box.blue { background: var(--team-blue); }
+
+ /* Score boxes follow scoring mode */
+ body.mode-acl .score-box{ border: 1px solid transparent; }
+ body.mode-acl .score-box.red{
+   background: color-mix(in srgb, var(--team-red) 22%, transparent);
+   border-color: color-mix(in srgb, var(--team-red) 45%, var(--border));
+ }
+ body.mode-acl .score-box.blue{
+   background: color-mix(in srgb, var(--team-blue) 22%, transparent);
+   border-color: color-mix(in srgb, var(--team-blue) 45%, var(--border));
+ }
+
+ body.mode-total .score-box{ border: 1px solid transparent; }
+ body.mode-total .score-box.red{
+   background: color-mix(in srgb, var(--team-red) 30%, transparent);
+   border-color: color-mix(in srgb, var(--team-red) 55%, var(--border));
+ }
+ body.mode-total .score-box.blue{
+   background: color-mix(in srgb, var(--team-blue) 30%, transparent);
+   border-color: color-mix(in srgb, var(--team-blue) 55%, var(--border));
+ }
+
   .score-num {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(50px, 18vh, 110px);
@@ -476,7 +498,7 @@
   <!-- TOTAL NUMBER INPUT (alternative to ACL IN/ON) -->
   <div class="total-cols hidden" id="total-cols">
     <div class="total-team">
-      <div class="total-col-label red">RED POINTS</div>
+      <div class="total-col-label red" id="label-red-total">RED</div>
       <div class="total-grid">
       <button class="bag-btn pt-btn" id="r-pt-0" onclick="selectTotal('red',0)">0</button>
       <button class="bag-btn pt-btn" id="r-pt-1" onclick="selectTotal('red',1)">1</button>
@@ -493,7 +515,7 @@
       </div>
     </div>
     <div class="total-team">
-      <div class="total-col-label blue">BLUE POINTS</div>
+      <div class="total-col-label blue" id="label-blue-total">BLUE</div>
       <div class="total-grid">
       <button class="bag-btn pt-btn" id="b-pt-0" onclick="selectTotal('blue',0)">0</button>
       <button class="bag-btn pt-btn" id="b-pt-1" onclick="selectTotal('blue',1)">1</button>
@@ -588,6 +610,8 @@
   const totalCols = document.getElementById('total-cols');
   if (bagCols) bagCols.classList.toggle('hidden', isTotal);
   if (totalCols) totalCols.classList.toggle('hidden', !isTotal);
+  updateScoreBoxStyles();
+  updateTotalLabels();
  }
 
  // TOTAL NUMBER selection buttons
@@ -958,8 +982,67 @@
    const pb = document.getElementById('pick-blue');
    if(pr) pr.value = red;
    if(pb) pb.value = blue;
+  updateTotalLabels();
+  updateScoreBoxStyles();
  }
- function initTeamColors(){
+ 
+ // ── COLOR NAME (for Total labels) ──
+ function rgbToHsl(r,g,b){
+   r/=255; g/=255; b/=255;
+   const max=Math.max(r,g,b), min=Math.min(r,g,b);
+   let h=0, s=0, l=(max+min)/2;
+   const d=max-min;
+   if(d!==0){
+     s = d/(1-Math.abs(2*l-1));
+     switch(max){
+       case r: h=((g-b)/d)%6; break;
+       case g: h=((b-r)/d)+2; break;
+       case b: h=((r-g)/d)+4; break;
+     }
+     h = Math.round(h*60);
+     if(h<0) h+=360;
+   }
+   return {h, s, l};
+ }
+ function colorNameFromHex(hex, fallback){
+   if(!hex) return fallback;
+   const h = hex.replace('#','').trim();
+   if(h.length!==6) return fallback;
+   const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+   const {h:hh, s, l} = rgbToHsl(r,g,b);
+   // low saturation = gray-ish
+   if(s < 0.15){
+     if(l > 0.85) return 'WHITE';
+     if(l < 0.15) return 'BLACK';
+     return 'GRAY';
+   }
+   if(hh < 15 || hh >= 345) return 'RED';
+   if(hh < 40) return 'ORANGE';
+   if(hh < 70) return 'YELLOW';
+   if(hh < 150) return 'GREEN';
+   if(hh < 190) return 'TEAL';
+   if(hh < 215) return 'CYAN';
+   if(hh < 260) return 'BLUE';
+   if(hh < 290) return 'PURPLE';
+   if(hh < 330) return 'MAGENTA';
+   return fallback;
+ }
+ function updateTotalLabels(){
+   const lr = document.getElementById('label-red-total');
+   const lb = document.getElementById('label-blue-total');
+   // Use chosen colors if set, otherwise defaults
+   const redHex = state.teamColors && state.teamColors.red ? state.teamColors.red : null;
+   const blueHex = state.teamColors && state.teamColors.blue ? state.teamColors.blue : null;
+   if(lr) lr.textContent = colorNameFromHex(redHex, 'RED');
+   if(lb) lb.textContent = colorNameFromHex(blueHex, 'BLUE');
+ }
+ function updateScoreBoxStyles(){
+   const isTotal = state.scoringMode === 'total';
+   document.body.classList.toggle('mode-total', isTotal);
+   document.body.classList.toggle('mode-acl', !isTotal);
+ }
+
+function initTeamColors(){
    const saved = localStorage.getItem('qc_teamColors');
    if(saved){
      try{
@@ -993,6 +1076,8 @@
    state.teamColors = { red:null, blue:null };
    localStorage.removeItem('qc_teamColors');
    applyTeamColors();
+  updateTotalLabels();
+  updateScoreBoxStyles();
  }
 
 render();
