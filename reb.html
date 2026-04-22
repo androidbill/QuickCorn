@@ -671,25 +671,6 @@ button { cursor: pointer; }
 }
 
 
-.color-team-toggle{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin:10px 0 12px;
-}
-.color-team-btn{
-  min-height:40px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:var(--panel-2);
-  color:var(--text);
-  font-weight:800;
-  letter-spacing:.3px;
-}
-.color-team-btn.active{
-  border-color:rgba(255,255,255,.28);
-  box-shadow:0 0 0 2px rgba(255,255,255,.08) inset;
-}
 #iro-picker{
   display:flex;
   justify-content:center;
@@ -712,6 +693,7 @@ button { cursor: pointer; }
   min-height:46px;
   border-radius:12px;
   border:1px solid var(--border);
+  background: var(--panel-2);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -719,9 +701,13 @@ button { cursor: pointer; }
   color:#fff;
   text-align:center;
   padding:6px;
+  cursor:pointer;
+}
+.color-preview.active{
+  border-color:rgba(255,255,255,.28);
+  box-shadow:0 0 0 2px rgba(255,255,255,.08) inset;
 }
 @media (max-width: 430px){
-  .color-team-btn{ min-height:36px; font-size:14px; }
   .color-preview{ min-height:42px; font-size:13px; }
 }
 
@@ -813,10 +799,6 @@ button { cursor: pointer; }
     </div>
     <button class="icon-btn" id="menu-btn">⋮</button>
     <div class="dropdown" id="menu-dropdown">
-      <button data-action="home">Home</button>
-      <button data-action="teams">Edit Teams</button>
-      <button data-action="settings">Scoring Mode</button>
-      <button data-action="colors">Team Colors</button>
       <button data-action="restart">Restart Game</button>
       <button data-action="about">About</button>
     </div>
@@ -930,26 +912,19 @@ button { cursor: pointer; }
     <h2>Team Colors</h2>
     <p class="sub">Pick any color for either team. Saved on your phone.</p>
 
-    <div class="color-team-toggle">
-      <button class="color-team-btn active" id="pick-red-team-btn" type="button">Left Team</button>
-      <button class="color-team-btn" id="pick-blue-team-btn" type="button">Right Team</button>
+    <div class="color-preview-row">
+      <button class="color-preview active" id="red-color-preview" type="button">Left Team</button>
+      <button class="color-preview" id="blue-color-preview" type="button">Right Team</button>
     </div>
 
     <div id="iro-picker"></div>
     <div class="color-hex" id="color-hex-readout">#E8332A</div>
-
-    <div class="color-preview-row">
-      <div class="color-preview" id="red-color-preview">Left Team</div>
-      <div class="color-preview" id="blue-color-preview">Right Team</div>
-    </div>
 
     <div class="modal-actions">
       <button class="btn-secondary" data-close="colors-modal-wrap">Close</button>
       <button class="btn-danger" id="reset-colors-btn" type="button">Reset</button>
     </div>
   </div>
-</div>
-
 </div>
 
 <div class="modal-wrap" id="breakdown-modal-wrap">
@@ -981,11 +956,10 @@ button { cursor: pointer; }
 
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
-    <h2>About QuickCorn</h2>
-    <p class="sub">This rebuild keeps the original idea, but the app logic is now state-driven.</p>
+    <h2>QuickCorn</h2>
+    <p class="sub">Version 1.1</p>
     <div class="small-help">
-      Built as a single mobile-first HTML file.<br>
-      Features included: 1v1 / 2v2, ACL or total scoring, round editing, team colors, and player PPR.
+      Created by: Bill Parsons
     </div>
     <div class="modal-actions">
       <button class="btn-primary" data-close="about-modal-wrap">Close</button>
@@ -1020,8 +994,6 @@ button { cursor: pointer; }
     saveTeamsBtn: document.getElementById('save-teams-btn'),
     settingsModalWrap: document.getElementById('settings-modal-wrap'), setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
     colorsModalWrap: document.getElementById('colors-modal-wrap'),
-    pickRedTeamBtn: document.getElementById('pick-red-team-btn'),
-    pickBlueTeamBtn: document.getElementById('pick-blue-team-btn'),
     redColorPreview: document.getElementById('red-color-preview'),
     blueColorPreview: document.getElementById('blue-color-preview'),
     colorHexReadout: document.getElementById('color-hex-readout'),
@@ -1152,8 +1124,8 @@ button { cursor: pointer; }
   }
 
   function syncColorPickerUI() {
-    if (els.pickRedTeamBtn) els.pickRedTeamBtn.classList.toggle('active', activeColorTeam === 'red');
-    if (els.pickBlueTeamBtn) els.pickBlueTeamBtn.classList.toggle('active', activeColorTeam === 'blue');
+    if (els.redColorPreview) els.redColorPreview.classList.toggle('active', activeColorTeam === 'red');
+    if (els.blueColorPreview) els.blueColorPreview.classList.toggle('active', activeColorTeam === 'blue');
     if (els.colorHexReadout) {
       els.colorHexReadout.textContent = (state.teamColors[activeColorTeam] || '#000000').toUpperCase();
     }
@@ -1178,13 +1150,16 @@ button { cursor: pointer; }
     document.documentElement.style.setProperty('--team-red-dark', darken(state.teamColors.red));
     document.documentElement.style.setProperty('--team-blue-dark', darken(state.teamColors.blue));
 
+    const redTeamName = state.teams.red.players.filter(Boolean).join(' & ') || 'Left Team';
+    const blueTeamName = state.teams.blue.players.filter(Boolean).join(' & ') || 'Right Team';
+
     if (els.redColorPreview) {
       els.redColorPreview.style.background = state.teamColors.red;
-      els.redColorPreview.textContent = state.teams.red.players.filter(Boolean).join(' & ') || 'Left Team';
+      els.redColorPreview.textContent = redTeamName;
     }
     if (els.blueColorPreview) {
       els.blueColorPreview.style.background = state.teamColors.blue;
-      els.blueColorPreview.textContent = state.teams.blue.players.filter(Boolean).join(' & ') || 'Right Team';
+      els.blueColorPreview.textContent = blueTeamName;
     }
     syncColorPickerUI();
   }
@@ -1503,10 +1478,6 @@ button { cursor: pointer; }
     if (!btn) return;
     const action = btn.dataset.action;
     closeAllMenus();
-    if (action === 'home') showScreen('game');
-    if (action === 'teams') openTeamsModal();
-    if (action === 'settings') showModal('settings-modal-wrap');
-    if (action === 'colors') openColorsModal(activeColorTeam || 'red');
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -1521,11 +1492,11 @@ button { cursor: pointer; }
   els.openScoringBtn.addEventListener('click', () => showModal('settings-modal-wrap'));
   els.redColorBtn.addEventListener('click', () => openColorsModal('red'));
   els.blueColorBtn.addEventListener('click', () => openColorsModal('blue'));
-  els.pickRedTeamBtn.addEventListener('click', () => {
+  els.redColorPreview.addEventListener('click', () => {
     activeColorTeam = 'red';
     syncColorPickerUI();
   });
-  els.pickBlueTeamBtn.addEventListener('click', () => {
+  els.blueColorPreview.addEventListener('click', () => {
     activeColorTeam = 'blue';
     syncColorPickerUI();
   });
