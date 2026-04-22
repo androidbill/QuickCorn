@@ -732,6 +732,27 @@ button { cursor: pointer; }
   .color-preview{ min-height:42px; font-size:13px; }
 }
 
+
+.modal{
+  max-height:min(90dvh, 720px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#colors-modal-wrap .modal{
+  padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px));
+}
+#iro-picker{
+  min-height:270px;
+}
+@media (max-height: 760px){
+  .modal{
+    max-height:92dvh;
+  }
+  #iro-picker{
+    min-height:240px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1083,7 +1104,8 @@ button { cursor: pointer; }
     mutator(state);
     syncTournament();
     applyTheme();
-    render();
+    applyTheme();
+  render();
     persist();
   }
 
@@ -1707,6 +1729,7 @@ button { cursor: pointer; }
   }
 
   function render() {
+    applyTheme();
     applyTheme();
     renderGame();
     renderTournament();
