@@ -838,23 +838,12 @@ button { cursor: pointer; }
 }
 
 
-.entry-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: repeat(4, 1fr);
+
+.entry-grid.acl-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
 }
-
-/* Left column: IN 1-4 */
-.entry-grid button:nth-child(1) { grid-column: 1; grid-row: 1; }
-.entry-grid button:nth-child(2) { grid-column: 1; grid-row: 2; }
-.entry-grid button:nth-child(3) { grid-column: 1; grid-row: 3; }
-.entry-grid button:nth-child(4) { grid-column: 1; grid-row: 4; }
-
-/* Right column: ON 1-4 */
-.entry-grid button:nth-child(5) { grid-column: 2; grid-row: 1; }
-.entry-grid button:nth-child(6) { grid-column: 2; grid-row: 2; }
-.entry-grid button:nth-child(7) { grid-column: 2; grid-row: 3; }
-.entry-grid button:nth-child(8) { grid-column: 2; grid-row: 4; }
 
 </style>
 </head>
@@ -1698,11 +1687,11 @@ button { cursor: pointer; }
     const selectedClass = team === 'red' ? 'selected-red' : 'selected-blue';
     if (state.scoringMode === 'acl') {
       return `
-        <div class="entry-grid">
-          ${[1,2,3,4].map(v=>`<button class="entry-btn ${entry.in===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="in" data-entry-val="${v}">${v} IN</button>`).join('')}
-        </div>
-        <div class="entry-grid">
-          ${[1,2,3,4].map(v=>`<button class="entry-btn ${entry.on===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="on" data-entry-val="${v}">${v} ON</button>`).join('')}
+        <div class="entry-grid acl-grid">
+          ${[1,2,3,4].map(v => `
+            <button class="entry-btn ${entry.in===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="in" data-entry-val="${v}">${v} IN</button>
+            <button class="entry-btn ${entry.on===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="on" data-entry-val="${v}">${v} ON</button>
+          `).join('')}
         </div>`;
     }
     return `<div class="entry-grid total-mode">${TOTAL_VALUES.map(v=>`<button class="entry-btn ${entry.total===v?selectedClass:''}" data-total-team="${team}" data-total-val="${v}">${v}</button>`).join('')}</div>`;
