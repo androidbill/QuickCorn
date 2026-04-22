@@ -343,7 +343,22 @@
 
 
 
-/* ── CENTER DIVIDER (solid white, stops above submit) ── */
+
+#game-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 180px; /* stops above submit button + rounds */
+  left: 50%;
+  width: 4px;
+  background: #ffffff;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+
+/* ── CENTER DIVIDER (white, flush with points boxes) ── */
 #game-screen {
   position: relative;
 }
@@ -352,7 +367,8 @@
   content: '';
   position: absolute;
   top: 0;
-  bottom: 180px; /* stops above submit button + rounds */
+  /* stop exactly at the top of the bottom bar (submit button) */
+  bottom: 72px; 
   left: 50%;
   width: 4px;
   background: #ffffff;
