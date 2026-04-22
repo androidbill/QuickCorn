@@ -437,19 +437,19 @@
 <div id="game-screen">
 <!-- SCOREBOARDS -->
 <div class="scoreboards">
-  <div class="team-card red" onclick="openModal()">
-  <input class="team-color-input" id="pick-red" type="color" aria-label="Choose red team color">
+  <div class="team-card red" onclick="openTeamCard(event)">
+  <input class="team-color-input" id="pick-red" type="color" aria-label="Choose red team color" onclick="event.stopPropagation();">
   <div class="team-line">
     <div class="team-name" id="red-p1">Player 1</div>
-    <button class="team-color-btn" title="Team color" onclick="event.stopPropagation();document.getElementById('pick-red').click();">🎨</button>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();document.getElementById('pick-red').click();">🎨</button>
   </div>
   <div class="team-player2" id="red-p2">Player 2</div>
 </div>
-  <div class="team-card blue" onclick="openModal()">
-  <input class="team-color-input" id="pick-blue" type="color" aria-label="Choose blue team color">
+  <div class="team-card blue" onclick="openTeamCard(event)">
+  <input class="team-color-input" id="pick-blue" type="color" aria-label="Choose blue team color" onclick="event.stopPropagation();">
   <div class="team-line">
     <div class="team-name" id="blue-p1">Player 3</div>
-    <button class="team-color-btn" title="Team color" onclick="event.stopPropagation();document.getElementById('pick-blue').click();">🎨</button>
+    <button class="team-color-btn" title="Team color" onclick="event.preventDefault();event.stopPropagation();document.getElementById('pick-blue').click();">🎨</button>
   </div>
   <div class="team-player2" id="blue-p2">Player 4</div>
 </div>
@@ -909,7 +909,18 @@
   }
   document.addEventListener('click', function() { closeDropdown(); });
 
-  function openModal() {
+  
+
+ // Open Edit Teams ONLY when tapping the card (not the color picker)
+ function openTeamCard(e){
+   // If the tap is on the paint button or the hidden color input, ignore
+   if(e && e.target && (e.target.closest('.team-color-btn') || e.target.closest('.team-color-input'))){
+     return;
+   }
+   openModal();
+ }
+
+function openModal() {
 
   ['in-red1','in-red2','in-blue1','in-blue2'].forEach(id => {
     const el = document.getElementById(id);
