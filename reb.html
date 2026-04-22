@@ -845,6 +845,19 @@ button { cursor: pointer; }
   gap:6px;
 }
 
+
+.team-player.active-player,
+.team-player2.active-player{
+  color:#fff;
+  opacity:1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.team-player.inactive-player,
+.team-player2.inactive-player{
+  opacity:.45;
+}
+
 </style>
 </head>
 <body>
@@ -1730,26 +1743,60 @@ button { cursor: pointer; }
       els.blueP1.classList.remove('inactive');
     }
   }
-  function renderGame() {
-    renderPlayers();
-    const totals = getTotals();
-    els.scoreRed.textContent = totals.red;
-    els.scoreBlue.textContent = totals.blue;
-    const net = entryToPoints(state.game.currentEntry.red) - entryToPoints(state.game.currentEntry.blue);
-    els.roundNet.textContent = net > 0 ? `+${net}` : String(net);
-    els.roundNum.textContent = String(state.game.rounds.length + 1);
-    els.openScoringBtn.textContent = state.scoringMode === 'acl' ? 'IN / ON' : 'TOTAL';
-    els.editStatePill.textContent = state.game.editingRound != null ? `Editing R${state.game.editingRound + 1}` : 'Live';
-    els.redEntryLabel.textContent = getTeamDisplay('red').toUpperCase();
-    els.blueEntryLabel.textContent = getTeamDisplay('blue').toUpperCase();
-    els.redEntryContent.innerHTML = renderEntryButtons('red');
-    els.blueEntryContent.innerHTML = renderEntryButtons('blue');
+  
+  function clearShooterClasses() {
+    [els.redP1, els.redP2, els.blueP1, els.blueP2].forEach(el => {
+      if (!el) return;
+      el.classList.remove('active-player', 'inactive-player');
+    });
+  }
+
+  function updateShooterHighlight() {
+    clearShooterClasses();
+
+    if (state.mode !== '2v2') {
+      if (els.redP1) els.redP1.classList.add('active-player');
+      if (els.blueP1) els.blueP1.classList.add('active-player');
+      return;
+    }
+
+    const roundIndex = state.game.editingRoundIndex !== null
+      ? state.game.editingRoundIndex
+      : state.game.rounds.length;
+
+    const pairIndex = roundIndex % 2; // even rounds: P1 vs P1, odd rounds: P2 vs P2
+
+    const activeRed = pairIndex === 0 ? els.redP1 : els.redP2;
+    const inactiveRed = pairIndex === 0 ? els.redP2 : els.redP1;
+    const activeBlue = pairIndex === 0 ? els.blueP1 : els.blueP2;
+    const inactiveBlue = pairIndex === 0 ? els.blueP2 : els.blueP1;
+
+    if (activeRed) activeRed.classList.add('active-player');
+    if (activeBlue) activeBlue.classList.add('active-player');
+    if (inactiveRed && inactiveRed.textContent.trim()) inactiveRed.classList.add('inactive-player');
+    if (inactiveBlue && inactiveBlue.textContent.trim()) inactiveBlue.classList.add('inactive-player');
+  }
+
+function renderGame() {
+    els.redP1.textContent = state.teams.red.players[0] || 'Player 1';
+    els.redP2.textContent = state.mode === '2v2' ? (state.teams.red.players[1] || 'Player 2') : '';
+    els.blueP1.textContent = state.teams.blue.players[0] || (state.mode === '1v1' ? 'Player 2' : 'Player 3');
+    els.blueP2.textContent = state.mode === '2v2' ? (state.teams.blue.players[1] || 'Player 4') : '';
+
+    els.redScore.textContent = state.game.redScore;
+    els.blueScore.textContent = state.game.blueScore;
+    els.roundNum.textContent = state.game.rounds.length + (state.game.editingRoundIndex === null ? 1 : 1);
+    els.netValue.textContent = formatNetPreview();
+
     els.modeAclBtn.classList.toggle('active', state.scoringMode === 'acl');
     els.modeTotalBtn.classList.toggle('active', state.scoringMode === 'total');
-    const over = !validateEntry(state.game.currentEntry.red) || !validateEntry(state.game.currentEntry.blue);
-    els.submitBtn.disabled = over;
-    els.submitBtn.textContent = state.game.editingRound != null ? 'UPDATE' : 'SUBMIT';
-    renderHistory();
+
+    els.redEntry.innerHTML = renderEntryButtons('red');
+    els.blueEntry.innerHTML = renderEntryButtons('blue');
+
+    renderRoundHistory();
+    updateSubmitButton();
+    updateShooterHighlight();
   }
   function renderTournament() {
     const champion = tournamentChampion();
