@@ -1305,6 +1305,11 @@ button { cursor: pointer; }
     if (icon === 'right') return '☛';
     return '—';
   }
+  function oppositeThrowSide(icon) {
+    if (icon === 'left') return 'right';
+    if (icon === 'right') return 'left';
+    return null;
+  }
   function setTeamThrowSide(team, icon) {
     setState(s => {
       s.teamThrowSide[team] = s.teamThrowSide[team] === icon ? null : icon;
@@ -1373,22 +1378,24 @@ button { cursor: pointer; }
     const rounds = state.game.rounds;
     const rows = [];
     if (state.mode === '1v1') {
-      rows.push(makePlayerStat(state.teams.red.players[0], 'red', rounds.map(r => r.redGross), rounds.map(r => r.redDefense || 0)));
-      rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', rounds.map(r => r.blueGross), rounds.map(r => r.blueDefense || 0)));
+      rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, rounds.map(r => r.redGross), rounds.map(r => r.redDefense || 0)));
+      rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, rounds.map(r => r.blueGross), rounds.map(r => r.blueDefense || 0)));
       return rows;
     }
     const evenRounds = rounds.filter((_,i)=>i%2===0);
     const oddRounds = rounds.filter((_,i)=>i%2===1);
-    rows.push(makePlayerStat(state.teams.red.players[0], 'red', evenRounds.map(r=>r.redGross), evenRounds.map(r=>r.redDefense || 0)));
-    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', oddRounds.map(r=>r.redGross), oddRounds.map(r=>r.redDefense || 0)));
-    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', evenRounds.map(r=>r.blueGross), evenRounds.map(r=>r.blueDefense || 0)));
-    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', oddRounds.map(r=>r.blueGross), oddRounds.map(r=>r.blueDefense || 0)));
+    rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, evenRounds.map(r=>r.redGross), evenRounds.map(r=>r.redDefense || 0)));
+    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', 1, oddRounds.map(r=>r.redGross), oddRounds.map(r=>r.redDefense || 0)));
+    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, evenRounds.map(r=>r.blueGross), evenRounds.map(r=>r.blueDefense || 0)));
+    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', 1, oddRounds.map(r=>r.blueGross), oddRounds.map(r=>r.blueDefense || 0)));
     return rows;
   }
-  function makePlayerStat(name, color, gross, defense=[]) {
+  function makePlayerStat(name, color, playerIndex, gross, defense=[]) {
     const total = gross.reduce((a,b)=>a+b,0);
     const rounds = gross.length;
     const defensive = defense.reduce((a,b)=>a+b,0);
+    const selectedSide = state.teamThrowSide[color] || null;
+    const icon = playerIndex === 0 ? selectedSide : oppositeThrowSide(selectedSide);
     return {
       name: safeText(name, 'Player'),
       color,
@@ -1396,7 +1403,7 @@ button { cursor: pointer; }
       rounds,
       defensive,
       ppr: rounds ? (total / rounds).toFixed(2) : '0.00',
-      icon: state.teamThrowSide[color] || null
+      icon
     };
   }
   function formatPlayedDate(isoString) {
