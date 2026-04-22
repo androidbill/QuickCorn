@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>QuickCorn Rebuilt</title>
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -676,6 +677,61 @@ button { cursor: pointer; }
   .round-chip-score { font-size: 11px; }
 }
 
+
+.color-team-toggle{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0 12px;
+}
+.color-team-btn{
+  min-height:40px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--panel-2);
+  color:var(--text);
+  font-weight:800;
+  letter-spacing:.3px;
+}
+.color-team-btn.active{
+  border-color:rgba(255,255,255,.28);
+  box-shadow:0 0 0 2px rgba(255,255,255,.08) inset;
+}
+#iro-picker{
+  display:flex;
+  justify-content:center;
+  padding:4px 0 2px;
+}
+.color-hex{
+  margin-top:10px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  letter-spacing:.8px;
+}
+.color-preview-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.color-preview{
+  min-height:46px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  color:#fff;
+  text-align:center;
+  padding:6px;
+}
+@media (max-width: 430px){
+  .color-team-btn{ min-height:36px; font-size:14px; }
+  .color-preview{ min-height:42px; font-size:13px; }
+}
+
 </style>
 </head>
 <body>
@@ -829,17 +885,32 @@ button { cursor: pointer; }
   </div>
 </div>
 
+
 <div class="modal-wrap" id="colors-modal-wrap">
   <div class="modal">
     <h2>Team Colors</h2>
-    <p class="sub">Pick custom team colors. These are saved on your phone.</p>
-    <div class="field"><label>Red Team</label><input type="color" id="red-color-input" /></div>
-    <div class="field"><label>Blue Team</label><input type="color" id="blue-color-input" /></div>
+    <p class="sub">Pick any color for either team. Saved on your phone.</p>
+
+    <div class="color-team-toggle">
+      <button class="color-team-btn active" id="pick-red-team-btn" type="button">Red Team</button>
+      <button class="color-team-btn" id="pick-blue-team-btn" type="button">Blue Team</button>
+    </div>
+
+    <div id="iro-picker"></div>
+    <div class="color-hex" id="color-hex-readout">#E8332A</div>
+
+    <div class="color-preview-row">
+      <div class="color-preview" id="red-color-preview">Red Team</div>
+      <div class="color-preview" id="blue-color-preview">Blue Team</div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-secondary" data-close="colors-modal-wrap">Close</button>
-      <button class="btn-danger" id="reset-colors-btn">Reset</button>
+      <button class="btn-danger" id="reset-colors-btn" type="button">Reset</button>
     </div>
   </div>
+</div>
+
 </div>
 
 <div class="modal-wrap" id="breakdown-modal-wrap">
@@ -932,7 +1003,13 @@ button { cursor: pointer; }
     tournamentModalWrap: document.getElementById('tournament-modal-wrap'),
     tournamentTeamFields: document.getElementById('tournament-team-fields'), saveTournamentBtn: document.getElementById('save-tournament-btn'),
     settingsModalWrap: document.getElementById('settings-modal-wrap'), setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
-    colorsModalWrap: document.getElementById('colors-modal-wrap'), redColorInput: document.getElementById('red-color-input'), blueColorInput: document.getElementById('blue-color-input'), resetColorsBtn: document.getElementById('reset-colors-btn'),
+    colorsModalWrap: document.getElementById('colors-modal-wrap'),
+    pickRedTeamBtn: document.getElementById('pick-red-team-btn'),
+    pickBlueTeamBtn: document.getElementById('pick-blue-team-btn'),
+    redColorPreview: document.getElementById('red-color-preview'),
+    blueColorPreview: document.getElementById('blue-color-preview'),
+    colorHexReadout: document.getElementById('color-hex-readout'),
+    resetColorsBtn: document.getElementById('reset-colors-btn'),
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
     winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'),
     aboutModalWrap: document.getElementById('about-modal-wrap'),
@@ -973,6 +1050,8 @@ button { cursor: pointer; }
   }
 
   let state = loadState();
+  let activeColorTeam = 'red';
+  let iroPicker = null;
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1037,13 +1116,67 @@ button { cursor: pointer; }
     const c = hexToRgb(hex); if (!c) return hex;
     return rgbToHex(clamp(Math.round(c.r*(1-amt)),0,255), clamp(Math.round(c.g*(1-amt)),0,255), clamp(Math.round(c.b*(1-amt)),0,255));
   }
+
+  function ensureColorPicker() {
+    if (iroPicker || typeof iro === 'undefined') return;
+    const mount = document.getElementById('iro-picker');
+    if (!mount) return;
+
+    iroPicker = new iro.ColorPicker('#iro-picker', {
+      width: 250,
+      color: state.teamColors[activeColorTeam] || '#E8332A',
+      borderWidth: 1,
+      borderColor: '#25415f',
+      layout: [
+        { component: iro.ui.Wheel },
+        { component: iro.ui.Slider, options: { sliderType: 'value' } }
+      ]
+    });
+
+    iroPicker.on('color:change', (color) => {
+      const hex = color.hexString.toUpperCase();
+      setState(s => {
+        s.teamColors[activeColorTeam] = hex;
+      });
+    });
+  }
+
+  function syncColorPickerUI() {
+    if (els.pickRedTeamBtn) els.pickRedTeamBtn.classList.toggle('active', activeColorTeam === 'red');
+    if (els.pickBlueTeamBtn) els.pickBlueTeamBtn.classList.toggle('active', activeColorTeam === 'blue');
+    if (els.colorHexReadout) {
+      els.colorHexReadout.textContent = (state.teamColors[activeColorTeam] || '#000000').toUpperCase();
+    }
+    if (iroPicker) {
+      const next = (state.teamColors[activeColorTeam] || '#000000').toUpperCase();
+      if (iroPicker.color.hexString.toUpperCase() != next) {
+        iroPicker.color.set(next);
+      }
+    }
+  }
+
+  function openColorsModal(team = 'red') {
+    activeColorTeam = team;
+    showModal('colors-modal-wrap');
+    ensureColorPicker();
+    syncColorPickerUI();
+  }
+
   function applyTheme() {
     document.documentElement.style.setProperty('--team-red', state.teamColors.red);
     document.documentElement.style.setProperty('--team-blue', state.teamColors.blue);
     document.documentElement.style.setProperty('--team-red-dark', darken(state.teamColors.red));
     document.documentElement.style.setProperty('--team-blue-dark', darken(state.teamColors.blue));
-    els.redColorInput.value = state.teamColors.red;
-    els.blueColorInput.value = state.teamColors.blue;
+
+    if (els.redColorPreview) {
+      els.redColorPreview.style.background = state.teamColors.red;
+      els.redColorPreview.textContent = state.teams.red.players.filter(Boolean).join(' & ') || 'Red Team';
+    }
+    if (els.blueColorPreview) {
+      els.blueColorPreview.style.background = state.teamColors.blue;
+      els.blueColorPreview.textContent = state.teams.blue.players.filter(Boolean).join(' & ') || 'Blue Team';
+    }
+    syncColorPickerUI();
   }
 
   function entryToPoints(entry) {
@@ -1594,7 +1727,7 @@ button { cursor: pointer; }
     if (action === 'teams') openTeamsModal();
     if (action === 'tournament') state.tournament.enabled ? showScreen('tournament') : openTournamentModal();
     if (action === 'settings') showModal('settings-modal-wrap');
-    if (action === 'colors') showModal('colors-modal-wrap');
+    if (action === 'colors') openColorsModal(activeColorTeam || 'red');
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -1610,11 +1743,22 @@ button { cursor: pointer; }
   els.modeAclBtn.addEventListener('click', () => setScoringMode('acl'));
   els.modeTotalBtn.addEventListener('click', () => setScoringMode('total'));
   els.openScoringBtn.addEventListener('click', () => showModal('settings-modal-wrap'));
-  els.redColorBtn.addEventListener('click', () => showModal('colors-modal-wrap'));
-  els.blueColorBtn.addEventListener('click', () => showModal('colors-modal-wrap'));
+  els.redColorBtn.addEventListener('click', () => openColorsModal('red'));
+  els.blueColorBtn.addEventListener('click', () => openColorsModal('blue'));
   els.redColorInput.addEventListener('input', e => setState(s => { s.teamColors.red = e.target.value; }));
   els.blueColorInput.addEventListener('input', e => setState(s => { s.teamColors.blue = e.target.value; }));
-  els.resetColorsBtn.addEventListener('click', () => setState(s => { s.teamColors.red = '#e8332a'; s.teamColors.blue = '#1a6fe8'; }));
+  els.pickRedTeamBtn.addEventListener('click', () => {
+    activeColorTeam = 'red';
+    syncColorPickerUI();
+  });
+  els.pickBlueTeamBtn.addEventListener('click', () => {
+    activeColorTeam = 'blue';
+    syncColorPickerUI();
+  });
+  els.resetColorsBtn.addEventListener('click', () => {
+    setState(s => { s.teamColors.red = '#E8332A'; s.teamColors.blue = '#1A6FE8'; });
+    syncColorPickerUI();
+  });
   els.submitBtn.addEventListener('click', submitRound);
   els.playAgainBtn.addEventListener('click', playAgain);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
