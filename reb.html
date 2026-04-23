@@ -248,9 +248,6 @@ button { cursor: pointer; }
 .icon-row.blue .icon-chip.active {
   background: color-mix(in srgb, var(--team-blue) 72%, var(--panel));
 }
-.icon-chip.defense-set {
-  font-weight: 900;
-}
 .entry-card {
   display: flex;
   flex-direction: column;
@@ -956,9 +953,6 @@ button { cursor: pointer; }
         <button class="icon-chip" type="button" data-team-throw="red" data-icon="right" aria-label="Outside lane">
           <span>☛</span><span class="icon-chip-label">Outside</span>
         </button>
-        <button class="icon-chip" type="button" data-defense-team="red" aria-label="Defensive points this round">
-          <span>⊘</span><span class="icon-chip-label">Defense</span>
-        </button>
       </div>
       <div class="icon-row blue" aria-label="Right team icons">
         <button class="icon-chip" type="button" data-team-throw="blue" data-icon="left" aria-label="Inside lane">
@@ -966,9 +960,6 @@ button { cursor: pointer; }
         </button>
         <button class="icon-chip" type="button" data-team-throw="blue" data-icon="right" aria-label="Outside lane">
           <span>☛</span><span class="icon-chip-label">Outside</span>
-        </button>
-        <button class="icon-chip" type="button" data-defense-team="blue" aria-label="Defensive points this round">
-          <span>⊘</span><span class="icon-chip-label">Defense</span>
         </button>
       </div>
     </div>
@@ -1168,8 +1159,8 @@ button { cursor: pointer; }
         editingRound: null,
         historyEntryId: null,
         currentEntry: {
-          red: { in: 0, on: 0, defense: 0, total: null },
-          blue: { in: 0, on: 0, defense: 0, total: null }
+          red: { in: 0, on: 0, total: null },
+          blue: { in: 0, on: 0, total: null }
         },
       },
       gameHistory: [],
@@ -1311,13 +1302,6 @@ button { cursor: pointer; }
       els.blueColorPreview.style.background = state.teamColors.blue;
       els.blueColorPreview.textContent = blueTeamName;
     }
-    document.querySelectorAll('[data-defense-team]').forEach(btn => {
-      const team = btn.dataset.defenseTeam;
-      const value = state.game.currentEntry[team]?.defense || 0;
-      btn.classList.toggle('defense-set', value > 0);
-      const symbol = btn.querySelector('span');
-      if (symbol) symbol.textContent = value > 0 ? `⊘ ${value}` : '⊘';
-    });
     syncColorPickerUI();
   }
   function iconSymbol(icon) {
@@ -1347,27 +1331,6 @@ button { cursor: pointer; }
       s.teamThrowSide[otherTeam] = oppositeThrowSide(icon);
     });
   }
-  function setDefensePoints(team) {
-    const current = state.game.currentEntry[team]?.defense || 0;
-    const raw = prompt('How many defensive points did you get that round?', String(current));
-    if (raw == null) return;
-    const trimmed = raw.trim();
-    if (trimmed === '') {
-      setState(s => {
-        s.game.currentEntry[team].defense = 0;
-      });
-      return;
-    }
-    const value = Number(trimmed);
-    if (!Number.isInteger(value) || value < 0) {
-      alert('Enter a whole number of defensive points.');
-      return;
-    }
-    setState(s => {
-      s.game.currentEntry[team].defense = value;
-    });
-  }
-
   function entryToPoints(entry) {
     if (state.scoringMode === 'acl') return entry.in * 3 + entry.on;
     if (entry.total == null) return 0;
@@ -1379,15 +1342,15 @@ button { cursor: pointer; }
     return opts;
   }
   function validateEntry(entry) {
-    return entry.in >= 0 && entry.on >= 0 && entry.in + entry.on <= 4 && (entry.defense || 0) >= 0;
+    return entry.in >= 0 && entry.on >= 0 && entry.in + entry.on <= 4;
   }
   function scoreRound(redEntry, blueEntry) {
     const redPts = entryToPoints(redEntry);
     const bluePts = entryToPoints(blueEntry);
     const net = redPts - bluePts;
     return {
-      redIn: redEntry.in, redOn: redEntry.on, redDefense: redEntry.defense || 0, redTotalRaw: redEntry.total,
-      blueIn: blueEntry.in, blueOn: blueEntry.on, blueDefense: blueEntry.defense || 0, blueTotalRaw: blueEntry.total,
+      redIn: redEntry.in, redOn: redEntry.on, redTotalRaw: redEntry.total,
+      blueIn: blueEntry.in, blueOn: blueEntry.on, blueTotalRaw: blueEntry.total,
       redGross: redPts, blueGross: bluePts,
       redNet: net > 0 ? net : 0,
       blueNet: net < 0 ? -net : 0,
@@ -1410,22 +1373,21 @@ button { cursor: pointer; }
     const rounds = state.game.rounds;
     const rows = [];
     if (state.mode === '1v1') {
-      rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, rounds.map(r => r.redGross), rounds.map(r => r.redDefense || 0)));
-      rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, rounds.map(r => r.blueGross), rounds.map(r => r.blueDefense || 0)));
+      rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, rounds.map(r => r.redGross)));
+      rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, rounds.map(r => r.blueGross)));
       return rows;
     }
     const evenRounds = rounds.filter((_,i)=>i%2===0);
     const oddRounds = rounds.filter((_,i)=>i%2===1);
-    rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, evenRounds.map(r=>r.redGross), evenRounds.map(r=>r.redDefense || 0)));
-    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', 1, oddRounds.map(r=>r.redGross), oddRounds.map(r=>r.redDefense || 0)));
-    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, evenRounds.map(r=>r.blueGross), evenRounds.map(r=>r.blueDefense || 0)));
-    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', 1, oddRounds.map(r=>r.blueGross), oddRounds.map(r=>r.blueDefense || 0)));
+    rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, evenRounds.map(r=>r.redGross)));
+    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', 1, oddRounds.map(r=>r.redGross)));
+    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, evenRounds.map(r=>r.blueGross)));
+    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', 1, oddRounds.map(r=>r.blueGross)));
     return rows;
   }
-  function makePlayerStat(name, color, playerIndex, gross, defense=[]) {
+  function makePlayerStat(name, color, playerIndex, gross) {
     const total = gross.reduce((a,b)=>a+b,0);
     const rounds = gross.length;
-    const defensive = defense.reduce((a,b)=>a+b,0);
     const selectedSide = state.teamThrowSide[color] || null;
     const icon = playerIndex === 0 ? selectedSide : oppositeThrowSide(selectedSide);
     return {
@@ -1433,7 +1395,6 @@ button { cursor: pointer; }
       color,
       total,
       rounds,
-      defensive,
       ppr: rounds ? (total / rounds).toFixed(2) : '0.00',
       icon,
       side: iconLabel(icon)
@@ -1463,7 +1424,6 @@ button { cursor: pointer; }
         total: row.total,
         rounds: row.rounds,
         ppr: row.ppr,
-        defensive: row.defensive || 0,
         icon: row.icon || null,
         side: row.side || 'None'
       }))
@@ -1527,8 +1487,8 @@ button { cursor: pointer; }
       s.game.rounds = [];
       s.game.editingRound = null;
       s.game.historyEntryId = null;
-      s.game.currentEntry.red = { in: 0, on: 0, defense: 0, total: null };
-      s.game.currentEntry.blue = { in: 0, on: 0, defense: 0, total: null };
+      s.game.currentEntry.red = { in: 0, on: 0, total: null };
+      s.game.currentEntry.blue = { in: 0, on: 0, total: null };
     });
   }
   function escapeHtml(str) {
@@ -1538,8 +1498,8 @@ button { cursor: pointer; }
   function setScoringMode(mode) {
     setState(s => {
       s.scoringMode = mode;
-      s.game.currentEntry.red = { in: 0, on: 0, defense: s.game.currentEntry.red.defense || 0, total: null };
-      s.game.currentEntry.blue = { in: 0, on: 0, defense: s.game.currentEntry.blue.defense || 0, total: null };
+      s.game.currentEntry.red = { in: 0, on: 0, total: null };
+      s.game.currentEntry.blue = { in: 0, on: 0, total: null };
       s.ui.breakdown = null;
     });
     closeModal('settings-modal-wrap');
@@ -1556,7 +1516,7 @@ button { cursor: pointer; }
     if (options.length === 1) {
       const opt = options[0];
       setState(s => {
-        s.game.currentEntry[team] = { in: opt.in, on: opt.on, defense: s.game.currentEntry[team].defense || 0, total: value };
+        s.game.currentEntry[team] = { in: opt.in, on: opt.on, total: value };
       });
       return;
     }
@@ -1571,7 +1531,7 @@ button { cursor: pointer; }
     setState(s => {
       const br = s.ui.breakdown;
       if (!br) return;
-      s.game.currentEntry[br.team] = { in: inCount, on: onCount, defense: s.game.currentEntry[br.team].defense || 0, total: br.total };
+      s.game.currentEntry[br.team] = { in: inCount, on: onCount, total: br.total };
       s.ui.breakdown = null;
     });
     closeModal('breakdown-modal-wrap');
@@ -1594,14 +1554,14 @@ button { cursor: pointer; }
     setState(s => {
       if (s.game.editingRound === index) {
         s.game.editingRound = null;
-        s.game.currentEntry.red = { in: 0, on: 0, defense: 0, total: null };
-        s.game.currentEntry.blue = { in: 0, on: 0, defense: 0, total: null };
+        s.game.currentEntry.red = { in: 0, on: 0, total: null };
+        s.game.currentEntry.blue = { in: 0, on: 0, total: null };
         return;
       }
       const round = s.game.rounds[index];
       s.game.editingRound = index;
-      s.game.currentEntry.red = { in: round.redIn, on: round.redOn, defense: round.redDefense || 0, total: round.redTotalRaw ?? round.redGross };
-      s.game.currentEntry.blue = { in: round.blueIn, on: round.blueOn, defense: round.blueDefense || 0, total: round.blueTotalRaw ?? round.blueGross };
+      s.game.currentEntry.red = { in: round.redIn, on: round.redOn, total: round.redTotalRaw ?? round.redGross };
+      s.game.currentEntry.blue = { in: round.blueIn, on: round.blueOn, total: round.blueTotalRaw ?? round.blueGross };
     });
   }
   function submitRound() {
@@ -1613,8 +1573,8 @@ button { cursor: pointer; }
       if (s.game.editingRound != null) s.game.rounds[s.game.editingRound] = round;
       else s.game.rounds.push(round);
       s.game.editingRound = null;
-      s.game.currentEntry.red = { in: 0, on: 0, defense: 0, total: null };
-      s.game.currentEntry.blue = { in: 0, on: 0, defense: 0, total: null };
+      s.game.currentEntry.red = { in: 0, on: 0, total: null };
+      s.game.currentEntry.blue = { in: 0, on: 0, total: null };
     });
     if (getWinnerSide()) {
       upsertGameHistory();
@@ -1632,7 +1592,7 @@ button { cursor: pointer; }
     stats.forEach(row => {
       const div = document.createElement('div');
       div.className = 'stat-row';
-      div.innerHTML = `<div class="stat-row-main"><span class="stat-icon">${escapeHtml(iconSymbol(row.icon))}</span><strong>${escapeHtml(row.name)}</strong></div><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span>`;
+      div.innerHTML = `<div class="stat-row-main"><span class="stat-icon">${escapeHtml(iconSymbol(row.icon))}</span><strong>${escapeHtml(row.name)}</strong></div><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR</span>`;
       els.winStats.appendChild(div);
     });
     showModal('win-modal-wrap');
@@ -1745,7 +1705,7 @@ button { cursor: pointer; }
       const card = document.createElement('div');
       card.className = 'card game-history-card';
       const statsHtml = (entry.stats || []).map(row =>
-        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR · ${row.defensive || 0} DEF</span></div>`
+        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR</span></div>`
       ).join('');
       card.innerHTML = `
         <div class="game-history-head">
@@ -1853,8 +1813,6 @@ button { cursor: pointer; }
   document.addEventListener('click', (e) => {
     const throwBtn = e.target.closest('[data-team-throw]');
     if (throwBtn) setTeamThrowSide(throwBtn.dataset.teamThrow, throwBtn.dataset.icon);
-    const defenseBtn = e.target.closest('[data-defense-team]');
-    if (defenseBtn) setDefensePoints(defenseBtn.dataset.defenseTeam);
     const btn = e.target.closest('[data-entry-team]');
     if (btn) setBagValue(btn.dataset.entryTeam, btn.dataset.entryType, Number(btn.dataset.entryVal));
     const totalBtn = e.target.closest('[data-total-team]');
