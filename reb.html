@@ -869,6 +869,9 @@ button { cursor: pointer; }
 #colors-modal-wrap .sub{
   margin-bottom:0;
 }
+#breakdown-options .modal-actions{
+  margin-top:0;
+}
 #iro-picker{
   flex:0 0 auto;
 }
@@ -1552,14 +1555,16 @@ button { cursor: pointer; }
     if (!br) return;
     els.breakdownTitle.textContent = `${br.team.toUpperCase()} — ${br.total} points`;
     els.breakdownOptions.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'modal-actions';
     br.options.forEach(opt => {
-      const row = document.createElement('div');
-      row.className = 'modal-actions';
-      row.style.marginTop = '0';
-      row.innerHTML = `<button class="btn-primary">${opt.in} IN, ${opt.on} ON</button>`;
-      row.querySelector('button').addEventListener('click', () => chooseBreakdown(opt.in, opt.on));
-      els.breakdownOptions.appendChild(row);
+      const button = document.createElement('button');
+      button.className = 'btn-primary';
+      button.textContent = `${opt.in} IN, ${opt.on} ON`;
+      button.addEventListener('click', () => chooseBreakdown(opt.in, opt.on));
+      row.appendChild(button);
     });
+    els.breakdownOptions.appendChild(row);
   }
   function selectRound(index) {
     setState(s => {
