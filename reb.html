@@ -1456,6 +1456,9 @@ button { cursor: pointer; }
     els.inRed2.value = safeText(state.teams.red.players[1], 'Player 2');
     els.inBlue1.value = safeText(state.teams.blue.players[0], state.mode === '1v1' ? 'Player 2' : 'Player 3');
     els.inBlue2.value = safeText(state.teams.blue.players[1], 'Player 4');
+    [els.inRed1, els.inRed2, els.inBlue1, els.inBlue2].forEach(input => {
+      if (input) delete input.dataset.cleared;
+    });
     renderTeamModeButtons();
     showModal('teams-modal-wrap');
   }
@@ -1831,20 +1834,6 @@ document.addEventListener('focusin', (e) => {
     input.dataset.cleared = 'true';
   }
 });
-
-// Reset the cleared flag each time the Edit Teams modal is opened
-(function() {
-  const originalShowModal = showModal;
-  showModal = function(id) {
-    originalShowModal(id);
-    if (id === 'teams-modal-wrap') {
-      ['in-red1','in-red2','in-blue1','in-blue2'].forEach(fieldId => {
-        const el = document.getElementById(fieldId);
-        if (el) delete el.dataset.cleared;
-      });
-    }
-  };
-})();
 
 </script>
 </body>
