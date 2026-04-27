@@ -4,8 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>QuickCorn</title>
+<meta name="description" content="QuickCorn is a fast cornhole scoring app built for mobile play." />
 <meta name="theme-color" content="#0d1b2a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
+<link rel="manifest" href="./manifest.webmanifest" />
 <link rel="icon" href="./quickcorn-icon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="./quickcorn-icon.svg" />
 <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
@@ -1889,6 +1894,15 @@ document.addEventListener('focusin', (e) => {
   }
 });
 
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch((error) => {
+      console.warn('QuickCorn service worker registration failed.', error);
+    });
+  });
+}
 </script>
 </body>
 </html>
