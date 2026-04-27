@@ -955,6 +955,7 @@ button { cursor: pointer; }
     </div>
     <button class="icon-btn" id="menu-btn">⋮</button>
     <div class="dropdown" id="menu-dropdown">
+      <button data-action="tournament">Tournament</button>
       <button data-action="history">Game History</button>
       <button data-action="restart">Restart Game</button>
       <button data-action="about">About</button>
@@ -1498,6 +1499,9 @@ button { cursor: pointer; }
     els.gameHistoryScreen.style.display = screen === 'history' ? 'block' : 'none';
     persist();
   }
+  function openTournamentApp() {
+    window.location.href = '../QuickBracket/index.html';
+  }
 
   function openTeamsModal() {
     state.ui.draftTeamMode = state.mode;
@@ -1796,6 +1800,7 @@ button { cursor: pointer; }
     if (!btn) return;
     const action = btn.dataset.action;
     closeAllMenus();
+    if (action === 'tournament') openTournamentApp();
     if (action === 'history') showScreen('history');
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
