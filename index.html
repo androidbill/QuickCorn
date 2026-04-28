@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest" />
-<link rel="icon" href="./quickcorn-icon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="./quickcorn-icon.svg" />
+<link rel="manifest" href="./manifest.webmanifest?v=1" />
+<link rel="icon" href="./quickcorn-icon.svg?v=1" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=1" />
 <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <style>
 :root {
@@ -1500,7 +1500,7 @@ button { cursor: pointer; }
     persist();
   }
   function openTournamentApp() {
-    window.location.href = 'https://androidbill.github.io/QuickBracket/';
+    window.location.href = '../quickbracket/index.html';
   }
 
   function openTeamsModal() {
@@ -1903,9 +1903,13 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch((error) => {
-      console.warn('QuickCorn service worker registration failed.', error);
-    });
+    navigator.serviceWorker.register('./service-worker.js?v=1', { updateViaCache: 'none' })
+      .then((registration) => {
+        registration.update().catch(() => {});
+      })
+      .catch((error) => {
+        console.warn('QuickCorn service worker registration failed.', error);
+      });
   });
 }
 </script>

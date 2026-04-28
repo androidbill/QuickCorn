@@ -2,7 +2,7 @@
   "name": "QuickCorn",
   "short_name": "QuickCorn",
   "description": "A fast cornhole scoring app built for mobile play.",
-  "start_url": "./index.html",
+  "start_url": "./index.html?v=1",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,13 +10,13 @@
   "theme_color": "#0d1b2a",
   "icons": [
     {
-      "src": "./quickcorn-icon.svg",
+      "src": "./quickcorn-icon.svg?v=1",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./quickcorn-icon.svg",
+      "src": "./quickcorn-icon.svg?v=1",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "maskable"
