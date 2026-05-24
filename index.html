@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=2" />
+<link rel="manifest" href="./manifest.webmanifest?v=2026052401" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052401" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=2026052401" />
 <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <style>
 :root {
@@ -561,14 +561,48 @@ button { cursor: pointer; }
 }
 .stat-row strong { font-size: 14px; }
 .stat-row span { font-weight: 900; }
+.win-stat-header,
 .win-stat-row {
-  display: block;
-  white-space: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px 44px 76px;
+  align-items: center;
+  gap: 8px;
 }
-.win-stat-row::-webkit-scrollbar { display: none; }
-.win-stat-row strong { margin-right: 8px; }
+.win-stat-header {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 12px 2px;
+}
+.win-stat-row {
+  overflow: visible;
+}
+.win-stat-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.win-stat-num {
+  text-align: right;
+  font-weight: 900;
+  font-size: 14px;
+}
+.win-stat-ppr {
+  justify-self: end;
+  min-width: 64px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  color: #fff;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
 .stat-row-main {
   display: flex;
   align-items: center;
@@ -985,6 +1019,7 @@ button { cursor: pointer; }
     <div class="dropdown" id="menu-dropdown">
       <button data-action="tournament">Tournament</button>
       <button data-action="history">Game History</button>
+      <button data-action="share">Share</button>
       <button data-action="restart">Restart Game</button>
       <button data-action="about">About</button>
     </div>
@@ -1168,7 +1203,13 @@ button { cursor: pointer; }
       <div id="win-team" style="font-size:30px; line-height:1.05; margin-top:4px;"></div>
       <div id="win-score" style="margin-top:6px; font-size:18px;"></div>
     </div>
-    <div class="section-title" style="margin-bottom:8px;">PTS · ROUNDS · PPR</div>
+    <div class="section-title" style="margin-bottom:6px;">Player Stats</div>
+    <div class="win-stat-header">
+      <span></span>
+      <span>Pts</span>
+      <span>Rds</span>
+      <span>PPR</span>
+    </div>
     <div class="stat-list" id="win-stats"></div>
     <div class="modal-actions">
       <button class="btn-secondary" data-close="win-modal-wrap">Close</button>
@@ -1180,7 +1221,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub">Version 1.1</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.01</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1192,6 +1233,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
+  const APP_VERSION = '2026.05.24.01';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1230,6 +1272,7 @@ button { cursor: pointer; }
     gameHistoryList: document.getElementById('game-history-list'),
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
     winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'),
+    appVersionLabel: document.getElementById('app-version-label'),
     aboutModalWrap: document.getElementById('about-modal-wrap'),
     teamRedCard: document.getElementById('team-red-card'), teamBlueCard: document.getElementById('team-blue-card')
   };
@@ -1267,6 +1310,7 @@ button { cursor: pointer; }
   let state = loadState();
   let activeColorTeam = 'red';
   let iroPicker = null;
+  if (els.appVersionLabel) els.appVersionLabel.textContent = `Version ${APP_VERSION}`;
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1558,6 +1602,29 @@ button { cursor: pointer; }
   function openTournamentApp() {
     window.location.href = '../quickbracket/index.html';
   }
+  async function shareApp() {
+    const shareUrl = new URL('./index.html', window.location.href).href;
+    const shareData = {
+      title: 'QuickCorn',
+      text: 'Score a cornhole game with QuickCorn.',
+      url: shareUrl
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('QuickCorn link copied.');
+        return;
+      }
+      prompt('Copy this QuickCorn link:', shareUrl);
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      prompt('Copy this QuickCorn link:', shareUrl);
+    }
+  }
 
   function openTeamsModal() {
     state.ui.draftTeamMode = state.mode;
@@ -1726,7 +1793,7 @@ button { cursor: pointer; }
     stats.forEach(row => {
       const div = document.createElement('div');
       div.className = 'stat-row win-stat-row';
-      div.innerHTML = `<strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR</span>`;
+      div.innerHTML = `<strong class="win-stat-name">${escapeHtml(row.name)}</strong><span class="win-stat-num">${row.total}</span><span class="win-stat-num">${row.rounds}</span><span class="win-stat-ppr">${row.ppr}</span>`;
       els.winStats.appendChild(div);
     });
     showModal('win-modal-wrap');
@@ -1895,6 +1962,7 @@ button { cursor: pointer; }
     closeAllMenus();
     if (action === 'tournament') openTournamentApp();
     if (action === 'history') showScreen('history');
+    if (action === 'share') shareApp();
     if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -1999,7 +2067,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026052401', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })
