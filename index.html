@@ -10,10 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052401" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052401" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=2026052401" />
-<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026052403" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052403" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026052403" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052403" />
+<script src="./iro.min.js?v=2026052403"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1020,7 +1021,7 @@ button { cursor: pointer; }
       <button data-action="tournament">Tournament</button>
       <button data-action="history">Game History</button>
       <button data-action="share">Share</button>
-      <button data-action="restart">Restart Game</button>
+      <button data-action="restart">New Game</button>
       <button data-action="about">About</button>
     </div>
   </div>
@@ -1221,7 +1222,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.05.24.01</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.03</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1233,7 +1234,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.05.24.01';
+  const APP_VERSION = '2026.05.24.03';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1963,7 +1964,7 @@ button { cursor: pointer; }
     if (action === 'tournament') openTournamentApp();
     if (action === 'history') showScreen('history');
     if (action === 'share') shareApp();
-    if (action === 'restart') { if (confirm('Restart the current game?')) resetGame(); }
+    if (action === 'restart') { if (confirm('Start a new game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
   document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
@@ -2067,7 +2068,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2026052401', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026052403', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })

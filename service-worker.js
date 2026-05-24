@@ -1,9 +1,13 @@
-const CACHE_NAME = 'quickcorn-2026052401';
+const CACHE_NAME = 'quickcorn-2026052403';
 const APP_SHELL = [
   './',
-  './index.html?v=2026052401',
-  './manifest.webmanifest?v=2026052401',
-  './quickcorn-icon.svg?v=2026052401'
+  './index.html?v=2026052403',
+  './manifest.webmanifest?v=2026052403',
+  './quickcorn-icon.svg?v=2026052403',
+  './quickcorn-icon-180.png?v=2026052403',
+  './quickcorn-icon-192.png?v=2026052403',
+  './quickcorn-icon-512.png?v=2026052403',
+  './iro.min.js?v=2026052403'
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,14 +51,18 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html?v=2026052401'));
+    event.respondWith(networkFirst(event.request, './index.html?v=2026052403'));
     return;
   }
 
   const isAppShellAsset =
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/manifest.webmanifest') ||
-    url.pathname.endsWith('/quickcorn-icon.svg');
+    url.pathname.endsWith('/quickcorn-icon.svg') ||
+    url.pathname.endsWith('/quickcorn-icon-180.png') ||
+    url.pathname.endsWith('/quickcorn-icon-192.png') ||
+    url.pathname.endsWith('/quickcorn-icon-512.png') ||
+    url.pathname.endsWith('/iro.min.js');
 
   if (isAppShellAsset) {
     event.respondWith(networkFirst(event.request));
