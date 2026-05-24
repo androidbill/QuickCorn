@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052409" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052409" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026052409" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052409" />
-<script src="./iro.min.js?v=2026052409"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026052410" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052410" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026052410" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052410" />
+<script src="./iro.min.js?v=2026052410"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -740,7 +740,7 @@ button { cursor: pointer; }
 }
 .four-bagger-log {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 6px 10px;
   align-items: start;
 }
@@ -748,6 +748,16 @@ button { cursor: pointer; }
   font-size: 17px;
   font-weight: 900;
   line-height: 1.15;
+}
+.four-bagger-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-3);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
 }
 .history-delete-btn {
   width: 30px;
@@ -1332,7 +1342,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.05.24.09</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.10</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1344,7 +1354,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.05.24.09';
+  const APP_VERSION = '2026.05.24.10';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1531,10 +1541,15 @@ button { cursor: pointer; }
   }
   function removeManagedPlayer(name) {
     if (!name) return;
-    if (!confirm(`Remove ${name} from saved players? Existing history will stay.`)) return;
+    if (!confirm(`Remove ${name} and all saved results for this player?`)) return;
     setState(s => {
       const key = name.toLocaleLowerCase();
       s.playerHistory = (s.playerHistory || []).filter(player => String(player || '').trim().toLocaleLowerCase() !== key);
+      s.fourBaggers = (s.fourBaggers || []).filter(entry => String(entry.playerName || '').trim().toLocaleLowerCase() !== key);
+      s.gameHistory = (s.gameHistory || []).map(entry => ({
+        ...entry,
+        stats: (entry.stats || []).filter(row => String(row.name || '').trim().toLocaleLowerCase() !== key)
+      }));
     });
   }
   function renderPlayerHistory() {
@@ -1809,6 +1824,11 @@ button { cursor: pointer; }
     setState(s => {
       s.gameHistory = s.gameHistory.filter(entry => entry.id !== id);
       if (s.game.historyEntryId === id) s.game.historyEntryId = null;
+    });
+  }
+  function deleteFourBagger(id) {
+    setState(s => {
+      s.fourBaggers = (s.fourBaggers || []).filter(entry => entry.id !== id);
     });
   }
 
@@ -2267,8 +2287,9 @@ button { cursor: pointer; }
             <div class="game-history-sub" style="margin-top:5px;">${escapeHtml(entry.teamName || '')}</div>
           </div>
           <div class="four-bagger-count four-bagger-badge">4 Bagger</div>
+          <button class="four-bagger-delete" type="button" data-four-bagger-delete="${escapeHtml(entry.id)}" aria-label="Delete this 4-bagger">x</button>
           <div class="note">${escapeHtml(formatPlayedDateTime(entry.playedAt))}</div>
-          <div class="game-history-sub">R${escapeHtml(entry.roundNumber || '')} &middot; ${escapeHtml(entry.scoreBefore || '0 - 0')}</div>
+          <div class="game-history-sub" style="grid-column: span 2;">R${escapeHtml(entry.roundNumber || '')} &middot; ${escapeHtml(entry.scoreBefore || '0 - 0')}</div>
         </div>
       `;
       els.fourBaggersList.appendChild(card);
@@ -2411,6 +2432,11 @@ button { cursor: pointer; }
       deleteGameHistory(historyDeleteBtn.dataset.historyDelete);
       return;
     }
+    const fourBaggerDeleteBtn = e.target.closest('[data-four-bagger-delete]');
+    if (fourBaggerDeleteBtn) {
+      deleteFourBagger(fourBaggerDeleteBtn.dataset.fourBaggerDelete);
+      return;
+    }
     const playerDeleteBtn = e.target.closest('[data-player-delete]');
     if (playerDeleteBtn) {
       removeManagedPlayer(playerDeleteBtn.dataset.playerDelete);
@@ -2441,7 +2467,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2026052409', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026052410', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })
