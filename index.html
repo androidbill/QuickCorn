@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052408" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052408" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026052408" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052408" />
-<script src="./iro.min.js?v=2026052408"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026052409" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052409" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026052409" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052409" />
+<script src="./iro.min.js?v=2026052409"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -734,6 +734,10 @@ button { cursor: pointer; }
   font-weight: 900;
   line-height: 1;
 }
+.four-bagger-badge {
+  min-width: 84px;
+  font-size: 14px;
+}
 .four-bagger-log {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1319,6 +1323,7 @@ button { cursor: pointer; }
     <div class="stat-list" id="win-stats"></div>
     <div class="modal-actions">
       <button class="btn-secondary" data-close="win-modal-wrap">Close</button>
+      <button class="btn-secondary" id="share-results-btn">Share</button>
       <button class="btn-primary" id="play-again-btn">Play Again</button>
     </div>
   </div>
@@ -1327,7 +1332,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.05.24.08</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.09</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1339,7 +1344,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.05.24.08';
+  const APP_VERSION = '2026.05.24.09';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1386,7 +1391,7 @@ button { cursor: pointer; }
     newPlayerName: document.getElementById('new-player-name'),
     addPlayerBtn: document.getElementById('add-player-btn'),
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
-    winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'),
+    winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'), shareResultsBtn: document.getElementById('share-results-btn'),
     appVersionLabel: document.getElementById('app-version-label'),
     aboutModalWrap: document.getElementById('about-modal-wrap'),
     teamRedCard: document.getElementById('team-red-card'), teamBlueCard: document.getElementById('team-blue-card')
@@ -1844,6 +1849,42 @@ button { cursor: pointer; }
       prompt('Copy this QuickCorn link:', shareUrl);
     }
   }
+  async function shareGameResults() {
+    const winner = getWinnerSide();
+    const totals = getTotals();
+    const stats = computePlayerStats();
+    const fourBaggers = (state.fourBaggers || []).filter(entry => entry.sessionId === state.game.sessionId);
+    const lines = [
+      'QuickCorn final score',
+      `${getTeamDisplay('red')} ${totals.red} - ${totals.blue} ${getTeamDisplay('blue')}`,
+      winner ? `Winner: ${getTeamDisplay(winner)}` : '',
+      '',
+      'PPR',
+      ...stats.map(row => `${row.name}: ${row.ppr}`),
+      fourBaggers.length ? '' : '',
+      fourBaggers.length ? `4-Baggers: ${fourBaggers.map(entry => entry.playerName).join(', ')}` : ''
+    ].filter(line => line !== '');
+    const text = lines.join('\n');
+    const shareData = {
+      title: 'QuickCorn results',
+      text
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        alert('Game results copied.');
+        return;
+      }
+      prompt('Copy these game results:', text);
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      prompt('Copy these game results:', text);
+    }
+  }
 
   function openTeamsModal() {
     state.ui.draftTeamMode = state.mode;
@@ -2225,7 +2266,7 @@ button { cursor: pointer; }
             <div class="four-bagger-player">${escapeHtml(entry.playerName || 'Player')}</div>
             <div class="game-history-sub" style="margin-top:5px;">${escapeHtml(entry.teamName || '')}</div>
           </div>
-          <div class="four-bagger-count">4</div>
+          <div class="four-bagger-count four-bagger-badge">4 Bagger</div>
           <div class="note">${escapeHtml(formatPlayedDateTime(entry.playedAt))}</div>
           <div class="game-history-sub">R${escapeHtml(entry.roundNumber || '')} &middot; ${escapeHtml(entry.scoreBefore || '0 - 0')}</div>
         </div>
@@ -2321,6 +2362,7 @@ button { cursor: pointer; }
   });
   els.submitBtn.addEventListener('click', submitRound);
   els.playAgainBtn.addEventListener('click', playAgain);
+  els.shareResultsBtn.addEventListener('click', shareGameResults);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
   els.teamBlueCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
   let touchStartX = 0;
@@ -2399,7 +2441,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2026052408', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026052409', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })
