@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052403" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052403" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026052403" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052403" />
-<script src="./iro.min.js?v=2026052403"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026052408" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052408" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026052408" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052408" />
+<script src="./iro.min.js?v=2026052408"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -124,7 +124,9 @@ button { cursor: pointer; }
   height: 100%;
   overflow: hidden;
 }
-#game-history-screen {
+#game-history-screen,
+#four-baggers-screen,
+#players-screen {
   display: none;
   min-height: 0;
   height: 100%;
@@ -286,6 +288,48 @@ button { cursor: pointer; }
 .first-shooter-options button.active {
   border-color: var(--green);
   background: var(--panel-3);
+}
+.player-add-card {
+  padding: 10px;
+}
+.player-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.player-add-row input {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 0 12px;
+}
+.player-add-row button {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--green);
+  color: #fff;
+  font-weight: 900;
+  padding: 0 14px;
+}
+.player-manage-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.player-manage-row button {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-3);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
 }
 .entry-card {
   display: flex;
@@ -673,6 +717,34 @@ button { cursor: pointer; }
   font-weight: 700;
   letter-spacing: 0.4px;
 }
+.four-bagger-total {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.four-bagger-count {
+  min-width: 48px;
+  border-radius: 10px;
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+.four-bagger-log {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 10px;
+  align-items: start;
+}
+.four-bagger-player {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.15;
+}
 .history-delete-btn {
   width: 30px;
   height: 30px;
@@ -704,7 +776,7 @@ button { cursor: pointer; }
     padding: 5px;
     grid-template-rows: auto auto auto auto auto;
   }
-  #game-history-screen { padding: 5px; }
+  #game-history-screen, #four-baggers-screen, #players-screen { padding: 5px; }
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
   .last-point-card { min-height: 36px; padding: 5px 8px; border-radius: 12px; }
   .last-point-name { font-size: 15px; }
@@ -1020,6 +1092,8 @@ button { cursor: pointer; }
     <div class="dropdown" id="menu-dropdown">
       <button data-action="tournament">Tournament</button>
       <button data-action="history">Game History</button>
+      <button data-action="fourBaggers">4-Baggers</button>
+      <button data-action="players">Players</button>
       <button data-action="share">Share</button>
       <button data-action="restart">New Game</button>
       <button data-action="about">About</button>
@@ -1124,6 +1198,36 @@ button { cursor: pointer; }
     </div>
     <div class="history-stack" id="game-history-list"></div>
   </div>
+
+  <div id="four-baggers-screen" class="screen">
+    <div class="screen-top">
+      <div>
+        <div class="section-title">4-Baggers</div>
+        <div class="note">All-time log with yearly totals by player.</div>
+      </div>
+      <button class="pill" id="close-four-baggers-btn">Back</button>
+    </div>
+    <div class="history-stack" id="four-baggers-list"></div>
+  </div>
+
+  <div id="players-screen" class="screen">
+    <div class="screen-top">
+      <div>
+        <div class="section-title">Players</div>
+        <div class="note">Manage saved names used for team selection and yearly totals.</div>
+      </div>
+      <button class="pill" id="close-players-btn">Back</button>
+    </div>
+    <div class="history-stack">
+      <div class="card player-add-card">
+        <div class="player-add-row">
+          <input id="new-player-name" maxlength="14" placeholder="Player name" />
+          <button id="add-player-btn" type="button">Add</button>
+        </div>
+      </div>
+      <div id="players-list" class="history-stack"></div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-wrap" id="teams-modal-wrap">
@@ -1134,10 +1238,11 @@ button { cursor: pointer; }
       <button id="teams-mode-1v1">1 vs 1</button>
       <button id="teams-mode-2v2">2 vs 2</button>
     </div>
-    <div class="field"><label>Red Player 1</label><input id="in-red1" maxlength="14" /></div>
-    <div class="field" id="field-red2"><label>Red Player 2</label><input id="in-red2" maxlength="14" /></div>
-    <div class="field"><label>Blue Player 1</label><input id="in-blue1" maxlength="14" /></div>
-    <div class="field" id="field-blue2"><label>Blue Player 2</label><input id="in-blue2" maxlength="14" /></div>
+    <datalist id="player-history-list"></datalist>
+    <div class="field"><label>Red Player 1</label><input id="in-red1" maxlength="14" list="player-history-list" /></div>
+    <div class="field" id="field-red2"><label>Red Player 2</label><input id="in-red2" maxlength="14" list="player-history-list" /></div>
+    <div class="field"><label>Blue Player 1</label><input id="in-blue1" maxlength="14" list="player-history-list" /></div>
+    <div class="field" id="field-blue2"><label>Blue Player 2</label><input id="in-blue2" maxlength="14" list="player-history-list" /></div>
     <div id="first-shooter-wrap" class="first-shooter-wrap">
       <div class="first-shooter-group">
         <div class="first-shooter-title">Starting Matchup</div>
@@ -1222,7 +1327,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.05.24.03</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.08</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1234,7 +1339,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.05.24.03';
+  const APP_VERSION = '2026.05.24.08';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1243,6 +1348,8 @@ button { cursor: pointer; }
     menuDropdown: document.getElementById('menu-dropdown'),
     gameScreen: document.getElementById('game-screen'),
     gameHistoryScreen: document.getElementById('game-history-screen'),
+    fourBaggersScreen: document.getElementById('four-baggers-screen'),
+    playersScreen: document.getElementById('players-screen'),
     redP1: document.getElementById('red-p1'), redP2: document.getElementById('red-p2'),
     blueP1: document.getElementById('blue-p1'), blueP2: document.getElementById('blue-p2'),
     scoreRed: document.getElementById('score-red'), scoreBlue: document.getElementById('score-blue'),
@@ -1258,6 +1365,7 @@ button { cursor: pointer; }
     teamsModalWrap: document.getElementById('teams-modal-wrap'),
     inRed1: document.getElementById('in-red1'), inRed2: document.getElementById('in-red2'),
     inBlue1: document.getElementById('in-blue1'), inBlue2: document.getElementById('in-blue2'),
+    playerHistoryList: document.getElementById('player-history-list'),
     fieldRed2: document.getElementById('field-red2'), fieldBlue2: document.getElementById('field-blue2'),
     teamsMode1v1: document.getElementById('teams-mode-1v1'), teamsMode2v2: document.getElementById('teams-mode-2v2'),
     firstShooterWrap: document.getElementById('first-shooter-wrap'),
@@ -1270,7 +1378,13 @@ button { cursor: pointer; }
     colorHexReadout: document.getElementById('color-hex-readout'),
     resetColorsBtn: document.getElementById('reset-colors-btn'),
     closeHistoryBtn: document.getElementById('close-history-btn'),
+    closeFourBaggersBtn: document.getElementById('close-four-baggers-btn'),
+    closePlayersBtn: document.getElementById('close-players-btn'),
     gameHistoryList: document.getElementById('game-history-list'),
+    fourBaggersList: document.getElementById('four-baggers-list'),
+    playersList: document.getElementById('players-list'),
+    newPlayerName: document.getElementById('new-player-name'),
+    addPlayerBtn: document.getElementById('add-player-btn'),
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
     winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'),
     appVersionLabel: document.getElementById('app-version-label'),
@@ -1291,6 +1405,7 @@ button { cursor: pointer; }
         blue: { players: ['Player 3', 'Player 4'] },
       },
       game: {
+        sessionId: `session-${Date.now()}`,
         targetScore: 21,
         rounds: [],
         editingRound: null,
@@ -1301,6 +1416,8 @@ button { cursor: pointer; }
         },
       },
       gameHistory: [],
+      fourBaggers: [],
+      playerHistory: [],
       ui: {
         breakdown: null,
         draftTeamMode: '2v2'
@@ -1320,6 +1437,7 @@ button { cursor: pointer; }
       const merged = deepMerge(defaultState(), parsed);
       merged.screen = 'game';
       normalizeFirstShooter(merged);
+      normalizePlayerHistory(merged);
       return merged;
     } catch {
       return defaultState();
@@ -1338,6 +1456,15 @@ button { cursor: pointer; }
   function normalizeFirstShooter(nextState) {
     const pair = Number(nextState.firstShooter && nextState.firstShooter.red) === 1 ? 1 : 0;
     nextState.firstShooter = { red: pair, blue: pair };
+  }
+  function normalizePlayerHistory(nextState) {
+    const names = [
+      ...(nextState.playerHistory || []),
+      ...((nextState.teams && nextState.teams.red && nextState.teams.red.players) || []),
+      ...((nextState.teams && nextState.teams.blue && nextState.teams.blue.players) || []),
+      ...((nextState.fourBaggers || []).map(entry => entry.playerName))
+    ];
+    nextState.playerHistory = uniquePlayerNames(names);
   }
   let saveTimer = null;
   function persist() {
@@ -1368,6 +1495,47 @@ button { cursor: pointer; }
   function safeText(v, fallback='') {
     const t = String(v || '').trim();
     return t || fallback;
+  }
+  function uniquePlayerNames(names) {
+    const seen = new Set();
+    return names
+      .map(name => String(name || '').trim())
+      .filter(name => name && !/^player\s+\d+$/i.test(name))
+      .filter(name => {
+        const key = name.toLocaleLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 60);
+  }
+  function rememberPlayers(names) {
+    const cleaned = uniquePlayerNames(names);
+    if (!cleaned.length) return;
+    setState(s => {
+      s.playerHistory = uniquePlayerNames([...cleaned, ...(s.playerHistory || [])]);
+    });
+  }
+  function addManagedPlayer() {
+    const name = safeText(els.newPlayerName.value, '');
+    if (!name) return;
+    setState(s => {
+      s.playerHistory = uniquePlayerNames([name, ...(s.playerHistory || [])]);
+    });
+    els.newPlayerName.value = '';
+  }
+  function removeManagedPlayer(name) {
+    if (!name) return;
+    if (!confirm(`Remove ${name} from saved players? Existing history will stay.`)) return;
+    setState(s => {
+      const key = name.toLocaleLowerCase();
+      s.playerHistory = (s.playerHistory || []).filter(player => String(player || '').trim().toLocaleLowerCase() !== key);
+    });
+  }
+  function renderPlayerHistory() {
+    if (!els.playerHistoryList) return;
+    const names = uniquePlayerNames(state.playerHistory || []);
+    els.playerHistoryList.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
   }
   function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
   function hexToRgb(hex) {
@@ -1552,6 +1720,54 @@ button { cursor: pointer; }
       return isoString;
     }
   }
+  function formatPlayedDateTime(isoString) {
+    try {
+      return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(isoString));
+    } catch {
+      return isoString;
+    }
+  }
+  function fourBaggerYear(isoString) {
+    const date = new Date(isoString);
+    return Number.isNaN(date.getTime()) ? 'Unknown' : String(date.getFullYear());
+  }
+  function isFourBaggerRound(round, side) {
+    if (side === 'red') return round.redIn === 4 || round.redGross === 12 || round.redTotalRaw === 12;
+    return round.blueIn === 4 || round.blueGross === 12 || round.blueTotalRaw === 12;
+  }
+  function getFourBaggerRecords(round, roundIndex, playedAt) {
+    const totalsBefore = state.game.rounds.reduce((acc, item, index) => {
+      if (index >= roundIndex) return acc;
+      acc.red += item.redNet;
+      acc.blue += item.blueNet;
+      return acc;
+    }, { red: 0, blue: 0 });
+    return ['red', 'blue'].flatMap(side => {
+      if (!isFourBaggerRound(round, side)) return [];
+      const shooterIndex = currentThrower(side, roundIndex);
+      const playerName = safeText(state.teams[side].players[shooterIndex], getTeamDisplay(side));
+      return [{
+        id: `${state.game.sessionId}-${roundIndex}-${side}`,
+        sessionId: state.game.sessionId,
+        roundIndex,
+        roundNumber: roundIndex + 1,
+        playedAt,
+        playerName,
+        teamName: getTeamDisplay(side),
+        side,
+        scoreBefore: `${totalsBefore.red} - ${totalsBefore.blue}`
+      }];
+    });
+  }
+  function upsertFourBaggersForRound(round, roundIndex) {
+    const playedAt = new Date().toISOString();
+    const records = getFourBaggerRecords(round, roundIndex, playedAt);
+    setState(s => {
+      const prefix = `${s.game.sessionId}-${roundIndex}-`;
+      s.fourBaggers = s.fourBaggers.filter(entry => !String(entry.id || '').startsWith(prefix));
+      if (records.length) s.fourBaggers.unshift(...records);
+    });
+  }
   function buildCurrentGameHistoryRecord() {
     const winnerSide = getWinnerSide();
     if (!winnerSide) return null;
@@ -1598,6 +1814,8 @@ button { cursor: pointer; }
     state.screen = screen;
     els.gameScreen.style.display = screen === 'game' ? 'grid' : 'none';
     els.gameHistoryScreen.style.display = screen === 'history' ? 'block' : 'none';
+    els.fourBaggersScreen.style.display = screen === 'fourBaggers' ? 'block' : 'none';
+    els.playersScreen.style.display = screen === 'players' ? 'block' : 'none';
     persist();
   }
   function openTournamentApp() {
@@ -1636,6 +1854,7 @@ button { cursor: pointer; }
     [els.inRed1, els.inRed2, els.inBlue1, els.inBlue2].forEach(input => {
       if (input) delete input.dataset.cleared;
     });
+    renderPlayerHistory();
     renderTeamModeButtons();
     showModal('teams-modal-wrap');
   }
@@ -1678,12 +1897,20 @@ button { cursor: pointer; }
         s.teams.red.players[1] = '';
         s.teams.blue.players[1] = '';
       }
+      s.playerHistory = uniquePlayerNames([
+        s.teams.red.players[0],
+        s.teams.red.players[1],
+        s.teams.blue.players[0],
+        s.teams.blue.players[1],
+        ...(s.playerHistory || [])
+      ]);
     });
     closeModal('teams-modal-wrap');
   }
 
   function resetGame() {
     setState(s => {
+      s.game.sessionId = `session-${Date.now()}`;
       s.game.rounds = [];
       s.game.editingRound = null;
       s.game.historyEntryId = null;
@@ -1771,6 +1998,7 @@ button { cursor: pointer; }
     const blueEntry = state.game.currentEntry.blue;
     if (!validateEntry(redEntry) || !validateEntry(blueEntry)) return;
     const round = scoreRound(redEntry, blueEntry);
+    const roundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
     setState(s => {
       if (s.game.editingRound != null) s.game.rounds[s.game.editingRound] = round;
       else s.game.rounds.push(round);
@@ -1778,6 +2006,7 @@ button { cursor: pointer; }
       s.game.currentEntry.red = { in: 0, on: 0, total: null };
       s.game.currentEntry.blue = { in: 0, on: 0, total: null };
     });
+    upsertFourBaggersForRound(round, roundIndex);
     if (getWinnerSide()) {
       upsertGameHistory();
       openWinModal();
@@ -1944,10 +2173,99 @@ button { cursor: pointer; }
       els.gameHistoryList.appendChild(card);
     });
   }
+  function renderFourBaggers() {
+    if (!els.fourBaggersList) return;
+    els.fourBaggersList.innerHTML = '';
+    const records = [...(state.fourBaggers || [])].sort((a, b) => new Date(b.playedAt) - new Date(a.playedAt));
+    if (!records.length) {
+      const empty = document.createElement('div');
+      empty.className = 'card game-history-card';
+      empty.innerHTML = `<div class="section-title" style="margin-bottom:4px;">No 4-baggers yet</div><div class="note">When someone gets all 4 bags in the hole, QuickCorn will save it here automatically.</div>`;
+      els.fourBaggersList.appendChild(empty);
+      return;
+    }
+
+    const currentYear = String(new Date().getFullYear());
+    const totals = records.reduce((map, entry) => {
+      const year = fourBaggerYear(entry.playedAt);
+      if (!map[year]) map[year] = {};
+      const key = entry.playerName || 'Player';
+      map[year][key] = (map[year][key] || 0) + 1;
+      return map;
+    }, {});
+
+    const totalCard = document.createElement('div');
+    totalCard.className = 'card game-history-card';
+    const yearTotals = Object.entries(totals[currentYear] || {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    totalCard.innerHTML = `
+      <div class="section-title">${escapeHtml(currentYear)} Totals</div>
+      <div class="stat-list">
+        ${yearTotals.length ? yearTotals.map(([name, count]) => `
+          <div class="stat-row four-bagger-total">
+            <strong>${escapeHtml(name)}</strong>
+            <span class="four-bagger-count">${count}</span>
+          </div>
+        `).join('') : `<div class="note">No 4-baggers recorded this year.</div>`}
+      </div>
+    `;
+    els.fourBaggersList.appendChild(totalCard);
+
+    const logTitle = document.createElement('div');
+    logTitle.className = 'section-title';
+    logTitle.style.padding = '2px 2px 0';
+    logTitle.textContent = 'Log';
+    els.fourBaggersList.appendChild(logTitle);
+
+    records.forEach(entry => {
+      const card = document.createElement('div');
+      card.className = 'card game-history-card';
+      card.innerHTML = `
+        <div class="four-bagger-log">
+          <div>
+            <div class="four-bagger-player">${escapeHtml(entry.playerName || 'Player')}</div>
+            <div class="game-history-sub" style="margin-top:5px;">${escapeHtml(entry.teamName || '')}</div>
+          </div>
+          <div class="four-bagger-count">4</div>
+          <div class="note">${escapeHtml(formatPlayedDateTime(entry.playedAt))}</div>
+          <div class="game-history-sub">R${escapeHtml(entry.roundNumber || '')} &middot; ${escapeHtml(entry.scoreBefore || '0 - 0')}</div>
+        </div>
+      `;
+      els.fourBaggersList.appendChild(card);
+    });
+  }
+  function renderPlayersScreen() {
+    if (!els.playersList) return;
+    els.playersList.innerHTML = '';
+    const names = uniquePlayerNames(state.playerHistory || []);
+    if (!names.length) {
+      const empty = document.createElement('div');
+      empty.className = 'card game-history-card';
+      empty.innerHTML = `<div class="section-title" style="margin-bottom:4px;">No saved players yet</div><div class="note">Add players here, or save teams to build this list automatically.</div>`;
+      els.playersList.appendChild(empty);
+      return;
+    }
+    names.forEach(name => {
+      const count = (state.fourBaggers || []).filter(entry => String(entry.playerName || '').trim().toLocaleLowerCase() === name.toLocaleLowerCase()).length;
+      const card = document.createElement('div');
+      card.className = 'card game-history-card';
+      card.innerHTML = `
+        <div class="player-manage-row">
+          <div>
+            <div class="game-history-winner">${escapeHtml(name)}</div>
+            <div class="game-history-sub">${count} 4-baggers recorded</div>
+          </div>
+          <button type="button" data-player-delete="${escapeHtml(name)}" aria-label="Remove ${escapeHtml(name)}">×</button>
+        </div>
+      `;
+      els.playersList.appendChild(card);
+    });
+  }
   function render() {
     applyTheme();
     renderGame();
     renderGameHistory();
+    renderFourBaggers();
+    renderPlayersScreen();
     showScreen(state.screen);
   }
 
@@ -1963,6 +2281,8 @@ button { cursor: pointer; }
     closeAllMenus();
     if (action === 'tournament') openTournamentApp();
     if (action === 'history') showScreen('history');
+    if (action === 'fourBaggers') showScreen('fourBaggers');
+    if (action === 'players') showScreen('players');
     if (action === 'share') shareApp();
     if (action === 'restart') { if (confirm('Start a new game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
@@ -1993,6 +2313,12 @@ button { cursor: pointer; }
     syncColorPickerUI();
   });
   els.closeHistoryBtn.addEventListener('click', () => showScreen('game'));
+  els.closeFourBaggersBtn.addEventListener('click', () => showScreen('game'));
+  els.closePlayersBtn.addEventListener('click', () => showScreen('game'));
+  els.addPlayerBtn.addEventListener('click', addManagedPlayer);
+  els.newPlayerName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addManagedPlayer();
+  });
   els.submitBtn.addEventListener('click', submitRound);
   els.playAgainBtn.addEventListener('click', playAgain);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
@@ -2043,6 +2369,11 @@ button { cursor: pointer; }
       deleteGameHistory(historyDeleteBtn.dataset.historyDelete);
       return;
     }
+    const playerDeleteBtn = e.target.closest('[data-player-delete]');
+    if (playerDeleteBtn) {
+      removeManagedPlayer(playerDeleteBtn.dataset.playerDelete);
+      return;
+    }
     const throwBtn = e.target.closest('[data-team-throw]');
     if (throwBtn) setTeamThrowSide(throwBtn.dataset.teamThrow, throwBtn.dataset.icon);
     const btn = e.target.closest('[data-entry-team]');
@@ -2068,7 +2399,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2026052403', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026052408', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })
