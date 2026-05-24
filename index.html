@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052410" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052410" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026052410" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052410" />
-<script src="./iro.min.js?v=2026052410"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026052413" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026052413" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026052413" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052413" />
+<script src="./iro.min.js?v=2026052413"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -111,6 +111,42 @@ button { cursor: pointer; }
   min-height: 44px;
 }
 .dropdown button:active { background: var(--panel-2); }
+.app-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 500px);
+  z-index: 120;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+.app-prompt-text {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+.app-prompt button {
+  min-height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-weight: 900;
+  padding: 0 10px;
+}
+.app-prompt .app-prompt-primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
 .screen {
   min-height: 0;
   height: 100%;
@@ -213,7 +249,7 @@ button { cursor: pointer; }
 }
 .last-point-card {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 8px;
   min-height: 42px;
@@ -248,6 +284,16 @@ button { cursor: pointer; }
 .last-point-value {
   font-size: 18px;
   font-weight: 900;
+}
+.last-point-undo {
+  min-height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 10px;
 }
 .score-box.last-point {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.22) inset, 0 0 0 1px rgba(255,255,255,0.1);
@@ -315,21 +361,32 @@ button { cursor: pointer; }
   font-weight: 900;
   padding: 0 14px;
 }
+.season-select {
+  min-height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 0 10px;
+  font-weight: 900;
+}
 .player-manage-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 8px;
   align-items: center;
 }
 .player-manage-row button {
-  width: 34px;
+  min-width: 34px;
   height: 34px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel-3);
   color: var(--text);
-  font-size: 18px;
+  font-size: 13px;
+  font-weight: 900;
   line-height: 1;
+  padding: 0 10px;
 }
 .entry-card {
   display: flex;
@@ -1145,6 +1202,7 @@ button { cursor: pointer; }
       <div class="last-point-label">Last Point</div>
       <div class="last-point-name" id="last-point-name">No points yet</div>
       <div class="last-point-value" id="last-point-value">0</div>
+      <button class="last-point-undo" id="undo-last-round-btn" type="button">Undo</button>
     </div>
 
     <div class="team-icons">
@@ -1219,6 +1277,7 @@ button { cursor: pointer; }
         <div class="section-title">4-Baggers</div>
         <div class="note">All-time log with yearly totals by player.</div>
       </div>
+      <select class="season-select" id="four-bagger-year-select" aria-label="4-bagger season"></select>
       <button class="pill" id="close-four-baggers-btn">Back</button>
     </div>
     <div class="history-stack" id="four-baggers-list"></div>
@@ -1242,6 +1301,12 @@ button { cursor: pointer; }
       <div id="players-list" class="history-stack"></div>
     </div>
   </div>
+</div>
+
+<div class="app-prompt hidden" id="app-prompt">
+  <div class="app-prompt-text" id="app-prompt-text">Install QuickCorn</div>
+  <button class="app-prompt-primary" id="app-prompt-action" type="button">Install</button>
+  <button id="app-prompt-dismiss" type="button">Later</button>
 </div>
 
 <div class="modal-wrap" id="teams-modal-wrap">
@@ -1342,7 +1407,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.05.24.10</p>
+    <p class="sub" id="app-version-label">Version 2026.05.24.13</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1354,13 +1419,17 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.05.24.10';
+  const APP_VERSION = '2026.05.24.13';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
   const els = {
     menuBtn: document.getElementById('menu-btn'),
     menuDropdown: document.getElementById('menu-dropdown'),
+    appPrompt: document.getElementById('app-prompt'),
+    appPromptText: document.getElementById('app-prompt-text'),
+    appPromptAction: document.getElementById('app-prompt-action'),
+    appPromptDismiss: document.getElementById('app-prompt-dismiss'),
     gameScreen: document.getElementById('game-screen'),
     gameHistoryScreen: document.getElementById('game-history-screen'),
     fourBaggersScreen: document.getElementById('four-baggers-screen'),
@@ -1371,6 +1440,7 @@ button { cursor: pointer; }
     lastPointCard: document.getElementById('last-point-card'),
     lastPointName: document.getElementById('last-point-name'),
     lastPointValue: document.getElementById('last-point-value'),
+    undoLastRoundBtn: document.getElementById('undo-last-round-btn'),
     roundNet: document.getElementById('round-net'), roundNum: document.getElementById('round-num'),
     submitBtn: document.getElementById('submit-btn'), history: document.getElementById('round-history'),
     redEntryContent: document.getElementById('red-entry-content'), blueEntryContent: document.getElementById('blue-entry-content'),
@@ -1395,6 +1465,7 @@ button { cursor: pointer; }
     closeHistoryBtn: document.getElementById('close-history-btn'),
     closeFourBaggersBtn: document.getElementById('close-four-baggers-btn'),
     closePlayersBtn: document.getElementById('close-players-btn'),
+    fourBaggerYearSelect: document.getElementById('four-bagger-year-select'),
     gameHistoryList: document.getElementById('game-history-list'),
     fourBaggersList: document.getElementById('four-baggers-list'),
     playersList: document.getElementById('players-list'),
@@ -1435,7 +1506,8 @@ button { cursor: pointer; }
       playerHistory: [],
       ui: {
         breakdown: null,
-        draftTeamMode: '2v2'
+        draftTeamMode: '2v2',
+        fourBaggerYear: String(new Date().getFullYear())
       }
     };
   }
@@ -1549,6 +1621,25 @@ button { cursor: pointer; }
       s.gameHistory = (s.gameHistory || []).map(entry => ({
         ...entry,
         stats: (entry.stats || []).filter(row => String(row.name || '').trim().toLocaleLowerCase() !== key)
+      }));
+    });
+  }
+  function renameManagedPlayer(oldName) {
+    if (!oldName) return;
+    const nextName = safeText(prompt(`Rename ${oldName} to:`, oldName), '');
+    if (!nextName || nextName === oldName) return;
+    const oldKey = oldName.toLocaleLowerCase();
+    setState(s => {
+      s.playerHistory = uniquePlayerNames((s.playerHistory || []).map(player => String(player || '').trim().toLocaleLowerCase() === oldKey ? nextName : player));
+      ['red', 'blue'].forEach(team => {
+        s.teams[team].players = s.teams[team].players.map(player => String(player || '').trim().toLocaleLowerCase() === oldKey ? nextName : player);
+      });
+      s.fourBaggers = (s.fourBaggers || []).map(entry =>
+        String(entry.playerName || '').trim().toLocaleLowerCase() === oldKey ? { ...entry, playerName: nextName } : entry
+      );
+      s.gameHistory = (s.gameHistory || []).map(entry => ({
+        ...entry,
+        stats: (entry.stats || []).map(row => String(row.name || '').trim().toLocaleLowerCase() === oldKey ? { ...row, name: nextName } : row)
       }));
     });
   }
@@ -1831,6 +1922,27 @@ button { cursor: pointer; }
       s.fourBaggers = (s.fourBaggers || []).filter(entry => entry.id !== id);
     });
   }
+  function undoLastRound() {
+    if (!state.game.rounds.length) {
+      alert('No rounds to undo.');
+      return;
+    }
+    if (!confirm('Undo the last round?')) return;
+    setState(s => {
+      const index = s.game.rounds.length - 1;
+      s.game.rounds.pop();
+      s.game.editingRound = null;
+      s.game.currentEntry.red = { in: 0, on: 0, total: null };
+      s.game.currentEntry.blue = { in: 0, on: 0, total: null };
+      const prefix = `${s.game.sessionId}-${index}-`;
+      s.fourBaggers = (s.fourBaggers || []).filter(entry => !String(entry.id || '').startsWith(prefix));
+      if (s.game.historyEntryId) {
+        s.gameHistory = (s.gameHistory || []).filter(entry => entry.id !== s.game.historyEntryId);
+        s.game.historyEntryId = null;
+      }
+    });
+    closeModal('win-modal-wrap');
+  }
 
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1874,15 +1986,24 @@ button { cursor: pointer; }
     const totals = getTotals();
     const stats = computePlayerStats();
     const fourBaggers = (state.fourBaggers || []).filter(entry => entry.sessionId === state.game.sessionId);
+    const sortedStats = [...stats].sort((a, b) => Number(b.ppr) - Number(a.ppr));
+    const topPpr = sortedStats[0];
+    const fourBaggerCounts = fourBaggers.reduce((acc, entry) => {
+      acc[entry.playerName] = (acc[entry.playerName] || 0) + 1;
+      return acc;
+    }, {});
     const lines = [
-      'QuickCorn final score',
-      `${getTeamDisplay('red')} ${totals.red} - ${totals.blue} ${getTeamDisplay('blue')}`,
+      'QuickCorn Final',
+      `${getTeamDisplay('red')} ${totals.red}`,
+      `${getTeamDisplay('blue')} ${totals.blue}`,
       winner ? `Winner: ${getTeamDisplay(winner)}` : '',
+      topPpr ? `Top PPR: ${topPpr.name} (${topPpr.ppr})` : '',
       '',
-      'PPR',
-      ...stats.map(row => `${row.name}: ${row.ppr}`),
-      fourBaggers.length ? '' : '',
-      fourBaggers.length ? `4-Baggers: ${fourBaggers.map(entry => entry.playerName).join(', ')}` : ''
+      'Player PPR',
+      ...sortedStats.map(row => `${row.name}: ${row.ppr} (${row.total} pts / ${row.rounds} rds)`),
+      Object.keys(fourBaggerCounts).length ? '' : '',
+      Object.keys(fourBaggerCounts).length ? '4-Baggers' : '',
+      ...Object.entries(fourBaggerCounts).map(([name, count]) => `${name}: ${count}`)
     ].filter(line => line !== '');
     const text = lines.join('\n');
     const shareData = {
@@ -2121,29 +2242,33 @@ button { cursor: pointer; }
     });
   }
   function renderLastPoint() {
-    const lastRound = state.game.rounds[state.game.rounds.length - 1];
     els.scoreRed.classList.remove('last-point');
     els.scoreBlue.classList.remove('last-point');
     els.lastPointCard.classList.remove('red', 'blue');
-    if (!lastRound) {
+    let lastScoringRound = null;
+    let lastScoringIndex = -1;
+    for (let i = state.game.rounds.length - 1; i >= 0; i--) {
+      const round = state.game.rounds[i];
+      if (round.redNet > 0 || round.blueNet > 0) {
+        lastScoringRound = round;
+        lastScoringIndex = i;
+        break;
+      }
+    }
+    if (!lastScoringRound) {
       els.lastPointName.textContent = 'No points yet';
       els.lastPointValue.textContent = '0';
       return;
     }
-    if (lastRound.redNet === 0 && lastRound.blueNet === 0) {
-      els.lastPointName.textContent = 'No point scored last round';
-      els.lastPointValue.textContent = '0';
-      return;
-    }
-    const side = lastRound.redNet > 0 ? 'red' : 'blue';
-    const points = side === 'red' ? lastRound.redNet : lastRound.blueNet;
-    const shooterIndex = currentThrower(side, state.game.rounds.length - 1);
+    const side = lastScoringRound.redNet > 0 ? 'red' : 'blue';
+    const points = side === 'red' ? lastScoringRound.redNet : lastScoringRound.blueNet;
+    const shooterIndex = currentThrower(side, lastScoringIndex);
     const shooterName = safeText(state.teams[side].players[shooterIndex], getTeamDisplay(side));
     const teamName = getTeamDisplay(side);
     els.lastPointCard.classList.add(side);
     els[side === 'red' ? 'scoreRed' : 'scoreBlue'].classList.add('last-point');
     els.lastPointName.textContent = state.mode === '2v2' ? `${shooterName} (${teamName})` : teamName;
-    els.lastPointValue.textContent = `+${points}`;
+    els.lastPointValue.textContent = `+${points} R${lastScoringIndex + 1}`;
   }
   function renderPlayers() {
     const roundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
@@ -2238,6 +2363,13 @@ button { cursor: pointer; }
     if (!els.fourBaggersList) return;
     els.fourBaggersList.innerHTML = '';
     const records = [...(state.fourBaggers || [])].sort((a, b) => new Date(b.playedAt) - new Date(a.playedAt));
+    const currentYear = String(new Date().getFullYear());
+    const years = [...new Set([currentYear, ...records.map(entry => fourBaggerYear(entry.playedAt))])].filter(Boolean).sort((a, b) => Number(b) - Number(a));
+    if (!years.includes(state.ui.fourBaggerYear)) state.ui.fourBaggerYear = currentYear;
+    if (els.fourBaggerYearSelect) {
+      els.fourBaggerYearSelect.innerHTML = years.map(year => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join('');
+      els.fourBaggerYearSelect.value = state.ui.fourBaggerYear;
+    }
     if (!records.length) {
       const empty = document.createElement('div');
       empty.className = 'card game-history-card';
@@ -2246,7 +2378,8 @@ button { cursor: pointer; }
       return;
     }
 
-    const currentYear = String(new Date().getFullYear());
+    const selectedYear = state.ui.fourBaggerYear || currentYear;
+    const visibleRecords = records.filter(entry => fourBaggerYear(entry.playedAt) === selectedYear);
     const totals = records.reduce((map, entry) => {
       const year = fourBaggerYear(entry.playedAt);
       if (!map[year]) map[year] = {};
@@ -2257,9 +2390,9 @@ button { cursor: pointer; }
 
     const totalCard = document.createElement('div');
     totalCard.className = 'card game-history-card';
-    const yearTotals = Object.entries(totals[currentYear] || {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const yearTotals = Object.entries(totals[selectedYear] || {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
     totalCard.innerHTML = `
-      <div class="section-title">${escapeHtml(currentYear)} Totals</div>
+      <div class="section-title">${escapeHtml(selectedYear)} Totals</div>
       <div class="stat-list">
         ${yearTotals.length ? yearTotals.map(([name, count]) => `
           <div class="stat-row four-bagger-total">
@@ -2277,7 +2410,15 @@ button { cursor: pointer; }
     logTitle.textContent = 'Log';
     els.fourBaggersList.appendChild(logTitle);
 
-    records.forEach(entry => {
+    if (!visibleRecords.length) {
+      const emptyLog = document.createElement('div');
+      emptyLog.className = 'card game-history-card';
+      emptyLog.innerHTML = `<div class="note">No 4-baggers recorded for ${escapeHtml(selectedYear)}.</div>`;
+      els.fourBaggersList.appendChild(emptyLog);
+      return;
+    }
+
+    visibleRecords.forEach(entry => {
       const card = document.createElement('div');
       card.className = 'card game-history-card';
       card.innerHTML = `
@@ -2316,6 +2457,7 @@ button { cursor: pointer; }
             <div class="game-history-winner">${escapeHtml(name)}</div>
             <div class="game-history-sub">${count} 4-baggers recorded</div>
           </div>
+          <button type="button" data-player-rename="${escapeHtml(name)}" aria-label="Rename ${escapeHtml(name)}">Edit</button>
           <button type="button" data-player-delete="${escapeHtml(name)}" aria-label="Remove ${escapeHtml(name)}">×</button>
         </div>
       `;
@@ -2377,11 +2519,15 @@ button { cursor: pointer; }
   els.closeHistoryBtn.addEventListener('click', () => showScreen('game'));
   els.closeFourBaggersBtn.addEventListener('click', () => showScreen('game'));
   els.closePlayersBtn.addEventListener('click', () => showScreen('game'));
+  els.fourBaggerYearSelect.addEventListener('change', () => {
+    setState(s => { s.ui.fourBaggerYear = els.fourBaggerYearSelect.value; });
+  });
   els.addPlayerBtn.addEventListener('click', addManagedPlayer);
   els.newPlayerName.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addManagedPlayer();
   });
   els.submitBtn.addEventListener('click', submitRound);
+  els.undoLastRoundBtn.addEventListener('click', undoLastRound);
   els.playAgainBtn.addEventListener('click', playAgain);
   els.shareResultsBtn.addEventListener('click', shareGameResults);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
@@ -2442,6 +2588,11 @@ button { cursor: pointer; }
       removeManagedPlayer(playerDeleteBtn.dataset.playerDelete);
       return;
     }
+    const playerRenameBtn = e.target.closest('[data-player-rename]');
+    if (playerRenameBtn) {
+      renameManagedPlayer(playerRenameBtn.dataset.playerRename);
+      return;
+    }
     const throwBtn = e.target.closest('[data-team-throw]');
     if (throwBtn) setTeamThrowSide(throwBtn.dataset.teamThrow, throwBtn.dataset.icon);
     const btn = e.target.closest('[data-entry-team]');
@@ -2451,6 +2602,39 @@ button { cursor: pointer; }
   });
   applyTheme();
   render();
+
+  let deferredInstallPrompt = null;
+  let waitingRegistration = null;
+  function showAppPrompt(message, actionText, action) {
+    if (!els.appPrompt) return;
+    els.appPromptText.textContent = message;
+    els.appPromptAction.textContent = actionText;
+    els.appPromptAction.onclick = action;
+    els.appPrompt.classList.remove('hidden');
+  }
+  function hideAppPrompt() {
+    if (els.appPrompt) els.appPrompt.classList.add('hidden');
+  }
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    showAppPrompt('Install QuickCorn on this phone.', 'Install', async () => {
+      const promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      hideAppPrompt();
+      if (promptEvent) await promptEvent.prompt();
+    });
+  });
+  if (els.appPromptDismiss) els.appPromptDismiss.addEventListener('click', hideAppPrompt);
+  window.quickcornShowUpdatePrompt = (registration) => {
+    waitingRegistration = registration;
+    showAppPrompt('QuickCorn update available.', 'Update', () => {
+      if (waitingRegistration && waitingRegistration.waiting) {
+        waitingRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      hideAppPrompt();
+    });
+  };
 })();
 
 // Clear team name fields on first focus after modal opens
@@ -2467,8 +2651,26 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=2026052410', { updateViaCache: 'none' })
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+    navigator.serviceWorker.register('./service-worker.js?v=2026052413', { updateViaCache: 'none' })
       .then((registration) => {
+        if (registration.waiting && window.quickcornShowUpdatePrompt) {
+          window.quickcornShowUpdatePrompt(registration);
+        }
+        registration.addEventListener('updatefound', () => {
+          const worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller && window.quickcornShowUpdatePrompt) {
+              window.quickcornShowUpdatePrompt(registration);
+            }
+          });
+        });
         registration.update().catch(() => {});
       })
       .catch((error) => {

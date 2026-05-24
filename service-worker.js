@@ -1,13 +1,13 @@
-const CACHE_NAME = 'quickcorn-2026052410';
+const CACHE_NAME = 'quickcorn-2026052413';
 const APP_SHELL = [
   './',
-  './index.html?v=2026052410',
-  './manifest.webmanifest?v=2026052410',
-  './quickcorn-icon.svg?v=2026052410',
-  './quickcorn-icon-180.png?v=2026052410',
-  './quickcorn-icon-192.png?v=2026052410',
-  './quickcorn-icon-512.png?v=2026052410',
-  './iro.min.js?v=2026052410'
+  './index.html?v=2026052413',
+  './manifest.webmanifest?v=2026052413',
+  './quickcorn-icon.svg?v=2026052413',
+  './quickcorn-icon-180.png?v=2026052413',
+  './quickcorn-icon-192.png?v=2026052413',
+  './quickcorn-icon-512.png?v=2026052413',
+  './iro.min.js?v=2026052413'
 ];
 
 self.addEventListener('install', (event) => {
@@ -23,6 +23,12 @@ self.addEventListener('activate', (event) => {
     await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 async function networkFirst(request, fallbackUrl) {
@@ -51,7 +57,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html?v=2026052410'));
+    event.respondWith(networkFirst(event.request, './index.html?v=2026052413'));
     return;
   }
 
