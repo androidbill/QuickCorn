@@ -1,9 +1,9 @@
-const CACHE_NAME = 'quickcorn-v1';
+const CACHE_NAME = 'quickcorn-v2';
 const APP_SHELL = [
   './',
-  './index.html?v=1',
-  './manifest.webmanifest?v=1',
-  './quickcorn-icon.svg?v=1'
+  './index.html?v=2',
+  './manifest.webmanifest?v=2',
+  './quickcorn-icon.svg?v=2'
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html?v=1'));
+    event.respondWith(networkFirst(event.request, './index.html?v=2'));
     return;
   }
 

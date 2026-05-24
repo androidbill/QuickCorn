@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=1" />
-<link rel="icon" href="./quickcorn-icon.svg?v=1" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=1" />
+<link rel="manifest" href="./manifest.webmanifest?v=2" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./quickcorn-icon.svg?v=2" />
 <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 <style>
 :root {
@@ -208,54 +208,83 @@ button { cursor: pointer; }
   background: color-mix(in srgb, var(--team-blue) 28%, var(--panel));
   border: 1px solid color-mix(in srgb, var(--team-blue) 55%, var(--border));
 }
+.last-point-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.last-point-card.red {
+  border-color: color-mix(in srgb, var(--team-red) 58%, var(--border));
+  background: color-mix(in srgb, var(--team-red) 22%, var(--panel));
+}
+.last-point-card.blue {
+  border-color: color-mix(in srgb, var(--team-blue) 58%, var(--border));
+  background: color-mix(in srgb, var(--team-blue) 22%, var(--panel));
+}
+.last-point-label {
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 900;
+}
+.last-point-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 900;
+}
+.last-point-value {
+  font-size: 18px;
+  font-weight: 900;
+}
+.score-box.last-point {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.22) inset, 0 0 0 1px rgba(255,255,255,0.1);
+}
 .team-icons {
+  display: none;
+}
+.first-shooter-wrap {
+  margin-bottom: 10px;
+}
+.first-shooter-group {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+.first-shooter-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+.first-shooter-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.icon-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
-.icon-chip {
-  min-height: 34px;
-  border-radius: 12px;
+.first-shooter-options button {
+  min-height: 38px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--panel);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1px;
-  font-size: 16px;
-  line-height: 1;
   color: var(--text);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-  cursor: pointer;
-  padding: 4px 2px;
-}
-.icon-chip.active {
-  border-color: rgba(255,255,255,0.35);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset;
-}
-.icon-chip-label {
-  font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
-.icon-row.red .icon-chip {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-red) 35%, transparent);
-}
-.icon-row.blue .icon-chip {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-blue) 35%, transparent);
-}
-.icon-row.red .icon-chip.active {
-  background: color-mix(in srgb, var(--team-red) 72%, var(--panel));
-}
-.icon-row.blue .icon-chip.active {
-  background: color-mix(in srgb, var(--team-blue) 72%, var(--panel));
+.first-shooter-options button.active {
+  border-color: var(--green);
+  background: var(--panel-3);
 }
 .entry-card {
   display: flex;
@@ -642,10 +671,9 @@ button { cursor: pointer; }
   }
   #game-history-screen { padding: 5px; }
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
-  .team-icons { gap: 5px; }
-  .icon-row { gap: 5px; }
-  .icon-chip { min-height: 30px; font-size: 14px; border-radius: 10px; }
-  .icon-chip-label { font-size: 8px; }
+  .last-point-card { min-height: 36px; padding: 5px 8px; border-radius: 12px; }
+  .last-point-name { font-size: 15px; }
+  .last-point-value { font-size: 16px; }
 
   .team-card { padding: 7px; border-radius: 14px; }
   .team-player { font-size: 15px; line-height: 1.05; }
@@ -989,6 +1017,12 @@ button { cursor: pointer; }
       <div class="score-box blue" id="score-blue">0</div>
     </div>
 
+    <div class="last-point-card" id="last-point-card">
+      <div class="last-point-label">Last Point</div>
+      <div class="last-point-name" id="last-point-name">No points yet</div>
+      <div class="last-point-value" id="last-point-value">0</div>
+    </div>
+
     <div class="team-icons">
       <div class="icon-row red" aria-label="Left team icons">
         <button class="icon-chip" type="button" data-team-throw="red" data-icon="left" aria-label="Inside lane">
@@ -1068,6 +1102,15 @@ button { cursor: pointer; }
     <div class="field" id="field-red2"><label>Red Player 2</label><input id="in-red2" maxlength="14" /></div>
     <div class="field"><label>Blue Player 1</label><input id="in-blue1" maxlength="14" /></div>
     <div class="field" id="field-blue2"><label>Blue Player 2</label><input id="in-blue2" maxlength="14" /></div>
+    <div id="first-shooter-wrap" class="first-shooter-wrap">
+      <div class="first-shooter-group">
+        <div class="first-shooter-title">Starting Matchup</div>
+        <div class="first-shooter-options">
+          <button type="button" id="first-pair-0">P1 vs P3</button>
+          <button type="button" id="first-pair-1">P2 vs P4</button>
+        </div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-secondary" data-close="teams-modal-wrap">Cancel</button>
       <button class="btn-primary" id="save-teams-btn">Save</button>
@@ -1160,6 +1203,9 @@ button { cursor: pointer; }
     redP1: document.getElementById('red-p1'), redP2: document.getElementById('red-p2'),
     blueP1: document.getElementById('blue-p1'), blueP2: document.getElementById('blue-p2'),
     scoreRed: document.getElementById('score-red'), scoreBlue: document.getElementById('score-blue'),
+    lastPointCard: document.getElementById('last-point-card'),
+    lastPointName: document.getElementById('last-point-name'),
+    lastPointValue: document.getElementById('last-point-value'),
     roundNet: document.getElementById('round-net'), roundNum: document.getElementById('round-num'),
     submitBtn: document.getElementById('submit-btn'), history: document.getElementById('round-history'),
     redEntryContent: document.getElementById('red-entry-content'), blueEntryContent: document.getElementById('blue-entry-content'),
@@ -1171,6 +1217,8 @@ button { cursor: pointer; }
     inBlue1: document.getElementById('in-blue1'), inBlue2: document.getElementById('in-blue2'),
     fieldRed2: document.getElementById('field-red2'), fieldBlue2: document.getElementById('field-blue2'),
     teamsMode1v1: document.getElementById('teams-mode-1v1'), teamsMode2v2: document.getElementById('teams-mode-2v2'),
+    firstShooterWrap: document.getElementById('first-shooter-wrap'),
+    firstPair0: document.getElementById('first-pair-0'), firstPair1: document.getElementById('first-pair-1'),
     saveTeamsBtn: document.getElementById('save-teams-btn'),
     settingsModalWrap: document.getElementById('settings-modal-wrap'), setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
     colorsModalWrap: document.getElementById('colors-modal-wrap'),
@@ -1193,6 +1241,7 @@ button { cursor: pointer; }
       scoringMode: 'acl',
       teamColors: { red: '#e8332a', blue: '#1a6fe8' },
       teamThrowSide: { red: null, blue: null },
+      firstShooter: { red: 0, blue: 0 },
       teams: {
         red: { players: ['Player 1', 'Player 2'] },
         blue: { players: ['Player 3', 'Player 4'] },
@@ -1225,6 +1274,7 @@ button { cursor: pointer; }
       const parsed = JSON.parse(raw);
       const merged = deepMerge(defaultState(), parsed);
       merged.screen = 'game';
+      normalizeFirstShooter(merged);
       return merged;
     } catch {
       return defaultState();
@@ -1239,6 +1289,10 @@ button { cursor: pointer; }
       return out;
     }
     return incoming === undefined ? base : incoming;
+  }
+  function normalizeFirstShooter(nextState) {
+    const pair = Number(nextState.firstShooter && nextState.firstShooter.red) === 1 ? 1 : 0;
+    nextState.firstShooter = { red: pair, blue: pair };
   }
   let saveTimer = null;
   function persist() {
@@ -1261,9 +1315,10 @@ button { cursor: pointer; }
   function getTeamDisplay(teamKey) {
     return teamNameList(teamKey).join(' & ');
   }
-  function currentThrower(sideIndex) {
+  function currentThrower(teamKey, sideIndex) {
     if (state.mode === '1v1') return 0;
-    return sideIndex % 2;
+    const first = Number(state.firstShooter && state.firstShooter[teamKey]) || 0;
+    return (first + sideIndex) % 2;
   }
   function safeText(v, fallback='') {
     const t = String(v || '').trim();
@@ -1421,27 +1476,28 @@ button { cursor: pointer; }
       rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, rounds.map(r => r.blueGross)));
       return rows;
     }
-    const evenRounds = rounds.filter((_,i)=>i%2===0);
-    const oddRounds = rounds.filter((_,i)=>i%2===1);
-    rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, evenRounds.map(r=>r.redGross)));
-    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', 1, oddRounds.map(r=>r.redGross)));
-    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, evenRounds.map(r=>r.blueGross)));
-    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', 1, oddRounds.map(r=>r.blueGross)));
+    const redP1Rounds = rounds.filter((_,i)=>currentThrower('red', i)===0);
+    const redP2Rounds = rounds.filter((_,i)=>currentThrower('red', i)===1);
+    const blueP1Rounds = rounds.filter((_,i)=>currentThrower('blue', i)===0);
+    const blueP2Rounds = rounds.filter((_,i)=>currentThrower('blue', i)===1);
+    rows.push(makePlayerStat(state.teams.red.players[0], 'red', 0, redP1Rounds.map(r=>r.redGross)));
+    if (state.teams.red.players[1]) rows.push(makePlayerStat(state.teams.red.players[1], 'red', 1, redP2Rounds.map(r=>r.redGross)));
+    rows.push(makePlayerStat(state.teams.blue.players[0], 'blue', 0, blueP1Rounds.map(r=>r.blueGross)));
+    if (state.teams.blue.players[1]) rows.push(makePlayerStat(state.teams.blue.players[1], 'blue', 1, blueP2Rounds.map(r=>r.blueGross)));
     return rows;
   }
   function makePlayerStat(name, color, playerIndex, gross) {
     const total = gross.reduce((a,b)=>a+b,0);
     const rounds = gross.length;
-    const selectedSide = state.teamThrowSide[color] || null;
-    const icon = playerIndex === 0 ? selectedSide : oppositeThrowSide(selectedSide);
+    const first = Number(state.firstShooter && state.firstShooter[color]) || 0;
     return {
       name: safeText(name, 'Player'),
       color,
       total,
       rounds,
       ppr: rounds ? (total / rounds).toFixed(2) : '0.00',
-      icon,
-      side: iconLabel(icon)
+      icon: null,
+      side: state.mode === '2v2' ? (playerIndex === first ? 'First' : 'Second') : ''
     };
   }
   function formatPlayedDate(isoString) {
@@ -1521,10 +1577,30 @@ button { cursor: pointer; }
     els.teamsMode2v2.classList.toggle('active', !is1v1);
     els.fieldRed2.classList.toggle('hidden', is1v1);
     els.fieldBlue2.classList.toggle('hidden', is1v1);
+    els.firstShooterWrap.classList.toggle('hidden', is1v1);
+    renderFirstShooterButtons();
+  }
+  function renderFirstShooterButtons() {
+    const pair = Number(state.firstShooter && state.firstShooter.red) || 0;
+    els.firstPair0.classList.toggle('active', pair === 0);
+    els.firstPair1.classList.toggle('active', pair === 1);
+    els.firstPair0.textContent = `${safeText(els.inRed1.value, 'P1')} vs ${safeText(els.inBlue1.value, 'P3')}`;
+    els.firstPair1.textContent = `${safeText(els.inRed2.value, 'P2')} vs ${safeText(els.inBlue2.value, 'P4')}`;
+  }
+  function setStartingPair(playerIndex) {
+    setState(s => {
+      s.firstShooter.red = playerIndex;
+      s.firstShooter.blue = playerIndex;
+    });
+    renderFirstShooterButtons();
   }
   function saveTeams() {
     setState(s => {
       s.mode = state.ui.draftTeamMode;
+      if (s.mode === '1v1') {
+        s.firstShooter.red = 0;
+        s.firstShooter.blue = 0;
+      }
       s.teams.red.players[0] = safeText(els.inRed1.value, 'Player 1');
       s.teams.blue.players[0] = safeText(els.inBlue1.value, s.mode === '1v1' ? 'Player 2' : 'Player 3');
       if (s.mode === '2v2') {
@@ -1686,9 +1762,35 @@ button { cursor: pointer; }
       els.history.appendChild(chip);
     });
   }
+  function renderLastPoint() {
+    const lastRound = state.game.rounds[state.game.rounds.length - 1];
+    els.scoreRed.classList.remove('last-point');
+    els.scoreBlue.classList.remove('last-point');
+    els.lastPointCard.classList.remove('red', 'blue');
+    if (!lastRound) {
+      els.lastPointName.textContent = 'No points yet';
+      els.lastPointValue.textContent = '0';
+      return;
+    }
+    if (lastRound.redNet === 0 && lastRound.blueNet === 0) {
+      els.lastPointName.textContent = 'No point scored last round';
+      els.lastPointValue.textContent = '0';
+      return;
+    }
+    const side = lastRound.redNet > 0 ? 'red' : 'blue';
+    const points = side === 'red' ? lastRound.redNet : lastRound.blueNet;
+    const shooterIndex = currentThrower(side, state.game.rounds.length - 1);
+    const shooterName = safeText(state.teams[side].players[shooterIndex], getTeamDisplay(side));
+    const teamName = getTeamDisplay(side);
+    els.lastPointCard.classList.add(side);
+    els[side === 'red' ? 'scoreRed' : 'scoreBlue'].classList.add('last-point');
+    els.lastPointName.textContent = state.mode === '2v2' ? `${shooterName} (${teamName})` : teamName;
+    els.lastPointValue.textContent = `+${points}`;
+  }
   function renderPlayers() {
     const roundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
-    const activeThrower = currentThrower(roundIndex);
+    const redThrower = currentThrower('red', roundIndex);
+    const blueThrower = currentThrower('blue', roundIndex);
     const redNames = teamNameList('red');
     const blueNames = teamNameList('blue');
 
@@ -1707,34 +1809,25 @@ button { cursor: pointer; }
       els.blueP2.textContent = '';
       els.redP1.classList.add('active');
       els.blueP1.classList.add('active');
-      document.querySelectorAll('[data-team-throw]').forEach(btn => {
-        const selected = state.teamThrowSide[btn.dataset.teamThrow];
-        btn.classList.toggle('active', !!selected && btn.dataset.icon === selected);
-      });
       return;
     }
 
-    const redActive = activeThrower === 0 ? els.redP1 : els.redP2;
-    const redInactive = activeThrower === 0 ? els.redP2 : els.redP1;
-    const blueActive = activeThrower === 0 ? els.blueP1 : els.blueP2;
-    const blueInactive = activeThrower === 0 ? els.blueP2 : els.blueP1;
+    const redActive = redThrower === 0 ? els.redP1 : els.redP2;
+    const redInactive = redThrower === 0 ? els.redP2 : els.redP1;
+    const blueActive = blueThrower === 0 ? els.blueP1 : els.blueP2;
+    const blueInactive = blueThrower === 0 ? els.blueP2 : els.blueP1;
 
     redActive.classList.add('active');
     blueActive.classList.add('active');
     if (redInactive.textContent.trim()) redInactive.classList.add('inactive');
     if (blueInactive.textContent.trim()) blueInactive.classList.add('inactive');
-
-    document.querySelectorAll('[data-team-throw]').forEach(btn => {
-      const selected = state.teamThrowSide[btn.dataset.teamThrow];
-      const activeIcon = activeThrower === 0 ? selected : oppositeThrowSide(selected);
-      btn.classList.toggle('active', !!activeIcon && btn.dataset.icon === activeIcon);
-    });
   }
   function renderGame() {
     renderPlayers();
     const totals = getTotals();
     els.scoreRed.textContent = totals.red;
     els.scoreBlue.textContent = totals.blue;
+    renderLastPoint();
     const net = entryToPoints(state.game.currentEntry.red) - entryToPoints(state.game.currentEntry.blue);
     els.roundNet.textContent = net > 0 ? `+${net}` : String(net);
     els.roundNum.textContent = String(state.game.rounds.length + 1);
@@ -1808,6 +1901,9 @@ button { cursor: pointer; }
   document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
   els.teamsMode1v1.addEventListener('click', () => { state.ui.draftTeamMode = '1v1'; renderTeamModeButtons(); });
   els.teamsMode2v2.addEventListener('click', () => { state.ui.draftTeamMode = '2v2'; renderTeamModeButtons(); });
+  els.firstPair0.addEventListener('click', () => setStartingPair(0));
+  els.firstPair1.addEventListener('click', () => setStartingPair(1));
+  [els.inRed1, els.inRed2, els.inBlue1, els.inBlue2].forEach(input => input.addEventListener('input', renderFirstShooterButtons));
   els.saveTeamsBtn.addEventListener('click', saveTeams);
   els.setAclBtn.addEventListener('click', () => setScoringMode('acl'));
   els.setTotalBtn.addEventListener('click', () => setScoringMode('total'));
@@ -1903,7 +1999,7 @@ document.addEventListener('focusin', (e) => {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=1', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2', { updateViaCache: 'none' })
       .then((registration) => {
         registration.update().catch(() => {});
       })
