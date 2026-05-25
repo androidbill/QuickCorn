@@ -153,7 +153,7 @@ button { cursor: pointer; }
 }
 #game-screen {
   display: grid;
-  grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
   gap: 6px;
   padding: 6px;
   min-height: 0;
@@ -845,7 +845,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 5px;
     padding: 5px;
-    grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   #game-history-screen, #four-baggers-screen, #players-screen { padding: 5px; }
   .scoreboards, .score-boxes, .entry-panels { gap: 5px; }
@@ -931,7 +931,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 4px;
     padding: 4px;
-    grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   .scoreboards, .score-boxes, .entry-panels, .entry-card, .entry-mode { gap: 4px; }
   .team-card { padding: 6px; }
@@ -973,7 +973,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 4px;
     padding: 4px;
-    grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
   }
   .header { padding-bottom: 4px; }
   .brand-title { font-size: 15px; }
@@ -1013,7 +1013,7 @@ button { cursor: pointer; }
 @media (max-height: 690px) {
   .brand-sub { display: none; }
   #game-screen {
-    grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
   }
   .history-card {
     min-height: 0;
