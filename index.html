@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026052413" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026052413" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026052413" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026052413" />
-<script src="./iro.min.js?v=2026052413"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026060623" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026060623" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026060623" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026060623" />
+<script src="./iro.min.js?v=2026060623"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -450,6 +450,33 @@ button { cursor: pointer; }
   color: var(--text);
   font-size: 24px;
   font-weight: 900;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  line-height:1;
+}
+.entry-btn-num {
+  font-size: 44px;
+  line-height: 0.74;
+  font-weight: 950;
+}
+.entry-btn-kind {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+.entry-btn[data-entry-team] {
+  flex-direction: row;
+  gap: 4px;
+}
+.entry-btn[data-entry-team] .entry-btn-kind {
+  margin-top: 4px;
+}
+.total-mode .entry-btn-num {
+  font-size: 46px;
 }
 .entry-btn.selected-red {
   background: color-mix(in srgb, var(--team-red) 72%, var(--panel-2));
@@ -895,6 +922,9 @@ button { cursor: pointer; }
     font-size: 18px;
     border-radius: 9px;
   }
+  .entry-btn-num { font-size: 34px; }
+  .entry-btn-kind { font-size: 9px; }
+  .total-mode .entry-btn-num { font-size: 36px; }
 
   .bottom-bar {
     grid-template-columns: 38px 1fr 38px;
@@ -947,6 +977,9 @@ button { cursor: pointer; }
     min-height: 32px;
     font-size: 16px;
   }
+  .entry-btn-num { font-size: 30px; }
+  .entry-btn-kind { font-size: 8px; }
+  .total-mode .entry-btn-num { font-size: 32px; }
   .bottom-bar {
     grid-template-columns: 36px 1fr 36px;
     gap: 4px;
@@ -990,6 +1023,9 @@ button { cursor: pointer; }
   .entry-label { font-size: 9px; }
   .entry-grid { gap: 3px; }
   .entry-btn { min-height: 30px; font-size: 15px; }
+  .entry-btn-num { font-size: 28px; }
+  .entry-btn-kind { font-size: 8px; }
+  .total-mode .entry-btn-num { font-size: 30px; }
   .bottom-bar {
     grid-template-columns: 34px 1fr 34px;
     gap: 3px;
@@ -1159,7 +1195,7 @@ button { cursor: pointer; }
       <div class="brand-title">QuickCorn</div>
       <div class="brand-sub">rebuilt for mobile</div>
     </div>
-    <button class="icon-btn" id="menu-btn">⋮</button>
+    <button class="icon-btn" id="menu-btn" aria-label="Menu">&#8942;</button>
     <div class="dropdown" id="menu-dropdown">
       <button data-action="tournament">Tournament</button>
       <button data-action="history">Game History</button>
@@ -1179,7 +1215,7 @@ button { cursor: pointer; }
             <div class="team-player" id="red-p1"></div>
             <div class="team-player2" id="red-p2"></div>
           </div>
-          <button class="mini-btn" id="red-color-btn">🎨</button>
+          <button class="mini-btn" id="red-color-btn" aria-label="Change red team color">&#127912;</button>
         </div>
       </div>
       <div class="team-card blue" id="team-blue-card">
@@ -1188,7 +1224,7 @@ button { cursor: pointer; }
             <div class="team-player" id="blue-p1"></div>
             <div class="team-player2" id="blue-p2"></div>
           </div>
-          <button class="mini-btn" id="blue-color-btn">🎨</button>
+          <button class="mini-btn" id="blue-color-btn" aria-label="Change blue team color">&#127912;</button>
         </div>
       </div>
     </div>
@@ -1208,18 +1244,18 @@ button { cursor: pointer; }
     <div class="team-icons">
       <div class="icon-row red" aria-label="Left team icons">
         <button class="icon-chip" type="button" data-team-throw="red" data-icon="left" aria-label="Inside lane">
-          <span>☚</span><span class="icon-chip-label">Inside</span>
+          <span>â˜š</span><span class="icon-chip-label">Inside</span>
         </button>
         <button class="icon-chip" type="button" data-team-throw="red" data-icon="right" aria-label="Outside lane">
-          <span>☛</span><span class="icon-chip-label">Outside</span>
+          <span>â˜›</span><span class="icon-chip-label">Outside</span>
         </button>
       </div>
       <div class="icon-row blue" aria-label="Right team icons">
         <button class="icon-chip" type="button" data-team-throw="blue" data-icon="left" aria-label="Inside lane">
-          <span>☚</span><span class="icon-chip-label">Inside</span>
+          <span>â˜š</span><span class="icon-chip-label">Inside</span>
         </button>
         <button class="icon-chip" type="button" data-team-throw="blue" data-icon="right" aria-label="Outside lane">
-          <span>☛</span><span class="icon-chip-label">Outside</span>
+          <span>â˜›</span><span class="icon-chip-label">Outside</span>
         </button>
       </div>
     </div>
@@ -1728,9 +1764,9 @@ button { cursor: pointer; }
     syncColorPickerUI();
   }
   function iconSymbol(icon) {
-    if (icon === 'left') return '☚';
-    if (icon === 'right') return '☛';
-    return '—';
+    if (icon === 'left') return 'â˜š';
+    if (icon === 'right') return 'â˜›';
+    return 'â€”';
   }
   function iconLabel(icon) {
     if (icon === 'left') return 'Inside';
@@ -2148,7 +2184,7 @@ button { cursor: pointer; }
   function renderBreakdown() {
     const br = state.ui.breakdown;
     if (!br) return;
-    els.breakdownTitle.textContent = `${br.team.toUpperCase()} — ${br.total} points`;
+    els.breakdownTitle.textContent = `${br.team.toUpperCase()} â€” ${br.total} points`;
     els.breakdownOptions.innerHTML = '';
     const row = document.createElement('div');
     row.className = 'modal-actions';
@@ -2200,7 +2236,7 @@ button { cursor: pointer; }
     const stats = computePlayerStats();
     els.winBanner.className = `win-banner ${winner}`;
     els.winTeam.textContent = getTeamDisplay(winner);
-    els.winScore.textContent = `${totals.red} – ${totals.blue}`;
+    els.winScore.textContent = `${totals.red} â€“ ${totals.blue}`;
     els.winStats.innerHTML = '';
     stats.forEach(row => {
       const div = document.createElement('div');
@@ -2222,12 +2258,12 @@ button { cursor: pointer; }
       return `
         <div class="entry-grid acl-grid">
           ${[1,2,3,4].map(v => `
-            <button class="entry-btn ${entry.in===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="in" data-entry-val="${v}">${v} IN</button>
-            <button class="entry-btn ${entry.on===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="on" data-entry-val="${v}">${v} ON</button>
+            <button class="entry-btn ${entry.in===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="in" data-entry-val="${v}"><span class="entry-btn-num">${v}</span><span class="entry-btn-kind">IN</span></button>
+            <button class="entry-btn ${entry.on===v?selectedClass:''}" data-entry-team="${team}" data-entry-type="on" data-entry-val="${v}"><span class="entry-btn-num">${v}</span><span class="entry-btn-kind">ON</span></button>
           `).join('')}
         </div>`;
     }
-    return `<div class="entry-grid total-mode">${TOTAL_VALUES.map(v=>`<button class="entry-btn ${entry.total===v?selectedClass:''}" data-total-team="${team}" data-total-val="${v}">${v}</button>`).join('')}</div>`;
+    return `<div class="entry-grid total-mode">${TOTAL_VALUES.map(v=>`<button class="entry-btn ${entry.total===v?selectedClass:''}" data-total-team="${team}" data-total-val="${v}"><span class="entry-btn-num">${v}</span></button>`).join('')}</div>`;
   }
   function renderHistory() {
     els.history.innerHTML = '';
@@ -2339,7 +2375,7 @@ button { cursor: pointer; }
       const card = document.createElement('div');
       card.className = 'card game-history-card';
       const statsHtml = (entry.stats || []).map(row =>
-        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} · ${row.total} pts · ${row.rounds} rds · ${row.ppr} PPR</span></div>`
+        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} Â· ${row.total} pts Â· ${row.rounds} rds Â· ${row.ppr} PPR</span></div>`
       ).join('');
       card.innerHTML = `
         <div class="game-history-head">
@@ -2350,10 +2386,10 @@ button { cursor: pointer; }
           </div>
           <div class="game-history-meta">
             <div class="game-history-date">${escapeHtml(formatPlayedDate(entry.playedAt))}</div>
-            <button class="history-delete-btn" type="button" data-history-delete="${escapeHtml(entry.id)}" aria-label="Delete this game history">✕</button>
+            <button class="history-delete-btn" type="button" data-history-delete="${escapeHtml(entry.id)}" aria-label="Delete this game history">âœ•</button>
           </div>
         </div>
-        <div class="section-title">Points · Rounds · PPR</div>
+        <div class="section-title">Points Â· Rounds Â· PPR</div>
         <div class="stat-list">${statsHtml}</div>
       `;
       els.gameHistoryList.appendChild(card);
@@ -2458,7 +2494,7 @@ button { cursor: pointer; }
             <div class="game-history-sub">${count} 4-baggers recorded</div>
           </div>
           <button type="button" data-player-rename="${escapeHtml(name)}" aria-label="Rename ${escapeHtml(name)}">Edit</button>
-          <button type="button" data-player-delete="${escapeHtml(name)}" aria-label="Remove ${escapeHtml(name)}">×</button>
+          <button type="button" data-player-delete="${escapeHtml(name)}" aria-label="Remove ${escapeHtml(name)}">&times;</button>
         </div>
       `;
       els.playersList.appendChild(card);
@@ -2657,7 +2693,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026052413', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026060623', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
