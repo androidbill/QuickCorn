@@ -1186,6 +1186,268 @@ button { cursor: pointer; }
   font-family: inherit !important;
 }
 
+/* Tight phone layout: keep the whole scoring surface visible without vertical scroll. */
+@media (max-width: 430px) {
+  #app {
+    max-width: none;
+  }
+
+  .header {
+    min-height: 52px;
+    padding: 6px 10px;
+  }
+
+  .brand-title {
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .brand-sub {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  #game-screen {
+    grid-template-rows: auto auto auto auto auto minmax(54px, 1fr);
+    align-content: stretch;
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .scoreboards,
+  .score-boxes,
+  .entry-panels,
+  .entry-card,
+  .entry-mode {
+    gap: 4px;
+  }
+
+  .team-card {
+    min-height: 70px;
+    padding: 7px;
+  }
+
+  .team-player {
+    font-size: 16px;
+  }
+
+  .team-card .team-player.active,
+  .team-card .team-player2.active {
+    font-size: 16px !important;
+  }
+
+  .team-card .team-player.inactive,
+  .team-card .team-player2.inactive {
+    font-size: 12px !important;
+  }
+
+  .mini-btn {
+    min-width: 30px;
+    height: 30px;
+  }
+
+  .score-box {
+    min-height: clamp(132px, 17.5dvh, 158px);
+    padding: 0 4px;
+    font-size: clamp(104px, 29vw, 148px);
+    letter-spacing: -2px;
+  }
+
+  .last-point-card {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    min-height: 38px;
+    padding: 4px 8px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  .last-point-label {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .last-point-name {
+    font-size: 15px;
+  }
+
+  .last-point-value {
+    font-size: 15px;
+  }
+
+  .last-point-undo {
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  .entry-mode button {
+    min-height: 31px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  .entry-panel {
+    padding: 4px;
+    gap: 3px;
+    border-radius: 12px;
+  }
+
+  .entry-label {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .entry-grid {
+    gap: 3px;
+  }
+
+  .entry-btn {
+    min-height: clamp(34px, 4.9dvh, 44px);
+    border-radius: 9px;
+  }
+
+  .entry-btn-num {
+    font-size: clamp(32px, 8.7vw, 40px);
+  }
+
+  .entry-btn-kind {
+    font-size: 8px;
+  }
+
+  .total-mode .entry-btn-num {
+    font-size: clamp(34px, 9vw, 42px);
+  }
+
+  .bottom-bar {
+    grid-template-columns: 38px 1fr 38px;
+    height: 30px;
+    align-self: stretch;
+    padding: 0 3px;
+    gap: 3px;
+    border-radius: 14px;
+  }
+
+  .primary-btn {
+    min-height: 28px;
+    height: 28px;
+    border-radius: 13px;
+    font-size: 13px;
+  }
+
+  .stat-label {
+    font-size: 7px;
+  }
+
+  .stat-value {
+    font-size: 12px;
+  }
+
+  .history-card {
+    min-height: 0;
+    height: 100%;
+    align-self: stretch;
+    padding: 4px;
+    gap: 3px;
+    border-radius: 14px;
+  }
+
+  .history-scroller {
+    min-height: 0;
+    height: 100%;
+    gap: 6px;
+  }
+
+  .round-chip {
+    min-width: 54px;
+    border-radius: 12px;
+  }
+
+  .round-chip-head {
+    padding: 4px 0;
+    font-size: 9px;
+  }
+
+  .round-chip-score {
+    padding: 5px 0;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 430px) and (max-height: 780px) {
+  .header {
+    min-height: 46px;
+    padding: 5px 9px;
+  }
+
+  .brand-title {
+    font-size: 15px;
+  }
+
+  .brand-sub {
+    font-size: 8px;
+  }
+
+  #game-screen {
+    gap: 3px;
+    padding: 3px;
+    grid-template-rows: auto auto auto auto auto minmax(44px, 1fr);
+  }
+
+  .team-card {
+    min-height: 58px;
+    padding: 5px;
+  }
+
+  .score-box {
+    min-height: clamp(112px, 16dvh, 132px);
+    font-size: clamp(94px, 27vw, 128px);
+  }
+
+  .last-point-card {
+    min-height: 32px;
+    padding: 3px 7px;
+  }
+
+  .last-point-name,
+  .last-point-value {
+    font-size: 13px;
+  }
+
+  .last-point-undo {
+    min-height: 25px;
+    font-size: 11px;
+  }
+
+  .entry-mode button {
+    min-height: 28px;
+  }
+
+  .entry-btn {
+    min-height: clamp(29px, 4.5dvh, 36px);
+  }
+
+  .entry-btn-num {
+    font-size: clamp(28px, 8vw, 34px);
+  }
+
+  .total-mode .entry-btn-num {
+    font-size: clamp(30px, 8.5vw, 36px);
+  }
+
+  .bottom-bar {
+    height: 28px;
+  }
+
+  .primary-btn {
+    min-height: 26px;
+    height: 26px;
+  }
+
+  .history-card .section-title {
+    font-size: 8px;
+  }
+}
+
 </style>
 </head>
 <body>
