@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.10" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.10" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.10" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.10" />
-<script src="./iro.min.js?v=2026.06.08.10"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.11" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.11" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.11" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.11" />
+<script src="./iro.min.js?v=2026.06.08.11"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -801,6 +801,46 @@ button { cursor: pointer; }
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.4px;
+}
+.history-stat-grid {
+  display: grid;
+  gap: 6px;
+}
+.history-stat-header,
+.history-stat-player {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px 58px 58px;
+  gap: 6px;
+  align-items: center;
+}
+.history-stat-header {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.history-stat-player {
+  min-height: 38px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 10px;
+  color: #ffffff;
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+}
+.history-stat-player span,
+.history-stat-player strong {
+  min-width: 0;
+}
+.history-stat-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-stat-number {
+  text-align: right;
+  font-weight: 900;
 }
 .four-bagger-total {
   display: grid;
@@ -1744,7 +1784,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.08.10</p>
+    <p class="sub" id="app-version-label">Version 2026.06.08.11</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1756,7 +1796,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.08.10';
+  const APP_VERSION = '2026.06.08.11';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -2238,6 +2278,8 @@ button { cursor: pointer; }
       score: `${totals.red} - ${totals.blue}`,
       stats: computePlayerStats().map(row => ({
         name: row.name,
+        color: row.color,
+        teamColor: state.teamColors[row.color] || '',
         total: row.total,
         rounds: row.rounds,
         ppr: row.ppr,
@@ -2683,9 +2725,18 @@ button { cursor: pointer; }
     state.gameHistory.forEach(entry => {
       const card = document.createElement('div');
       card.className = 'card game-history-card';
-      const statsHtml = (entry.stats || []).map(row =>
-        `<div class="stat-row"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.side || 'None')} - ${row.total} pts - ${row.rounds} rds - ${row.ppr} PPR</span></div>`
-      ).join('');
+      const statsHtml = (entry.stats || []).map(row => {
+        const teamColor = row.teamColor || state.teamColors[row.color] || '';
+        const rowStyle = teamColor ? ` style="background:${escapeHtml(teamColor)};"` : '';
+        return `
+          <div class="history-stat-player"${rowStyle}>
+            <strong class="history-stat-name">${escapeHtml(row.name)}</strong>
+            <span class="history-stat-number">${escapeHtml(row.total)}</span>
+            <span class="history-stat-number">${escapeHtml(row.rounds)}</span>
+            <span class="history-stat-number">${escapeHtml(row.ppr)}</span>
+          </div>
+        `;
+      }).join('');
       card.innerHTML = `
         <div class="game-history-head">
           <div>
@@ -2698,8 +2749,15 @@ button { cursor: pointer; }
             <button class="history-delete-btn" type="button" data-history-delete="${escapeHtml(entry.id)}" aria-label="Delete this game history">x</button>
           </div>
         </div>
-        <div class="section-title">Points - Rounds - PPR</div>
-        <div class="stat-list">${statsHtml}</div>
+        <div class="history-stat-grid">
+          <div class="history-stat-header">
+            <span>Name</span>
+            <span>Points</span>
+            <span>Rounds</span>
+            <span>PPR</span>
+          </div>
+          ${statsHtml}
+        </div>
       `;
       els.gameHistoryList.appendChild(card);
     });
@@ -3003,7 +3061,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.10', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.11', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
