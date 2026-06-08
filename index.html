@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.05" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.05" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.05" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.05" />
-<script src="./iro.min.js?v=2026.06.08.05"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.06" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.06" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.06" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.06" />
+<script src="./iro.min.js?v=2026.06.08.06"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1466,6 +1466,7 @@ button { cursor: pointer; }
       <button data-action="fourBaggers">4-Baggers</button>
       <button data-action="players">Players</button>
       <button data-action="share">Share</button>
+      <button data-action="refresh">Refresh</button>
       <button data-action="restart">New Game</button>
       <button data-action="about">About</button>
     </div>
@@ -1707,7 +1708,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.08.05</p>
+    <p class="sub" id="app-version-label">Version 2026.06.08.06</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1719,7 +1720,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.08.05';
+  const APP_VERSION = '2026.06.08.06';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -2796,6 +2797,7 @@ button { cursor: pointer; }
     if (action === 'fourBaggers') showScreen('fourBaggers');
     if (action === 'players') showScreen('players');
     if (action === 'share') shareApp();
+    if (action === 'refresh') window.location.reload();
     if (action === 'restart') { if (confirm('Start a new game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -2965,7 +2967,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.05', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.06', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
