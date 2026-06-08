@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.02" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.02" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.02" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.02" />
-<script src="./iro.min.js?v=2026.06.08.02"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.03" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.03" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.03" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.03" />
+<script src="./iro.min.js?v=2026.06.08.03"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1208,7 +1208,7 @@ button { cursor: pointer; }
   }
 
   #game-screen {
-    grid-template-rows: auto auto auto auto auto minmax(54px, 1fr);
+    grid-template-rows: auto auto auto auto auto auto;
     align-content: stretch;
     gap: 4px;
     padding: 4px;
@@ -1343,9 +1343,10 @@ button { cursor: pointer; }
   }
 
   .history-card {
-    min-height: 0;
-    height: 100%;
-    align-self: stretch;
+    min-height: 92px;
+    height: 92px;
+    max-height: 92px;
+    align-self: start;
     padding: 4px;
     gap: 3px;
     border-radius: 14px;
@@ -1353,23 +1354,23 @@ button { cursor: pointer; }
 
   .history-scroller {
     min-height: 0;
-    height: 100%;
+    height: auto;
     gap: 6px;
   }
 
   .round-chip {
-    min-width: 54px;
+    min-width: 52px;
     border-radius: 12px;
   }
 
   .round-chip-head {
-    padding: 4px 0;
+    padding: 3px 0;
     font-size: 9px;
   }
 
   .round-chip-score {
-    padding: 5px 0;
-    font-size: 14px;
+    padding: 4px 0;
+    font-size: 13px;
   }
 }
 
@@ -1390,7 +1391,7 @@ button { cursor: pointer; }
   #game-screen {
     gap: 3px;
     padding: 3px;
-    grid-template-rows: auto auto auto auto auto minmax(44px, 1fr);
+    grid-template-rows: auto auto auto auto auto auto;
   }
 
   .team-card {
@@ -1705,7 +1706,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.08.02</p>
+    <p class="sub" id="app-version-label">Version 2026.06.08.03</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1717,7 +1718,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.08.02';
+  const APP_VERSION = '2026.06.08.03';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -2955,7 +2956,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.02', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.03', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
