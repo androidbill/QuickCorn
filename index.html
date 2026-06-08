@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.06" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.06" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.06" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.06" />
-<script src="./iro.min.js?v=2026.06.08.06"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.08" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.08" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.08" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.08" />
+<script src="./iro.min.js?v=2026.06.08.08"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1029,7 +1029,7 @@ button { cursor: pointer; }
   .total-mode .entry-btn-num { font-size: 30px; }
   .bottom-bar {
     grid-template-columns: 34px 1fr 34px;
-    gap: 3px;
+    gap: 6px;
     padding: 0 3px;
     height: 28px;
   }
@@ -1324,7 +1324,7 @@ button { cursor: pointer; }
     height: 60px;
     align-self: stretch;
     padding: 0 3px;
-    gap: 0;
+    gap: 5px;
     border-radius: 14px;
   }
 
@@ -1447,6 +1447,21 @@ button { cursor: pointer; }
 
   .history-card .section-title {
     font-size: 8px;
+  }
+}
+
+/* Final phone spacing override so shorter device-height rules cannot collapse rows together. */
+@media (max-width: 430px) {
+  #game-screen {
+    gap: 6px;
+    grid-template-rows: auto auto auto auto auto auto;
+  }
+}
+
+@media (max-width: 430px) and (max-height: 780px) {
+  #game-screen {
+    gap: 5px;
+    grid-template-rows: auto auto auto auto auto auto;
   }
 }
 
@@ -1708,7 +1723,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.08.06</p>
+    <p class="sub" id="app-version-label">Version 2026.06.08.08</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1720,7 +1735,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.08.06';
+  const APP_VERSION = '2026.06.08.08';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -2967,7 +2982,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.06', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.08', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
