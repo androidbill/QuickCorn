@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.03" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.03" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.03" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.03" />
-<script src="./iro.min.js?v=2026.06.08.03"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.08.04" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.08.04" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.08.04" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.08.04" />
+<script src="./iro.min.js?v=2026.06.08.04"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -39,13 +39,14 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { min-height: 100%; background: var(--bg); color: var(--text); overflow-x: hidden; }
+html, body { height: var(--qc-viewport-height, 100dvh); overflow-y: hidden; }
 body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 .hidden { display: none !important; }
 #app {
-  height: 100dvh;
-  min-height: 100dvh;
+  height: var(--qc-viewport-height, 100dvh);
+  min-height: var(--qc-viewport-height, 100dvh);
   display: grid;
   grid-template-rows: auto 1fr;
   width: 100%;
@@ -1209,8 +1210,8 @@ button { cursor: pointer; }
 
   #game-screen {
     grid-template-rows: auto auto auto auto auto auto;
-    align-content: stretch;
-    gap: 4px;
+    align-content: start;
+    gap: 0;
     padding: 4px;
   }
 
@@ -1223,7 +1224,7 @@ button { cursor: pointer; }
   }
 
   .team-card {
-    min-height: 70px;
+    min-height: 64px;
     padding: 7px;
   }
 
@@ -1247,7 +1248,7 @@ button { cursor: pointer; }
   }
 
   .score-box {
-    min-height: clamp(146px, 18.8dvh, 172px);
+    min-height: clamp(138px, 18dvh, 164px);
     padding: 0 4px;
     font-size: clamp(104px, 29vw, 148px);
     letter-spacing: -2px;
@@ -1255,7 +1256,7 @@ button { cursor: pointer; }
 
   .last-point-card {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
-    min-height: 38px;
+    min-height: 34px;
     padding: 4px 8px;
     gap: 6px;
     border-radius: 12px;
@@ -1281,7 +1282,7 @@ button { cursor: pointer; }
   }
 
   .entry-mode button {
-    min-height: 31px;
+    min-height: 29px;
     border-radius: 12px;
     font-size: 13px;
   }
@@ -1302,7 +1303,7 @@ button { cursor: pointer; }
   }
 
   .entry-btn {
-    min-height: clamp(34px, 4.9dvh, 44px);
+    min-height: clamp(32px, 4.6dvh, 40px);
     border-radius: 9px;
   }
 
@@ -1323,7 +1324,7 @@ button { cursor: pointer; }
     height: 60px;
     align-self: stretch;
     padding: 0 3px;
-    gap: 3px;
+    gap: 0;
     border-radius: 14px;
   }
 
@@ -1389,23 +1390,23 @@ button { cursor: pointer; }
   }
 
   #game-screen {
-    gap: 3px;
+    gap: 0;
     padding: 3px;
     grid-template-rows: auto auto auto auto auto auto;
   }
 
   .team-card {
-    min-height: 58px;
+    min-height: 54px;
     padding: 5px;
   }
 
   .score-box {
-    min-height: clamp(122px, 17dvh, 142px);
+    min-height: clamp(116px, 16.2dvh, 136px);
     font-size: clamp(94px, 27vw, 128px);
   }
 
   .last-point-card {
-    min-height: 32px;
+    min-height: 30px;
     padding: 3px 7px;
   }
 
@@ -1420,11 +1421,11 @@ button { cursor: pointer; }
   }
 
   .entry-mode button {
-    min-height: 28px;
+    min-height: 26px;
   }
 
   .entry-btn {
-    min-height: clamp(29px, 4.5dvh, 36px);
+    min-height: clamp(28px, 4.2dvh, 34px);
   }
 
   .entry-btn-num {
@@ -1706,7 +1707,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.08.03</p>
+    <p class="sub" id="app-version-label">Version 2026.06.08.04</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1718,9 +1719,17 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.08.03';
+  const APP_VERSION = '2026.06.08.04';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
+
+  function syncViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty('--qc-viewport-height', `${Math.floor(height)}px`);
+  }
+  syncViewportHeight();
+  window.addEventListener('resize', syncViewportHeight);
+  window.visualViewport?.addEventListener('resize', syncViewportHeight);
 
   const els = {
     menuBtn: document.getElementById('menu-btn'),
@@ -2956,7 +2965,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.03', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.08.04', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
