@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.07" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.07" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.07" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.07" />
-<script src="./iro.min.js?v=2026.06.21.07"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.08" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.08" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.08" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.08" />
+<script src="./iro.min.js?v=2026.06.21.08"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -250,7 +250,7 @@ button { cursor: pointer; }
 }
 .last-point-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr;
   align-items: end;
   column-gap: 8px;
@@ -303,19 +303,6 @@ button { cursor: pointer; }
   grid-row: 2;
   font-size: 18px;
   font-weight: 900;
-}
-.last-point-undo {
-  grid-column: 3;
-  grid-row: 1 / span 2;
-  align-self: center;
-  min-height: 30px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 900;
-  padding: 0 10px;
 }
 .score-box.last-point {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.22) inset, 0 0 0 1px rgba(255,255,255,0.1);
@@ -1357,12 +1344,6 @@ button { cursor: pointer; }
     font-size: 15px;
   }
 
-  .last-point-undo {
-    min-height: 28px;
-    padding: 0 9px;
-    font-size: 12px;
-  }
-
   .entry-mode button {
     min-height: 60px;
     border-radius: 12px;
@@ -1515,11 +1496,6 @@ button { cursor: pointer; }
     font-size: 13px;
   }
 
-  .last-point-undo {
-    min-height: 25px;
-    font-size: 11px;
-  }
-
   .entry-mode button {
     min-height: 56px;
   }
@@ -1580,10 +1556,6 @@ button { cursor: pointer; }
     font-size: 30px;
     line-height: 1;
   }
-
-  .last-point-undo {
-    font-size: 22px;
-  }
 }
 
 @media (max-width: 430px) and (max-height: 780px) {
@@ -1594,10 +1566,6 @@ button { cursor: pointer; }
   .last-point-name,
   .last-point-value {
     font-size: 26px;
-  }
-
-  .last-point-undo {
-    font-size: 20px;
   }
 }
 
@@ -1654,7 +1622,6 @@ button { cursor: pointer; }
       <div class="last-point-label">Last Point</div>
       <div class="last-point-name" id="last-point-name">No points yet</div>
       <div class="last-point-value" id="last-point-value">0</div>
-      <button class="last-point-undo" id="undo-last-round-btn" type="button">Undo</button>
     </div>
 
     <div class="team-icons">
@@ -1859,7 +1826,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.21.07</p>
+    <p class="sub" id="app-version-label">Version 2026.06.21.08</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1871,7 +1838,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.21.07';
+  const APP_VERSION = '2026.06.21.08';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1900,7 +1867,6 @@ button { cursor: pointer; }
     lastPointCard: document.getElementById('last-point-card'),
     lastPointName: document.getElementById('last-point-name'),
     lastPointValue: document.getElementById('last-point-value'),
-    undoLastRoundBtn: document.getElementById('undo-last-round-btn'),
     roundNet: document.getElementById('round-net'), roundNum: document.getElementById('round-num'),
     submitBtn: document.getElementById('submit-btn'), history: document.getElementById('round-history'),
     redEntryContent: document.getElementById('red-entry-content'), blueEntryContent: document.getElementById('blue-entry-content'),
@@ -2384,28 +2350,6 @@ button { cursor: pointer; }
       s.fourBaggers = (s.fourBaggers || []).filter(entry => entry.id !== id);
     });
   }
-  function undoLastRound() {
-    if (!state.game.rounds.length) {
-      alert('No rounds to undo.');
-      return;
-    }
-    if (!confirm('Undo the last round?')) return;
-    setState(s => {
-      const index = s.game.rounds.length - 1;
-      s.game.rounds.pop();
-      s.game.editingRound = null;
-      s.game.currentEntry.red = { in: 0, on: 0, total: null };
-      s.game.currentEntry.blue = { in: 0, on: 0, total: null };
-      const prefix = `${s.game.sessionId}-${index}-`;
-      s.fourBaggers = (s.fourBaggers || []).filter(entry => !String(entry.id || '').startsWith(prefix));
-      if (s.game.historyEntryId) {
-        s.gameHistory = (s.gameHistory || []).filter(entry => entry.id !== s.game.historyEntryId);
-        s.game.historyEntryId = null;
-      }
-    });
-    closeModal('win-modal-wrap');
-  }
-
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   function closeAllMenus() { els.menuDropdown.classList.remove('open'); }
@@ -3006,7 +2950,6 @@ button { cursor: pointer; }
     if (e.key === 'Enter') addManagedPlayer();
   });
   els.submitBtn.addEventListener('click', submitRound);
-  els.undoLastRoundBtn.addEventListener('click', undoLastRound);
   els.playAgainBtn.addEventListener('click', playAgain);
   els.shareResultsBtn.addEventListener('click', shareGameResults);
   els.teamRedCard.addEventListener('click', (e) => { if (!e.target.closest('button')) openTeamsModal(); });
@@ -3136,7 +3079,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.07', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.08', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
