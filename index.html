@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.06" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.06" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.06" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.06" />
-<script src="./iro.min.js?v=2026.06.21.06"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.07" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.07" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.07" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.07" />
+<script src="./iro.min.js?v=2026.06.21.07"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -465,13 +465,16 @@ button { cursor: pointer; }
   text-align: center;
 }
 .entry-grid {
+  --entry-btn-height: 58px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(4, var(--entry-btn-height));
   gap: 6px;
 }
 .entry-grid.total-mode { grid-template-columns: repeat(3, 1fr); }
 .entry-btn {
-  min-height: 58px;
+  height: var(--entry-btn-height);
+  min-height: 0;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--panel-2);
@@ -985,8 +988,10 @@ button { cursor: pointer; }
   .entry-panel { padding: 5px; gap: 5px; border-radius: 14px; }
   .entry-label { font-size: 10px; }
   .entry-grid { gap: 4px; }
+  .entry-grid {
+    --entry-btn-height: 36px;
+  }
   .entry-btn {
-    min-height: 36px;
     font-size: 18px;
     border-radius: 9px;
   }
@@ -1041,8 +1046,10 @@ button { cursor: pointer; }
     padding: 0 5px;
   }
   .entry-panel { padding: 4px; }
+  .entry-grid {
+    --entry-btn-height: 32px;
+  }
   .entry-btn {
-    min-height: 32px;
     font-size: 16px;
   }
   .entry-btn-num { font-size: 30px; }
@@ -1090,7 +1097,8 @@ button { cursor: pointer; }
   .entry-panel { padding: 4px; gap: 4px; }
   .entry-label { font-size: 9px; }
   .entry-grid { gap: 3px; }
-  .entry-btn { min-height: 30px; font-size: 15px; }
+  .entry-grid { --entry-btn-height: 30px; }
+  .entry-btn { font-size: 15px; }
   .entry-btn-num { font-size: 28px; }
   .entry-btn-kind { font-size: 8px; }
   .total-mode .entry-btn-num { font-size: 30px; }
@@ -1376,8 +1384,11 @@ button { cursor: pointer; }
     gap: 3px;
   }
 
+  .entry-grid {
+    --entry-btn-height: clamp(32px, 4.6dvh, 40px);
+  }
+
   .entry-btn {
-    min-height: clamp(32px, 4.6dvh, 40px);
     border-radius: 9px;
   }
 
@@ -1513,8 +1524,12 @@ button { cursor: pointer; }
     min-height: 56px;
   }
 
+  .entry-grid {
+    --entry-btn-height: clamp(28px, 4.2dvh, 34px);
+  }
+
   .entry-btn {
-    min-height: clamp(28px, 4.2dvh, 34px);
+    min-height: 0;
   }
 
   .entry-btn-num {
@@ -1844,7 +1859,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.21.06</p>
+    <p class="sub" id="app-version-label">Version 2026.06.21.07</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1856,7 +1871,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.21.06';
+  const APP_VERSION = '2026.06.21.07';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -3121,7 +3136,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.06', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.07', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
