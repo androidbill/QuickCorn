@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.01" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.01" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.01" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.01" />
-<script src="./iro.min.js?v=2026.06.21.01"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.22.01" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.22.01" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.22.01" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.22.01" />
+<script src="./iro.min.js?v=2026.06.22.01"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -271,9 +271,9 @@ button { cursor: pointer; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
-  padding: 0 10px;
-  border-radius: 10px;
+  min-height: 15px;
+  padding: 0 5px;
+  border-radius: 5px;
   border: 1px solid rgba(255,255,255,0.18);
   background: #05070c;
   font-size: 9px;
@@ -1536,7 +1536,7 @@ button { cursor: pointer; }
 
 @media (max-width: 430px) {
   .last-point-label {
-    font-size: 16px;
+    font-size: 8px;
     line-height: 1;
   }
 
@@ -1553,7 +1553,7 @@ button { cursor: pointer; }
 
 @media (max-width: 430px) and (max-height: 780px) {
   .last-point-label {
-    font-size: 14px;
+    font-size: 7px;
   }
 
   .last-point-name,
@@ -1824,7 +1824,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.21.01</p>
+    <p class="sub" id="app-version-label">Version 2026.06.22.01</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1836,7 +1836,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.21.01';
+  const APP_VERSION = '2026.06.22.01';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -3101,7 +3101,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.01', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.22.01', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
