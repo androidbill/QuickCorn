@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.04" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.04" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.04" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.04" />
-<script src="./iro.min.js?v=2026.06.21.04"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.05" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.05" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.05" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.05" />
+<script src="./iro.min.js?v=2026.06.21.05"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -450,8 +450,14 @@ button { cursor: pointer; }
   flex-direction: column;
   gap: 8px;
 }
-.entry-panel.red { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-red) 35%, transparent); }
-.entry-panel.blue { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-blue) 35%, transparent); }
+.entry-panel.red {
+  border-color: color-mix(in srgb, var(--team-red) 78%, var(--border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-red) 35%, transparent);
+}
+.entry-panel.blue {
+  border-color: color-mix(in srgb, var(--team-blue) 78%, var(--border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team-blue) 35%, transparent);
+}
 .entry-label {
   font-weight: 800;
   letter-spacing: 1px;
@@ -521,22 +527,10 @@ button { cursor: pointer; }
   color: var(--muted);
   font-weight: 800;
 }
-.entry-mode button.team-red-border {
-  border-color: color-mix(in srgb, var(--team-red) 72%, var(--border));
-}
-.entry-mode button.team-blue-border {
-  border-color: color-mix(in srgb, var(--team-blue) 72%, var(--border));
-}
 .entry-mode button.active {
   background: var(--panel-3);
   color: var(--text);
   border-color: var(--green);
-}
-.entry-mode button.team-red-border.active {
-  border-color: color-mix(in srgb, var(--team-red) 82%, #fff 8%);
-}
-.entry-mode button.team-blue-border.active {
-  border-color: color-mix(in srgb, var(--team-blue) 82%, #fff 8%);
 }
 .bottom-bar {
   display:grid;
@@ -1670,8 +1664,8 @@ button { cursor: pointer; }
 
     <div class="entry-card">
       <div class="entry-mode">
-        <button class="team-red-border" id="mode-acl-btn">IN / ON</button>
-        <button class="team-blue-border" id="mode-total-btn">TOTAL</button>
+        <button id="mode-acl-btn">IN / ON</button>
+        <button id="mode-total-btn">TOTAL</button>
       </div>
 
       <div class="entry-panels">
@@ -1851,7 +1845,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.21.04</p>
+    <p class="sub" id="app-version-label">Version 2026.06.21.05</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1863,7 +1857,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.21.04';
+  const APP_VERSION = '2026.06.21.05';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -3128,7 +3122,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.04', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.05', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
