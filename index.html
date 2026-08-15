@@ -2576,6 +2576,8 @@ button { cursor: pointer; }
         ...(s.playerHistory || [])
       ]);
     });
+    // Saving teams starts the game fresh, so the new lineup begins at 0-0.
+    resetGame();
     closeModal('teams-modal-wrap');
   }
 
