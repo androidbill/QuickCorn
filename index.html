@@ -707,6 +707,32 @@ button { cursor: pointer; }
   font-size: 13px;
   margin-bottom: 12px;
 }
+.swap-colors-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.swap-colors-btn:active { background: var(--panel); }
+.swap-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.swap-swatch.left { background: var(--team-red); }
+.swap-swatch.right { background: var(--team-blue); }
 .team-fields { margin-bottom: 12px; }
 .team-fields-title {
   font-size: 12px;
@@ -1819,6 +1845,11 @@ button { cursor: pointer; }
         <div class="field" id="field-blue2"><label>Player 2</label><input id="in-blue2" maxlength="14" list="player-history-list" /></div>
       </div>
     </div>
+    <button type="button" class="swap-colors-btn" id="swap-colors-btn">
+      <span class="swap-swatch left" aria-hidden="true"></span>
+      <span>&#8646; Swap Colors</span>
+      <span class="swap-swatch right" aria-hidden="true"></span>
+    </button>
     <div id="first-shooter-wrap" class="first-shooter-wrap">
       <div class="first-shooter-group">
         <div class="first-shooter-title">Starting Matchup</div>
@@ -1957,6 +1988,7 @@ button { cursor: pointer; }
     inBlue1: document.getElementById('in-blue1'), inBlue2: document.getElementById('in-blue2'),
     playerHistoryList: document.getElementById('player-history-list'),
     fieldRed2: document.getElementById('field-red2'), fieldBlue2: document.getElementById('field-blue2'),
+    swapColorsBtn: document.getElementById('swap-colors-btn'),
     teamsMode1v1: document.getElementById('teams-mode-1v1'), teamsMode2v2: document.getElementById('teams-mode-2v2'),
     firstShooterWrap: document.getElementById('first-shooter-wrap'),
     firstPair0: document.getElementById('first-pair-0'), firstPair1: document.getElementById('first-pair-1'),
@@ -2552,6 +2584,14 @@ button { cursor: pointer; }
     });
     renderFirstShooterButtons();
   }
+  function swapTeamColors() {
+    setState(s => {
+      const left = s.teamColors.red;
+      s.teamColors.red = s.teamColors.blue;
+      s.teamColors.blue = left;
+    });
+    syncColorPickerUI();
+  }
   function saveTeams() {
     setState(s => {
       s.mode = state.ui.draftTeamMode;
@@ -3035,6 +3075,7 @@ button { cursor: pointer; }
   els.firstPair0.addEventListener('click', () => setStartingPair(0));
   els.firstPair1.addEventListener('click', () => setStartingPair(1));
   [els.inRed1, els.inRed2, els.inBlue1, els.inBlue2].forEach(input => input.addEventListener('input', renderFirstShooterButtons));
+  els.swapColorsBtn.addEventListener('click', swapTeamColors);
   els.saveTeamsBtn.addEventListener('click', saveTeams);
   els.setAclBtn.addEventListener('click', () => setScoringMode('acl'));
   els.setTotalBtn.addEventListener('click', () => setScoringMode('total'));
