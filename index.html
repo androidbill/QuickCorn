@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.06.21.09" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.06.21.09" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.06.21.09" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.06.21.09" />
-<script src="./iro.min.js?v=2026.06.21.09"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.08.15.01" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.08.15.01" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.08.15.01" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.08.15.01" />
+<script src="./iro.min.js?v=2026.08.15.01"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -112,6 +112,52 @@ button { cursor: pointer; }
   min-height: 44px;
 }
 .dropdown button:active { background: var(--panel-2); }
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 8px;
+}
+.dropdown button.menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+.menu-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.menu-toggle-label small {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--muted);
+  white-space: normal;
+}
+.menu-pill {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background 0.15s ease;
+}
+.menu-pill-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.menu-toggle.on .menu-pill { background: var(--green); border-color: var(--green); }
+.menu-toggle.on .menu-pill-knob { transform: translateX(16px); background: #fff; }
 .app-prompt {
   position: fixed;
   left: 50%;
@@ -1570,6 +1616,12 @@ button { cursor: pointer; }
       <button data-action="history">Game History</button>
       <button data-action="fourBaggers">4-Baggers</button>
       <button data-action="players">Players</button>
+      <div class="menu-divider"></div>
+      <button class="menu-toggle" id="track-in-on-btn" data-action="toggleInOn" type="button" role="switch" aria-checked="false">
+        <span class="menu-toggle-label">Track IN / ON<small>Ask for the bag split on 3, 4 and 6</small></span>
+        <span class="menu-pill" aria-hidden="true"><span class="menu-pill-knob"></span></span>
+      </button>
+      <div class="menu-divider"></div>
       <button data-action="share">Share</button>
       <button data-action="refresh">Refresh</button>
       <button data-action="restart">New Game</button>
@@ -1812,7 +1864,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.06.21.09</p>
+    <p class="sub" id="app-version-label">Version 2026.08.15.01</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1824,7 +1876,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.06.21.09';
+  const APP_VERSION = '2026.08.15.01';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1886,6 +1938,7 @@ button { cursor: pointer; }
     breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
     winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'), shareResultsBtn: document.getElementById('share-results-btn'),
     appVersionLabel: document.getElementById('app-version-label'),
+    trackInOnBtn: document.getElementById('track-in-on-btn'),
     aboutModalWrap: document.getElementById('about-modal-wrap'),
     teamRedCard: document.getElementById('team-red-card'), teamBlueCard: document.getElementById('team-blue-card')
   };
@@ -1895,6 +1948,7 @@ button { cursor: pointer; }
       screen: 'game',
       mode: '2v2',
       scoringMode: 'acl',
+      trackInOn: false,
       teamColors: { red: '#e8332a', blue: '#1a6fe8' },
       teamThrowSide: { red: null, blue: null },
       firstShooter: { red: 0, blue: 0 },
@@ -2512,12 +2566,30 @@ button { cursor: pointer; }
       entry.total = entry.in * 3 + entry.on;
     });
   }
+  function toggleTrackInOn() {
+    setState(s => {
+      s.trackInOn = !s.trackInOn;
+      s.ui.breakdown = null;
+    });
+    closeModal('breakdown-modal-wrap');
+  }
+  function renderMenuToggles() {
+    if (!els.trackInOnBtn) return;
+    els.trackInOnBtn.classList.toggle('on', !!state.trackInOn);
+    els.trackInOnBtn.setAttribute('aria-checked', state.trackInOn ? 'true' : 'false');
+  }
   function setTotalValue(team, value) {
     const options = entryBreakdownOptions(value);
     if (options.length === 1) {
       const opt = options[0];
       setState(s => {
         s.game.currentEntry[team] = { in: opt.in, on: opt.on, total: value };
+      });
+      return;
+    }
+    if (!state.trackInOn) {
+      setState(s => {
+        s.game.currentEntry[team] = { in: 0, on: 0, total: value };
       });
       return;
     }
@@ -2874,6 +2946,7 @@ button { cursor: pointer; }
   }
   function render() {
     applyTheme();
+    renderMenuToggles();
     renderGame();
     renderGameHistory();
     renderFourBaggers();
@@ -2890,6 +2963,11 @@ button { cursor: pointer; }
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const action = btn.dataset.action;
+    if (action === 'toggleInOn') {
+      e.stopPropagation();
+      toggleTrackInOn();
+      return;
+    }
     closeAllMenus();
     if (action === 'tournament') openTournamentApp();
     if (action === 'history') showScreen('history');
@@ -3065,7 +3143,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.06.21.09', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.08.15.01', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
