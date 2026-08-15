@@ -1,13 +1,19 @@
-const CACHE_NAME = 'quickcorn-2026.08.15.04';
+// The version comes from the ?v= that index.html registers this worker with,
+// which in turn comes from version.js - the one place the version is written.
+// A bump therefore gives this worker a new script URL, which is what makes the
+// browser install it, and a new cache name, which clears the old shell.
+const APP_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
+const CACHE_NAME = `quickcorn-${APP_VERSION}`;
 const APP_SHELL = [
   './',
-  './index.html?v=2026.08.15.04',
-  './manifest.webmanifest?v=2026.08.15.04',
-  './quickcorn-icon.svg?v=2026.08.15.04',
-  './quickcorn-icon-180.png?v=2026.08.15.04',
-  './quickcorn-icon-192.png?v=2026.08.15.04',
-  './quickcorn-icon-512.png?v=2026.08.15.04',
-  './iro.min.js?v=2026.08.15.04'
+  './index.html',
+  './version.js',
+  './manifest.webmanifest',
+  './quickcorn-icon.svg',
+  './quickcorn-icon-180.png',
+  './quickcorn-icon-192.png',
+  './quickcorn-icon-512.png',
+  './iro.min.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -57,12 +63,13 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html?v=2026.08.15.04'));
+    event.respondWith(networkFirst(event.request, './index.html'));
     return;
   }
 
   const isAppShellAsset =
     url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/version.js') ||
     url.pathname.endsWith('/manifest.webmanifest') ||
     url.pathname.endsWith('/quickcorn-icon.svg') ||
     url.pathname.endsWith('/quickcorn-icon-180.png') ||

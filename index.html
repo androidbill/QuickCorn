@@ -10,11 +10,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.08.15.04" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.08.15.04" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.08.15.04" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.08.15.04" />
-<script src="./iro.min.js?v=2026.08.15.04"></script>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./quickcorn-icon.svg" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png" />
+<script src="./version.js"></script>
+<script src="./iro.min.js"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -1635,7 +1636,7 @@ button { cursor: pointer; }
   <div class="header">
     <div class="brand">
       <div class="brand-title">QuickCorn</div>
-      <div class="brand-sub" id="brand-version">v2026.08.15.04</div>
+      <div class="brand-sub" id="brand-version"></div>
     </div>
     <button class="icon-btn" id="menu-btn" aria-label="Menu">&#8942;</button>
     <div class="dropdown" id="menu-dropdown">
@@ -1903,7 +1904,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.08.15.04</p>
+    <p class="sub" id="app-version-label"></p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1915,7 +1916,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.08.15.04';
+  const APP_VERSION = self.APP_VERSION || 'dev';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -3191,7 +3192,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.08.15.04', { updateViaCache: 'none' })
+    navigator.serviceWorker.register(`./service-worker.js?v=${self.APP_VERSION || 'dev'}`, { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
