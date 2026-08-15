@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="QuickCorn" />
-<link rel="manifest" href="./manifest.webmanifest?v=2026.08.15.01" />
-<link rel="icon" href="./quickcorn-icon.svg?v=2026.08.15.01" type="image/svg+xml" />
-<link rel="icon" href="./quickcorn-icon-192.png?v=2026.08.15.01" sizes="192x192" type="image/png" />
-<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.08.15.01" />
-<script src="./iro.min.js?v=2026.08.15.01"></script>
+<link rel="manifest" href="./manifest.webmanifest?v=2026.08.15.02" />
+<link rel="icon" href="./quickcorn-icon.svg?v=2026.08.15.02" type="image/svg+xml" />
+<link rel="icon" href="./quickcorn-icon-192.png?v=2026.08.15.02" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="./quickcorn-icon-180.png?v=2026.08.15.02" />
+<script src="./iro.min.js?v=2026.08.15.02"></script>
 <style>
 :root {
   --bg: #0d1b2a;
@@ -296,7 +296,7 @@ button { cursor: pointer; }
 }
 .last-point-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr;
   align-items: end;
   column-gap: 8px;
@@ -344,8 +344,16 @@ button { cursor: pointer; }
   font-size: 17px;
   font-weight: 900;
 }
-.last-point-value {
+.last-point-card .next-first-label {
   grid-column: 2;
+  grid-row: 1;
+}
+.last-point-card .next-first-name {
+  grid-column: 2;
+  grid-row: 2;
+}
+.last-point-value {
+  grid-column: 3;
   grid-row: 2;
   font-size: 18px;
   font-weight: 900;
@@ -1362,7 +1370,7 @@ button { cursor: pointer; }
   }
 
   .last-point-card {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
     grid-template-rows: auto 1fr;
     min-height: 60px;
     padding: 4px 8px;
@@ -1585,7 +1593,7 @@ button { cursor: pointer; }
 
   .last-point-name,
   .last-point-value {
-    font-size: 30px;
+    font-size: 22px;
     line-height: 1;
   }
 }
@@ -1597,7 +1605,7 @@ button { cursor: pointer; }
 
   .last-point-name,
   .last-point-value {
-    font-size: 26px;
+    font-size: 19px;
   }
 }
 
@@ -1659,6 +1667,8 @@ button { cursor: pointer; }
     <div class="last-point-card" id="last-point-card">
       <div class="last-point-label">Last Point</div>
       <div class="last-point-name" id="last-point-name">No points yet</div>
+      <div class="last-point-label next-first-label">Shooting First</div>
+      <div class="last-point-name next-first-name" id="next-first-name">&mdash;</div>
       <div class="last-point-value" id="last-point-value">0</div>
     </div>
 
@@ -1864,7 +1874,7 @@ button { cursor: pointer; }
 <div class="modal-wrap" id="about-modal-wrap">
   <div class="modal">
     <h2>QuickCorn</h2>
-    <p class="sub" id="app-version-label">Version 2026.08.15.01</p>
+    <p class="sub" id="app-version-label">Version 2026.08.15.02</p>
     <div class="small-help">
       Created by: Bill Parsons
     </div>
@@ -1876,7 +1886,7 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = '2026.08.15.01';
+  const APP_VERSION = '2026.08.15.02';
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -1905,6 +1915,7 @@ button { cursor: pointer; }
     lastPointCard: document.getElementById('last-point-card'),
     lastPointName: document.getElementById('last-point-name'),
     lastPointValue: document.getElementById('last-point-value'),
+    nextFirstName: document.getElementById('next-first-name'),
     roundNet: document.getElementById('round-net'), roundNum: document.getElementById('round-num'),
     submitBtn: document.getElementById('submit-btn'), history: document.getElementById('round-history'),
     redEntryContent: document.getElementById('red-entry-content'), blueEntryContent: document.getElementById('blue-entry-content'),
@@ -2722,17 +2733,23 @@ button { cursor: pointer; }
     if (!lastScoringRound) {
       els.lastPointName.textContent = 'No points yet';
       els.lastPointValue.textContent = '0';
+      if (els.nextFirstName) els.nextFirstName.textContent = '—';
       return;
     }
     const side = lastScoringRound.redNet > 0 ? 'red' : 'blue';
     const points = side === 'red' ? lastScoringRound.redNet : lastScoringRound.blueNet;
     const shooterIndex = currentThrower(side, lastScoringIndex);
     const shooterName = safeText(state.teams[side].players[shooterIndex], getTeamDisplay(side));
-    const teamName = getTeamDisplay(side);
     els.lastPointCard.classList.add(side);
     els[side === 'red' ? 'scoreRed' : 'scoreBlue'].classList.add('last-point');
-    els.lastPointName.textContent = state.mode === '2v2' ? `${shooterName} (${teamName})` : teamName;
+    els.lastPointName.textContent = shooterName;
     els.lastPointValue.textContent = `+${points} R${lastScoringIndex + 1}`;
+    if (els.nextFirstName) {
+      // The side that scored last throws first in the next round.
+      const nextRoundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
+      const nextShooterIndex = currentThrower(side, nextRoundIndex);
+      els.nextFirstName.textContent = safeText(state.teams[side].players[nextShooterIndex], getTeamDisplay(side));
+    }
   }
   function renderPlayers() {
     const roundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
@@ -3143,7 +3160,7 @@ if ('serviceWorker' in navigator) {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./service-worker.js?v=2026.08.15.01', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('./service-worker.js?v=2026.08.15.02', { updateViaCache: 'none' })
       .then((registration) => {
         if (registration.waiting && window.quickcornShowUpdatePrompt) {
           window.quickcornShowUpdatePrompt(registration);
