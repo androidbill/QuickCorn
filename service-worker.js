@@ -82,14 +82,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Anything else is served from cache for speed but revalidated in the
+  // background, so a file that is not listed above can never be pinned to an
+  // old copy forever.
   event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
     const cached = await caches.match(event.request);
-    if (cached) return cached;
-    const response = await fetch(event.request);
-    if (response && response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(event.request, response.clone());
+    const network = fetch(event.request).then((response) => {
+      if (response && response.ok) cache.put(event.request, response.clone());
+      return response;
+    });
+    if (cached) {
+      event.waitUntil(network.catch(() => {}));
+      return cached;
     }
-    return response;
+    return network;
   })());
 });

@@ -10,4 +10,4 @@
  *   service-worker.js reads that ?v= off its own URL, so a bump gives it a new
  *                     script URL and a new cache name without editing it
  */
-self.APP_VERSION = '2026.08.15.08';
+self.APP_VERSION = '2026.08.15.09';

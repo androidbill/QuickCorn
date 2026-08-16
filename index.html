@@ -3048,7 +3048,7 @@ button { cursor: pointer; }
     if (action === 'fourBaggers') showScreen('fourBaggers');
     if (action === 'players') showScreen('players');
     if (action === 'share') shareApp();
-    if (action === 'refresh') window.location.reload();
+    if (action === 'refresh') applyUpdate();
     if (action === 'restart') { if (confirm('Start a new game?')) resetGame(); }
     if (action === 'about') showModal('about-modal-wrap');
   });
@@ -3165,7 +3165,6 @@ button { cursor: pointer; }
   render();
 
   let deferredInstallPrompt = null;
-  let waitingRegistration = null;
   function showAppPrompt(message, actionText, action) {
     if (!els.appPrompt) return;
     els.appPromptText.textContent = message;
@@ -3187,15 +3186,57 @@ button { cursor: pointer; }
     });
   });
   if (els.appPromptDismiss) els.appPromptDismiss.addEventListener('click', hideAppPrompt);
-  window.quickcornShowUpdatePrompt = (registration) => {
-    waitingRegistration = registration;
-    showAppPrompt('QuickCorn update available.', 'Update', () => {
-      if (waitingRegistration && waitingRegistration.waiting) {
-        waitingRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  // Update detection deliberately does not use the service worker lifecycle.
+  // That path was unreliable here: the worker calls skipWaiting() during
+  // install, so it never sits in "waiting", which left the old prompt with a
+  // null registration.waiting and a button that did nothing.
+  // Instead the live version.js is fetched and compared with the version this
+  // page booted with, which is a plain string comparison that cannot race.
+  let updatePromptShown = false;
+  async function fetchLiveVersion() {
+    // The timestamp defeats both the HTTP cache and any cache-first service
+    // worker that an older build may have left behind on the device.
+    const response = await fetch(`./version.js?ts=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) return null;
+    const text = await response.text();
+    const match = text.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    return match ? match[1] : null;
+  }
+  async function applyUpdate() {
+    hideAppPrompt();
+    // Drop every cache and worker so the reload is served entirely from the
+    // network. The fresh page registers the worker again on load.
+    try {
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
       }
-      hideAppPrompt();
-    });
-  };
+      if (navigator.serviceWorker) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(registration => registration.unregister()));
+      }
+    } catch (error) {
+      console.warn('QuickCorn update cleanup failed.', error);
+    }
+    window.location.reload();
+  }
+  async function checkForUpdate() {
+    if (updatePromptShown) return;
+    try {
+      const liveVersion = await fetchLiveVersion();
+      if (!liveVersion || liveVersion === APP_VERSION) return;
+      updatePromptShown = true;
+      showAppPrompt(`Update to ${liveVersion}`, 'Refresh', applyUpdate);
+    } catch {
+      // Offline or blocked. The next check picks it up.
+    }
+  }
+  window.quickcornCheckForUpdate = checkForUpdate;
+  checkForUpdate();
+  setInterval(checkForUpdate, 15 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
 })();
 
 // Clear team name fields on first focus after modal opens
@@ -3210,28 +3251,14 @@ document.addEventListener('focusin', (e) => {
 
 </script>
 <script>
+// The worker is registered for offline use only. It no longer drives the
+// update prompt, and it no longer reloads the page on controllerchange - that
+// auto-reload used to race the prompt and fire at unpredictable moments.
+// Update detection lives in the main script and polls version.js.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
     navigator.serviceWorker.register(`./service-worker.js?v=${self.APP_VERSION || 'dev'}`, { updateViaCache: 'none' })
       .then((registration) => {
-        if (registration.waiting && window.quickcornShowUpdatePrompt) {
-          window.quickcornShowUpdatePrompt(registration);
-        }
-        registration.addEventListener('updatefound', () => {
-          const worker = registration.installing;
-          if (!worker) return;
-          worker.addEventListener('statechange', () => {
-            if (worker.state === 'installed' && navigator.serviceWorker.controller && window.quickcornShowUpdatePrompt) {
-              window.quickcornShowUpdatePrompt(registration);
-            }
-          });
-        });
         registration.update().catch(() => {});
       })
       .catch((error) => {
