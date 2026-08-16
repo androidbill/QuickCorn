@@ -147,6 +147,19 @@ export function toPx(expr, viewport) {
   return Number.isNaN(value) ? null : Math.round(value);
 }
 
+// Resolve a property and follow any var(--token) through :root, then render to
+// pixels. The type scale is defined as tokens on :root with a phone override,
+// so measuring it means dereferencing those at the viewport in question.
+export function computedPx(declarations, selector, prop, viewport, depth = 0) {
+  let value = resolve(declarations, selector, prop, viewport);
+  while (value && /^var\(\s*(--[\w-]+)\s*\)$/.test(value)) {
+    if (depth++ > 10) return null; // guard against a token cycle
+    const token = value.match(/^var\(\s*(--[\w-]+)\s*\)$/)[1];
+    value = resolve(declarations, ':root', token, viewport);
+  }
+  return toPx(value, viewport);
+}
+
 // The winning value for `selector`/`prop` at `viewport`: last matching
 // declaration wins, with !important beating non-important.
 export function resolve(declarations, selector, prop, viewport) {

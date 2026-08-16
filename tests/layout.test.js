@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadStylesheet, parseDeclarations, resolve, toPx } from './css-cascade.js';
+import { loadStylesheet, parseDeclarations, resolve, computedPx } from './css-cascade.js';
 
 // A snapshot of what the stylesheet actually resolves to at real device sizes.
 //
@@ -47,7 +47,7 @@ describe('type scale', () => {
     it(`renders at the expected sizes on ${name}`, () => {
       const sizes = {};
       for (const selector of TYPE_SELECTORS) {
-        sizes[selector] = toPx(resolve(declarations, selector, 'font-size', viewport), viewport);
+        sizes[selector] = computedPx(declarations, selector, 'font-size', viewport);
       }
       expect(sizes).toMatchSnapshot();
     });
@@ -67,7 +67,7 @@ describe('cascade invariants', () => {
   it('never renders type below 7px on any device', () => {
     for (const [name, viewport] of Object.entries(DEVICES)) {
       for (const selector of TYPE_SELECTORS) {
-        const px = toPx(resolve(declarations, selector, 'font-size', viewport), viewport);
+        const px = computedPx(declarations, selector, 'font-size', viewport);
         expect(px, `${selector} on ${name}`).toBeGreaterThanOrEqual(7);
       }
     }
