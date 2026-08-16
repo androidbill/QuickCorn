@@ -297,7 +297,7 @@ button { cursor: pointer; }
 }
 .last-point-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr;
   align-items: end;
   column-gap: 8px;
@@ -345,16 +345,8 @@ button { cursor: pointer; }
   font-size: 17px;
   font-weight: 900;
 }
-.last-point-card .next-first-label {
-  grid-column: 2;
-  grid-row: 1;
-}
-.last-point-card .next-first-name {
-  grid-column: 2;
-  grid-row: 2;
-}
 .last-point-value {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 2;
   font-size: 18px;
   font-weight: 900;
@@ -1416,7 +1408,7 @@ button { cursor: pointer; }
   }
 
   .last-point-card {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-rows: auto 1fr;
     min-height: 60px;
     padding: 4px 8px;
@@ -1639,7 +1631,7 @@ button { cursor: pointer; }
 
   .last-point-name,
   .last-point-value {
-    font-size: 22px;
+    font-size: 30px;
     line-height: 1;
   }
 }
@@ -1651,7 +1643,7 @@ button { cursor: pointer; }
 
   .last-point-name,
   .last-point-value {
-    font-size: 19px;
+    font-size: 26px;
   }
 }
 
@@ -1711,10 +1703,8 @@ button { cursor: pointer; }
     </div>
 
     <div class="last-point-card" id="last-point-card">
-      <div class="last-point-label">Last Point</div>
-      <div class="last-point-name" id="last-point-name">No points yet</div>
-      <div class="last-point-label next-first-label">Shooting First</div>
-      <div class="last-point-name next-first-name" id="next-first-name">&mdash;</div>
+      <div class="last-point-label">Next Up</div>
+      <div class="last-point-name" id="next-first-name">&mdash;</div>
       <div class="last-point-value" id="last-point-value">0</div>
     </div>
 
@@ -1974,7 +1964,6 @@ button { cursor: pointer; }
     blueP1: document.getElementById('blue-p1'), blueP2: document.getElementById('blue-p2'),
     scoreRed: document.getElementById('score-red'), scoreBlue: document.getElementById('score-blue'),
     lastPointCard: document.getElementById('last-point-card'),
-    lastPointName: document.getElementById('last-point-name'),
     lastPointValue: document.getElementById('last-point-value'),
     nextFirstName: document.getElementById('next-first-name'),
     roundNet: document.getElementById('round-net'), roundNum: document.getElementById('round-num'),
@@ -2805,25 +2794,19 @@ button { cursor: pointer; }
       }
     }
     if (!lastScoringRound) {
-      els.lastPointName.textContent = 'No points yet';
+      els.nextFirstName.textContent = 'No points yet';
       els.lastPointValue.textContent = '0';
-      if (els.nextFirstName) els.nextFirstName.textContent = '—';
       return;
     }
     const side = lastScoringRound.redNet > 0 ? 'red' : 'blue';
     const points = side === 'red' ? lastScoringRound.redNet : lastScoringRound.blueNet;
-    const shooterIndex = currentThrower(side, lastScoringIndex);
-    const shooterName = safeText(state.teams[side].players[shooterIndex], getTeamDisplay(side));
     els.lastPointCard.classList.add(side);
     els[side === 'red' ? 'scoreRed' : 'scoreBlue'].classList.add('last-point');
-    els.lastPointName.textContent = shooterName;
     els.lastPointValue.textContent = `+${points} R${lastScoringIndex + 1}`;
-    if (els.nextFirstName) {
-      // The side that scored last throws first in the next round.
-      const nextRoundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
-      const nextShooterIndex = currentThrower(side, nextRoundIndex);
-      els.nextFirstName.textContent = safeText(state.teams[side].players[nextShooterIndex], getTeamDisplay(side));
-    }
+    // The side that scored last throws first in the next round.
+    const nextRoundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
+    const nextShooterIndex = currentThrower(side, nextRoundIndex);
+    els.nextFirstName.textContent = safeText(state.teams[side].players[nextShooterIndex], getTeamDisplay(side));
   }
   function renderPlayers() {
     const roundIndex = state.game.editingRound != null ? state.game.editingRound : state.game.rounds.length;
