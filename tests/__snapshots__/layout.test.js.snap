@@ -1,0 +1,111 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`type scale > resolves as expected on phone large 430x932 1`] = `
+{
+  ".brand-sub": "9px",
+  ".brand-title": "17px",
+  ".entry-btn-kind": "8px",
+  ".entry-btn-num": "clamp(34px, 9vw, 42px)",
+  ".entry-label": "9px",
+  ".last-point-label": "8px",
+  ".last-point-name": "30px",
+  ".last-point-value": "30px",
+  ".primary-btn": "13px",
+  ".round-chip-head": "9px",
+  ".round-chip-score": "13px",
+  ".score-box": "clamp(104px, 29vw, 148px)",
+  ".section-title": "10px",
+  ".stat-label": "7px",
+  ".stat-value": "12px",
+  ".team-player": "32px",
+  ".team-player2": "24px",
+}
+`;
+
+exports[`type scale > resolves as expected on phone short 390x760 1`] = `
+{
+  ".brand-sub": "8px",
+  ".brand-title": "15px",
+  ".entry-btn-kind": "8px",
+  ".entry-btn-num": "clamp(30px, 8.5vw, 36px)",
+  ".entry-label": "9px",
+  ".last-point-label": "7px",
+  ".last-point-name": "26px",
+  ".last-point-value": "26px",
+  ".primary-btn": "13px",
+  ".round-chip-head": "9px",
+  ".round-chip-score": "13px",
+  ".score-box": "clamp(94px, 27vw, 128px)",
+  ".section-title": "9px",
+  ".stat-label": "7px",
+  ".stat-value": "12px",
+  ".team-player": "28px",
+  ".team-player2": "21px",
+}
+`;
+
+exports[`type scale > resolves as expected on phone tall 390x844 1`] = `
+{
+  ".brand-sub": "9px",
+  ".brand-title": "17px",
+  ".entry-btn-kind": "8px",
+  ".entry-btn-num": "clamp(34px, 9vw, 42px)",
+  ".entry-label": "9px",
+  ".last-point-label": "8px",
+  ".last-point-name": "30px",
+  ".last-point-value": "30px",
+  ".primary-btn": "13px",
+  ".round-chip-head": "9px",
+  ".round-chip-score": "13px",
+  ".score-box": "clamp(104px, 29vw, 148px)",
+  ".section-title": "10px",
+  ".stat-label": "7px",
+  ".stat-value": "12px",
+  ".team-player": "32px",
+  ".team-player2": "24px",
+}
+`;
+
+exports[`type scale > resolves as expected on small phone 360x640 1`] = `
+{
+  ".brand-sub": "8px",
+  ".brand-title": "15px",
+  ".entry-btn-kind": "8px",
+  ".entry-btn-num": "clamp(30px, 8.5vw, 36px)",
+  ".entry-label": "9px",
+  ".last-point-label": "7px",
+  ".last-point-name": "26px",
+  ".last-point-value": "26px",
+  ".primary-btn": "13px",
+  ".round-chip-head": "9px",
+  ".round-chip-score": "13px",
+  ".score-box": "clamp(94px, 27vw, 128px)",
+  ".section-title": "9px",
+  ".stat-label": "7px",
+  ".stat-value": "12px",
+  ".team-player": "28px",
+  ".team-player2": "21px",
+}
+`;
+
+exports[`type scale > resolves as expected on tablet 768x1024 1`] = `
+{
+  ".brand-sub": "11px",
+  ".brand-title": "20px",
+  ".entry-btn-kind": "13px",
+  ".entry-btn-num": "46px",
+  ".entry-label": "12px",
+  ".last-point-label": "9px",
+  ".last-point-name": "17px",
+  ".last-point-value": "18px",
+  ".primary-btn": "15px",
+  ".round-chip-head": "10px",
+  ".round-chip-score": "15px",
+  ".score-box": "clamp(68px, 20vw, 116px)",
+  ".section-title": "11px",
+  ".stat-label": "7px",
+  ".stat-value": "14px",
+  ".team-player": "20px",
+  ".team-player2": "17px",
+}
+`;
