@@ -1940,7 +1940,7 @@ button { cursor: pointer; }
   // the displayed version must describe the code actually running, and a
   // separate version file can be cached independently of this one, which lets
   // the two drift apart on a device.
-  const APP_VERSION = '2026.08.16.03';
+  const APP_VERSION = '2026.08.16.04';
   self.APP_VERSION = APP_VERSION;
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
@@ -2508,12 +2508,24 @@ button { cursor: pointer; }
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   function closeAllMenus() { els.menuDropdown.classList.remove('open'); }
+  // Only the screen on show is drawn. Scoring taps used to rebuild the game
+  // history and 4-bagger lists as well, sorting every stored record on every
+  // tap, and those lists grow for as long as the app is used.
+  function renderActiveScreen() {
+    if (state.screen === 'history') renderGameHistory();
+    else if (state.screen === 'fourBaggers') renderFourBaggers();
+    else if (state.screen === 'players') renderPlayersScreen();
+    else renderGame();
+  }
   function showScreen(screen) {
     state.screen = screen;
     els.gameScreen.style.display = screen === 'game' ? 'grid' : 'none';
     els.gameHistoryScreen.style.display = screen === 'history' ? 'block' : 'none';
     els.fourBaggersScreen.style.display = screen === 'fourBaggers' ? 'block' : 'none';
     els.playersScreen.style.display = screen === 'players' ? 'block' : 'none';
+    // Draw on reveal. A screen may have gone unrendered while it was hidden,
+    // so it cannot rely on a previous pass having filled it in.
+    renderActiveScreen();
     persist();
   }
   function openTournamentApp() {
@@ -3072,10 +3084,6 @@ button { cursor: pointer; }
   function render() {
     applyTheme();
     renderMenuToggles();
-    renderGame();
-    renderGameHistory();
-    renderFourBaggers();
-    renderPlayersScreen();
     showScreen(state.screen);
   }
 
