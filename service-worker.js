@@ -1,13 +1,12 @@
 // The version comes from the ?v= that index.html registers this worker with,
-// which in turn comes from version.js - the one place the version is written.
-// A bump therefore gives this worker a new script URL, which is what makes the
-// browser install it, and a new cache name, which clears the old shell.
+// which is where APP_VERSION is written. A bump therefore gives this worker a
+// new script URL, which is what makes the browser install it, and a new cache
+// name, which clears the old shell.
 const APP_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
 const CACHE_NAME = `quickcorn-${APP_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './version.js',
   './manifest.webmanifest',
   './quickcorn-icon.svg',
   './quickcorn-icon-180.png',
@@ -69,7 +68,6 @@ self.addEventListener('fetch', (event) => {
 
   const isAppShellAsset =
     url.pathname.endsWith('/index.html') ||
-    url.pathname.endsWith('/version.js') ||
     url.pathname.endsWith('/manifest.webmanifest') ||
     url.pathname.endsWith('/quickcorn-icon.svg') ||
     url.pathname.endsWith('/quickcorn-icon-180.png') ||

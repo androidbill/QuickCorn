@@ -14,7 +14,6 @@
 <link rel="icon" href="./quickcorn-icon.svg" type="image/svg+xml" />
 <link rel="icon" href="./quickcorn-icon-192.png" sizes="192x192" type="image/png" />
 <link rel="apple-touch-icon" href="./quickcorn-icon-180.png" />
-<script src="./version.js"></script>
 <script src="./iro.min.js"></script>
 <style>
 :root {
@@ -1937,7 +1936,12 @@ button { cursor: pointer; }
 
 <script>
 (() => {
-  const APP_VERSION = self.APP_VERSION || 'dev';
+  // The one place the version is written. It lives in index.html on purpose:
+  // the displayed version must describe the code actually running, and a
+  // separate version file can be cached independently of this one, which lets
+  // the two drift apart on a device.
+  const APP_VERSION = '2026.08.16.02';
+  self.APP_VERSION = APP_VERSION;
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
 
@@ -3190,16 +3194,17 @@ button { cursor: pointer; }
   // That path was unreliable here: the worker calls skipWaiting() during
   // install, so it never sits in "waiting", which left the old prompt with a
   // null registration.waiting and a button that did nothing.
-  // Instead the live version.js is fetched and compared with the version this
-  // page booted with, which is a plain string comparison that cannot race.
+  // Instead the live index.html is fetched and its version compared with the
+  // version this page booted with, a string comparison that cannot race.
   let updatePromptShown = false;
   async function fetchLiveVersion() {
-    // The timestamp defeats both the HTTP cache and any cache-first service
-    // worker that an older build may have left behind on the device.
-    const response = await fetch(`./version.js?ts=${Date.now()}`, { cache: 'no-store' });
+    // index.html is polled rather than a small side file, because the version
+    // has to describe this exact document. The timestamp defeats both the HTTP
+    // cache and any cache-first worker an older build left on the device.
+    const response = await fetch(`./index.html?ts=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return null;
     const text = await response.text();
-    const match = text.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    const match = text.match(/const\s+APP_VERSION\s*=\s*'([^']+)'/);
     return match ? match[1] : null;
   }
   async function applyUpdate() {
@@ -3254,7 +3259,7 @@ document.addEventListener('focusin', (e) => {
 // The worker is registered for offline use only. It no longer drives the
 // update prompt, and it no longer reloads the page on controllerchange - that
 // auto-reload used to race the prompt and fire at unpredictable moments.
-// Update detection lives in the main script and polls version.js.
+// Update detection lives in the main script and polls index.html.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`./service-worker.js?v=${self.APP_VERSION || 'dev'}`, { updateViaCache: 'none' })
