@@ -83,7 +83,7 @@ const LAYOUT_PAIRS = [
   ['.history-card', 'height'], ['.history-card', 'gap'], ['.history-card', 'max-height'],
   ['.history-scroller', 'gap'], ['.history-scroller', 'height'], ['.history-scroller', 'min-height'],
   ['.round-chip', 'min-width'], ['.round-chip', 'border-radius'],
-  ['.round-chip-head', 'padding'], ['.round-chip-score', 'padding'], ['.round-chip-label', 'padding'],
+  ['.round-chip-head', 'padding'], ['.round-chip-score', 'padding'],
   ['.pill', 'min-height'], ['.pill', 'border-radius'], ['.pill', 'padding'],
   ['.modal', 'max-height'],
   ['.color-preview', 'min-height'], ['#iro-picker', 'min-height'],

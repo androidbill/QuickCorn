@@ -25,15 +25,11 @@
   --muted: #8aa8c1;
   --border: #25415f;
   --green: #6abf45;
-  --green-dark: #4f9432;
   --danger: #cf4c4c;
-  --red: #e8332a;
-  --blue: #1a6fe8;
   --team-red: #2a9fd6;
   --team-red-dark: #2386b4;
   --team-blue: #ba55d3;
   --team-blue-dark: #9c47b1;
-  --tap: 48px;
   --radius: 14px;
   --shadow: 0 10px 26px rgba(0,0,0,0.24);
 
@@ -506,11 +502,6 @@ button { cursor: pointer; }
   font-weight: 800;
   line-height: 1;
 }
-.pill-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
 .pill {
   min-height: 36px;
   border-radius: 999px;
@@ -659,7 +650,6 @@ button { cursor: pointer; }
   letter-spacing:.3px;
   padding:0 10px;
 }
-.primary-btn.alt { background: var(--blue); }
 .primary-btn:disabled { background: #3f556c; color: #a1b6c8; }
 .history-card {
   background: var(--panel);
@@ -886,23 +876,6 @@ button { cursor: pointer; }
   font-weight: 900;
   line-height: 1;
 }
-.stat-row-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.stat-icon {
-  min-width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--panel-3);
-  border: 1px solid var(--border);
-  font-size: 15px;
-  line-height: 1;
-}
 .small-help {
   font-size: 12px;
   color: var(--muted);
@@ -1060,7 +1033,7 @@ button { cursor: pointer; }
 @media (max-width: 430px) {
   .brand-sub {  letter-spacing: 1px; }
   .icon-btn { width: 34px; height: 34px; border-radius: 10px; }
-  #game-history-screen, #four-baggers-screen, #players-screen { padding: 5px; }
+  #game-history-screen, #four-baggers-screen, #players-screen { padding: 5px; }
 
   .team-card { border-radius: 14px; }
   .team-player2 {  margin-top: 1px; }
@@ -1079,7 +1052,7 @@ button { cursor: pointer; }
     padding: 0 8px;
     font-size: 12px;
     border-radius: 999px;
-  }
+  }
   .entry-btn {
     font-size: 18px;
   }
@@ -1087,14 +1060,12 @@ button { cursor: pointer; }
   .primary-btn {
     letter-spacing: 0.3px;
   }
-  .round-chip-label { font-size: 10px; padding: 5px 0; }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 360px) {
   .entry-btn {
     font-size: 16px;
-  }
-  .round-chip-label { font-size: 9px; padding: 4px 0; }
+  }
 }
 
 @media (max-height: 760px) {
@@ -1127,7 +1098,6 @@ button { cursor: pointer; }
     gap: 4px;
   }
   .round-chip { min-width: 48px; }
-  .round-chip-label { font-size: 9px; padding: 4px 0; }
   .round-chip-score {  padding: 5px 0; }
 }
 
@@ -1266,7 +1236,6 @@ button { cursor: pointer; }
   font-size: inherit !important;
   font-weight: 800 !important;
   letter-spacing: 0.2px !important;
-  line-height: 1.05 !important;
   font-family: inherit !important;
 }
 
@@ -1798,7 +1767,7 @@ button { cursor: pointer; }
   // the displayed version must describe the code actually running, and a
   // separate version file can be cached independently of this one, which lets
   // the two drift apart on a device.
-  const APP_VERSION = '2026.08.16.07';
+  const APP_VERSION = '2026.08.16.08';
   self.APP_VERSION = APP_VERSION;
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
@@ -1903,7 +1872,6 @@ button { cursor: pointer; }
     redEntryLabel: document.getElementById('red-entry-label'), blueEntryLabel: document.getElementById('blue-entry-label'),
     modeAclBtn: document.getElementById('mode-acl-btn'), modeTotalBtn: document.getElementById('mode-total-btn'),
     redColorBtn: document.getElementById('red-color-btn'), blueColorBtn: document.getElementById('blue-color-btn'),
-    teamsModalWrap: document.getElementById('teams-modal-wrap'),
     inRed1: document.getElementById('in-red1'), inRed2: document.getElementById('in-red2'),
     inBlue1: document.getElementById('in-blue1'), inBlue2: document.getElementById('in-blue2'),
     playerHistoryList: document.getElementById('player-history-list'),
@@ -1913,8 +1881,7 @@ button { cursor: pointer; }
     firstShooterWrap: document.getElementById('first-shooter-wrap'),
     firstPair0: document.getElementById('first-pair-0'), firstPair1: document.getElementById('first-pair-1'),
     saveTeamsBtn: document.getElementById('save-teams-btn'),
-    settingsModalWrap: document.getElementById('settings-modal-wrap'), setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
-    colorsModalWrap: document.getElementById('colors-modal-wrap'),
+    setAclBtn: document.getElementById('set-acl-btn'), setTotalBtn: document.getElementById('set-total-btn'),
     redColorPreview: document.getElementById('red-color-preview'),
     blueColorPreview: document.getElementById('blue-color-preview'),
     colorHexReadout: document.getElementById('color-hex-readout'),
@@ -1928,12 +1895,11 @@ button { cursor: pointer; }
     playersList: document.getElementById('players-list'),
     newPlayerName: document.getElementById('new-player-name'),
     addPlayerBtn: document.getElementById('add-player-btn'),
-    breakdownModalWrap: document.getElementById('breakdown-modal-wrap'), breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
-    winModalWrap: document.getElementById('win-modal-wrap'), winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'), shareResultsBtn: document.getElementById('share-results-btn'),
+    breakdownTitle: document.getElementById('breakdown-title'), breakdownSub: document.getElementById('breakdown-sub'), breakdownOptions: document.getElementById('breakdown-options'),
+    winBanner: document.getElementById('win-banner'), winTeam: document.getElementById('win-team'), winScore: document.getElementById('win-score'), winStats: document.getElementById('win-stats'), playAgainBtn: document.getElementById('play-again-btn'), shareResultsBtn: document.getElementById('share-results-btn'),
     appVersionLabel: document.getElementById('app-version-label'),
     brandVersion: document.getElementById('brand-version'),
     trackInOnBtn: document.getElementById('track-in-on-btn'),
-    aboutModalWrap: document.getElementById('about-modal-wrap'),
     teamRedCard: document.getElementById('team-red-card'), teamBlueCard: document.getElementById('team-blue-card')
   };
 
@@ -2054,13 +2020,6 @@ button { cursor: pointer; }
         return true;
       })
       .slice(0, 60);
-  }
-  function rememberPlayers(names) {
-    const cleaned = uniquePlayerNames(names);
-    if (!cleaned.length) return;
-    setState(s => {
-      s.playerHistory = uniquePlayerNames([...cleaned, ...(s.playerHistory || [])]);
-    });
   }
   function addManagedPlayer() {
     const name = safeText(els.newPlayerName.value, '');
@@ -2185,16 +2144,6 @@ button { cursor: pointer; }
       els.blueColorPreview.textContent = blueTeamName;
     }
     syncColorPickerUI();
-  }
-  function iconSymbol(icon) {
-    if (icon === 'left') return 'L';
-    if (icon === 'right') return 'R';
-    return '-';
-  }
-  function iconLabel(icon) {
-    if (icon === 'left') return 'Inside';
-    if (icon === 'right') return 'Outside';
-    return 'None';
   }
   function oppositeThrowSide(icon) {
     if (icon === 'left') return 'right';
@@ -3149,7 +3098,6 @@ button { cursor: pointer; }
       // Offline or blocked. The next check picks it up.
     }
   }
-  window.quickcornCheckForUpdate = checkForUpdate;
   checkForUpdate();
   setInterval(checkForUpdate, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => {
