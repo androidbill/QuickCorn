@@ -55,6 +55,7 @@
   --fs-player-2: 17px;
   --fs-nextup: 18px;
   --fs-entry-num: 44px;
+  --fs-entry-num-acl: 34px;
   --fs-entry-kind: 12px;
   --fs-chip: 15px;
   --fs-button: 15px;
@@ -75,6 +76,7 @@
     --fs-player-2: clamp(20px, 2.8dvh, 24px);
     --fs-nextup: clamp(24px, 3.5dvh, 30px);
     --fs-entry-num: clamp(28px, min(9vw, 4.3dvh), 42px);
+    --fs-entry-num-acl: clamp(20px, min(7vw, 3.2dvh), 34px);
     --fs-entry-kind: clamp(8px, 1dvh, 10px);
     --fs-chip: clamp(12px, 1.6dvh, 14px);
     --fs-button: clamp(13px, 1.7dvh, 15px);
@@ -187,11 +189,17 @@ button { cursor: pointer; border: 0; background: none; }
 .screen[hidden] { display: none; }
 .screen--scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: var(--gap-2); }
 
+/* The entry pads are the flexible row, everything else sizes to content.
+   IN/ON keys carry two lines of text where Total keys carry one, so the pads
+   are the part whose natural height changes with the mode. Letting them take
+   the slack keeps the round strip and the submit button in the same place
+   whichever mode is on - the alternative pushes the button off the screen. */
 #screen-game {
   display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: var(--gap-2);
   padding: var(--gap-2);
+  padding-bottom: max(var(--gap-2), env(safe-area-inset-bottom));
   overflow: hidden;
 }
 
@@ -305,10 +313,24 @@ button { cursor: pointer; border: 0; background: none; }
 
 /* ---------------------------------------------------------------- entry */
 
-.pad { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--gap-2); display: flex; flex-direction: column; gap: var(--gap-2); min-width: 0; }
+.pads { min-height: 0; }
+.pad {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap-2);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--gap-2);
+  min-width: 0;
+  min-height: 0;
+}
 .pad-label { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 900; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.pad-grid { display: grid; gap: var(--gap-1); }
+/* Both modes lay out as four rows - IN/ON is 8 keys in 2 columns, Total is 12
+   in 3 - and the rows share the height equally, so switching mode changes what
+   is on the keys and nothing about where anything sits. */
+.pad-grid { display: grid; gap: var(--gap-1); height: 100%; min-height: 0; grid-auto-rows: minmax(0, 1fr); }
 .pad-grid--acl { grid-template-columns: 1fr 1fr; }
 .pad-grid--total { grid-template-columns: repeat(3, 1fr); }
 
@@ -319,7 +341,9 @@ button { cursor: pointer; border: 0; background: none; }
   justify-content: center;
   gap: 1px;
   min-height: 0;
-  padding: var(--gap-1) 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--panel-2);
@@ -330,6 +354,9 @@ button { cursor: pointer; border: 0; background: none; }
 .pad--left { --team: var(--team-left); }
 .pad--right { --team: var(--team-right); }
 .key-num { font-size: var(--fs-entry-num); font-weight: 900; }
+/* An IN/ON key spends part of its height on the label underneath, so its
+   number is set smaller than a Total key's rather than being clipped. */
+.pad-grid--acl .key-num { font-size: var(--fs-entry-num-acl); }
 .key-kind { font-size: var(--fs-entry-kind); font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
 
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-2); }

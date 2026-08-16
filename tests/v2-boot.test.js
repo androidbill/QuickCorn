@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @vitest-environment happy-dom
  *
  * Boots QuickCorn 2 exactly as a browser would: real index.html into a real
@@ -18,13 +18,13 @@ beforeAll(async () => {
   // The page is served from /test/, so relative fetches resolve against it.
   const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
   document.body.innerHTML = body.replace(/<script[\s\S]*?<\/script>/g, '');
-  window.APP_VERSION = '2026.08.16.01';
+  window.APP_VERSION = '2026.08.16.02';
 
   // The update watch polls the network; give it the running version so it
   // decides there is nothing new rather than prompting during the test.
   vi.stubGlobal('fetch', vi.fn(async () => ({
     ok: true,
-    text: async () => `window.APP_VERSION = '2026.08.16.01';`,
+    text: async () => `window.APP_VERSION = '2026.08.16.02';`,
   })));
 
   window.addEventListener('error', (e) => errors.push(e.message));
@@ -41,8 +41,8 @@ describe('boot', () => {
   });
 
   it('shows the version in the header and the About box', () => {
-    expect(document.querySelector('#brand-version').textContent).toBe('v2026.08.16.01');
-    expect(document.querySelector('#about-version').textContent).toContain('2026.08.16.01');
+    expect(document.querySelector('#brand-version').textContent).toBe('v2026.08.16.02');
+    expect(document.querySelector('#about-version').textContent).toContain('2026.08.16.02');
   });
 
   it('renders a fresh scoreboard at nil all', () => {
