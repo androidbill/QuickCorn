@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @vitest-environment happy-dom
  *
  * Boots QuickCorn 2 exactly as a browser would: real index.html into a real
@@ -11,6 +11,9 @@ import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 
 const html = readFileSync(resolve(process.cwd(), 'test/index.html'), 'utf8');
+// Taken from the page rather than restated, so a version bump is not a chore
+// here and the assertions below cannot drift from what ships.
+const VERSION = html.match(/window\.APP_VERSION\s*=\s*'([^']+)'/)[1];
 
 const errors = [];
 
@@ -18,13 +21,13 @@ beforeAll(async () => {
   // The page is served from /test/, so relative fetches resolve against it.
   const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
   document.body.innerHTML = body.replace(/<script[\s\S]*?<\/script>/g, '');
-  window.APP_VERSION = '2026.08.16.02';
+  window.APP_VERSION = VERSION;
 
   // The update watch polls the network; give it the running version so it
   // decides there is nothing new rather than prompting during the test.
   vi.stubGlobal('fetch', vi.fn(async () => ({
     ok: true,
-    text: async () => `window.APP_VERSION = '2026.08.16.02';`,
+    text: async () => `window.APP_VERSION = '${VERSION}';`,
   })));
 
   window.addEventListener('error', (e) => errors.push(e.message));
@@ -41,8 +44,8 @@ describe('boot', () => {
   });
 
   it('shows the version in the header and the About box', () => {
-    expect(document.querySelector('#brand-version').textContent).toBe('v2026.08.16.02');
-    expect(document.querySelector('#about-version').textContent).toContain('2026.08.16.02');
+    expect(document.querySelector('#brand-version').textContent).toBe(`v${VERSION}`);
+    expect(document.querySelector('#about-version').textContent).toContain(VERSION);
   });
 
   it('renders a fresh scoreboard at nil all', () => {
@@ -86,6 +89,67 @@ describe('boot', () => {
     for (const modal of document.querySelectorAll('.modal-wrap')) {
       expect(modal.hidden, modal.id).toBe(true);
     }
+  });
+});
+
+describe('editing names by tapping the scoreboard', () => {
+  it('opens Edit Teams focused on the player that was tapped', () => {
+    document.querySelector('[data-edit="right-0"]').click();
+    expect(document.querySelector('#modal-teams').hidden).toBe(false);
+    expect(document.activeElement.id).toBe('in-right-1');
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
+  it('reaches the second player of a team too', () => {
+    document.querySelector('[data-edit="left-1"]').click();
+    expect(document.activeElement.id).toBe('in-left-2');
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
+  it('renames a player and shows it on the scoreboard', () => {
+    document.querySelector('[data-edit="left-0"]').click();
+    const input = document.querySelector('#in-left-1');
+    input.value = 'Bill';
+    document.querySelector('#save-teams').click();
+
+    expect(document.querySelector('#modal-teams').hidden).toBe(true);
+    expect(document.querySelector('[data-name="left-1"]').textContent).toBe('Bill');
+    expect(document.querySelector('#pad-label-left').textContent).toContain('BILL');
+  });
+});
+
+describe('team colours', () => {
+  it('opens with the left team selected and its colour shown', () => {
+    document.querySelector('[data-menu="colors"]').click();
+    expect(document.querySelector('#modal-colors').hidden).toBe(false);
+    expect(document.querySelector('[data-color-side="left"]').getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('#color-hex').textContent).toMatch(/^#[0-9A-F]{6}$/);
+  });
+
+  it('falls back to the native picker when the wheel library is absent', () => {
+    // happy-dom loads no scripts, so `iro` is undefined here - the same path a
+    // phone takes if the library fails to load. The modal must still work.
+    expect(document.querySelector('#color-fallback').hidden).toBe(false);
+  });
+
+  it('switches which team the picker is editing', () => {
+    document.querySelector('[data-color-side="right"]').click();
+    expect(document.querySelector('[data-color-side="right"]').getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('[data-color-side="left"]').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('applies a preset to the selected team only', () => {
+    const before = document.documentElement.style.getPropertyValue('--team-left');
+    document.querySelector('[data-preset="#6abf45"]').click();
+    expect(document.documentElement.style.getPropertyValue('--team-right')).toBe('#6abf45');
+    expect(document.documentElement.style.getPropertyValue('--team-left')).toBe(before);
+  });
+
+  it('resets both teams to the defaults', () => {
+    document.querySelector('#reset-colors').click();
+    expect(document.documentElement.style.getPropertyValue('--team-left')).toBe('#2a9fd6');
+    expect(document.documentElement.style.getPropertyValue('--team-right')).toBe('#ba55d3');
+    document.querySelector('#modal-colors [data-dismiss]').click();
   });
 });
 

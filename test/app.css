@@ -226,14 +226,22 @@ button { cursor: pointer; border: 0; background: none; }
 .team--right { --team: var(--team-right); --team-dark: color-mix(in srgb, var(--team-right) 78%, #000); }
 
 .team-head { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-2); }
+.team-names { min-width: 0; flex: 1; }
+/* The names are buttons: tapping one opens Edit Teams with that box focused,
+   which is how you rename someone without hunting through the menu. */
 .team-name, .team-name-2 {
+  display: block;
+  width: 100%;
+  text-align: left;
   line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 900;
   min-width: 0;
+  color: inherit;
 }
+.team-name:active, .team-name-2:active { opacity: 0.7; }
 .team-name { font-size: var(--fs-player); }
 .team-name-2 { font-size: var(--fs-player-2); margin-top: var(--gap-1); color: rgba(255, 255, 255, 0.82); }
 .is-throwing { text-decoration: underline; text-underline-offset: 3px; color: #fff; }
@@ -468,9 +476,31 @@ button { cursor: pointer; border: 0; background: none; }
 .swap-btn { display: flex; align-items: center; justify-content: center; gap: var(--gap-4); width: 100%; min-height: var(--tap); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-2); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: var(--gap-4); }
 .swatch { width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--border); }
 
-.color-row { display: flex; gap: var(--gap-3); margin-bottom: var(--gap-4); }
-.color-cell { flex: 1; display: flex; flex-direction: column; gap: var(--gap-2); }
-.color-cell input[type='color'] { width: 100%; height: 46px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel-2); padding: 3px; }
+.color-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-2); margin-bottom: var(--gap-4); }
+.color-tab {
+  min-height: var(--tap);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  font-weight: 900;
+  font-size: var(--fs-button);
+  color: #fff;
+}
+.color-tab[data-color-side='left'] { background: var(--team-left); }
+.color-tab[data-color-side='right'] { background: var(--team-right); }
+.color-tab[aria-pressed='true'] { border-color: #fff; }
+.color-tab[aria-pressed='false'] { opacity: 0.5; }
+
+.wheel { display: flex; justify-content: center; margin-bottom: var(--gap-2); }
+.color-hex {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  font-weight: 900;
+  color: var(--muted);
+  margin-bottom: var(--gap-4);
+}
+#color-fallback { width: 100%; height: 46px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel-2); padding: 3px; margin-bottom: var(--gap-4); }
+#color-fallback[hidden] { display: none; }
 .presets { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--gap-2); }
 .preset { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--border); }
 

@@ -490,13 +490,57 @@ function saveTeams() {
   closeModal('modal-teams');
 }
 
-function openColorsModal() {
-  const state = getState();
-  $('#color-left').value = state.teamColors.left;
-  $('#color-right').value = state.teamColors.right;
+/* ---------------------------------------------------------------- colours */
+
+let activeColorSide = 'left';
+let wheel = null;
+
+/**
+ * Build the colour wheel once, on first open. If the library did not load -
+ * offline on a cold start, or under a test runner with no DOM measurement -
+ * the native colour input is shown instead, so the modal is never a dead end.
+ */
+function ensureWheel() {
+  if (wheel || typeof iro === 'undefined') return;
+  const mount = $('#wheel');
+  if (!mount) return;
+  try {
+    wheel = new iro.ColorPicker(mount, {
+      width: Math.min(240, Math.round(window.innerWidth * 0.62)),
+      color: getState().teamColors[activeColorSide],
+      layout: [{ component: iro.ui.Wheel }, { component: iro.ui.Slider, options: { sliderType: 'value' } }],
+    });
+    wheel.on('color:change', (color) => {
+      const hex = color.hexString;
+      if (getState().teamColors[activeColorSide] === hex) return;
+      setState((s) => { s.teamColors[activeColorSide] = hex; }, ['teamColors']);
+      setText($('#color-hex'), hex.toUpperCase());
+    });
+  } catch {
+    wheel = null;
+  }
+}
+
+function syncColorsModal() {
+  const colour = getState().teamColors[activeColorSide];
+  $$('[data-color-side]').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.colorSide === activeColorSide)));
+  setText($('#color-hex'), String(colour).toUpperCase());
+  if (wheel && wheel.color.hexString.toLowerCase() !== String(colour).toLowerCase()) {
+    wheel.color.set(colour);
+  }
+  const fallback = $('#color-fallback');
+  fallback.hidden = Boolean(wheel);
+  fallback.value = colour;
+}
+
+function openColorsModal(side = activeColorSide) {
+  activeColorSide = side;
   setHtml($('#presets'), PRESETS.map((c) =>
     html`<button class="preset" data-preset="${c}" style="background:${c}" aria-label="Use ${c}"></button>`).join(''));
   openModal('modal-colors');
+  ensureWheel();
+  syncColorsModal();
 }
 
 function openTargetModal() {
@@ -629,26 +673,31 @@ function wire() {
   });
 
   // Colours
-  for (const side of R.SIDES) {
-    $(`#color-${side}`).addEventListener('input', (e) => {
-      setState((s) => { s.teamColors[side] = e.target.value; }, ['teamColors']);
-    });
-  }
+  on(document.body, 'click', '[data-color-side]', (e, btn) => {
+    activeColorSide = btn.dataset.colorSide;
+    syncColorsModal();
+  });
   on(document.body, 'click', '[data-preset]', (e, btn) => {
-    // Apply a preset to whichever side is furthest from it, so one tap does
-    // something sensible without asking which team first.
-    const colour = btn.dataset.preset;
-    setState((s) => {
-      const target = s.teamColors.left === colour ? 'right' : 'left';
-      s.teamColors[target] = colour;
-    }, ['teamColors']);
-    $('#color-left').value = getState().teamColors.left;
-    $('#color-right').value = getState().teamColors.right;
+    setState((s) => { s.teamColors[activeColorSide] = btn.dataset.preset; }, ['teamColors']);
+    syncColorsModal();
+  });
+  $('#color-fallback').addEventListener('input', (e) => {
+    setState((s) => { s.teamColors[activeColorSide] = e.target.value; }, ['teamColors']);
+    setText($('#color-hex'), e.target.value.toUpperCase());
   });
   $('#reset-colors').addEventListener('click', () => {
     setState((s) => { s.teamColors = { ...DEFAULT_COLORS }; }, ['teamColors']);
-    $('#color-left').value = DEFAULT_COLORS.left;
-    $('#color-right').value = DEFAULT_COLORS.right;
+    syncColorsModal();
+  });
+
+  // Tapping a name on the scoreboard edits that player.
+  on(document.body, 'click', '[data-edit]', (e, btn) => {
+    const [side, index] = btn.dataset.edit.split('-');
+    openTeamsModal();
+    const input = $(`#in-${side}-${Number(index) + 1}`);
+    if (!input || input.closest('[data-second-player]')?.hidden) return;
+    input.focus();
+    input.select?.();
   });
 
   // Target score
