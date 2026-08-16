@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadStylesheet, parseDeclarations, resolve } from './css-cascade.js';
+import { loadStylesheet, parseDeclarations, resolve, toPx } from './css-cascade.js';
 
 // A snapshot of what the stylesheet actually resolves to at real device sizes.
 //
@@ -39,12 +39,15 @@ const TYPE_SELECTORS = [
   '.stat-label',
 ];
 
+// Snapshots hold rendered pixels, not declaration text, so the stylesheet can
+// be restructured and still be shown to render the same. A diff here is a real
+// visual change.
 describe('type scale', () => {
   for (const [name, viewport] of Object.entries(DEVICES)) {
-    it(`resolves as expected on ${name}`, () => {
+    it(`renders at the expected sizes on ${name}`, () => {
       const sizes = {};
       for (const selector of TYPE_SELECTORS) {
-        sizes[selector] = resolve(declarations, selector, 'font-size', viewport);
+        sizes[selector] = toPx(resolve(declarations, selector, 'font-size', viewport), viewport);
       }
       expect(sizes).toMatchSnapshot();
     });
@@ -61,12 +64,11 @@ describe('cascade invariants', () => {
     }
   });
 
-  it('never renders body type below 7px on any device', () => {
-    for (const viewport of Object.values(DEVICES)) {
+  it('never renders type below 7px on any device', () => {
+    for (const [name, viewport] of Object.entries(DEVICES)) {
       for (const selector of TYPE_SELECTORS) {
-        const value = resolve(declarations, selector, 'font-size', viewport);
-        const px = /^(\d+)px$/.exec(value || '');
-        if (px) expect(Number(px[1])).toBeGreaterThanOrEqual(7);
+        const px = toPx(resolve(declarations, selector, 'font-size', viewport), viewport);
+        expect(px, `${selector} on ${name}`).toBeGreaterThanOrEqual(7);
       }
     }
   });

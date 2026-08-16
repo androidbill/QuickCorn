@@ -100,6 +100,53 @@ export function parseDeclarations(css) {
   return out;
 }
 
+// #app is width-capped, so viewport units stop tracking the column past this.
+export const APP_MAX_WIDTH = 540;
+
+// Evaluate a CSS length to rendered pixels. Supports px, vw, vh/dvh, cqi/cqb
+// and the clamp/min/max functions the stylesheet uses. Comparing rendered px
+// rather than declaration text is what lets the type scale be rewritten and
+// still be shown to be equivalent.
+export function toPx(expr, viewport) {
+  if (expr == null) return null;
+  const column = Math.min(viewport.width, APP_MAX_WIDTH);
+
+  function splitArgs(s) {
+    const out = [];
+    let depth = 0;
+    let cur = '';
+    for (const ch of s) {
+      if (ch === '(') depth++;
+      if (ch === ')') depth--;
+      if (ch === ',' && depth === 0) { out.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    if (cur.trim()) out.push(cur);
+    return out;
+  }
+
+  function evaluate(s) {
+    s = s.trim();
+    let m;
+    if ((m = s.match(/^clamp\((.+)\)$/s))) {
+      const [lo, mid, hi] = splitArgs(m[1]).map(evaluate);
+      return Math.min(Math.max(lo, mid), hi);
+    }
+    if ((m = s.match(/^min\((.+)\)$/s))) return Math.min(...splitArgs(m[1]).map(evaluate));
+    if ((m = s.match(/^max\((.+)\)$/s))) return Math.max(...splitArgs(m[1]).map(evaluate));
+    if ((m = s.match(/^(-?[\d.]+)px$/))) return +m[1];
+    if ((m = s.match(/^(-?[\d.]+)vw$/))) return (+m[1] * viewport.width) / 100;
+    if ((m = s.match(/^(-?[\d.]+)d?vh$/))) return (+m[1] * viewport.height) / 100;
+    if ((m = s.match(/^(-?[\d.]+)cqi$/))) return (+m[1] * column) / 100;
+    if ((m = s.match(/^(-?[\d.]+)cqb$/))) return (+m[1] * viewport.height) / 100;
+    if ((m = s.match(/^(-?[\d.]+)$/))) return +m[1];
+    return NaN;
+  }
+
+  const value = evaluate(String(expr));
+  return Number.isNaN(value) ? null : Math.round(value);
+}
+
 // The winning value for `selector`/`prop` at `viewport`: last matching
 // declaration wins, with !important beating non-important.
 export function resolve(declarations, selector, prop, viewport) {
