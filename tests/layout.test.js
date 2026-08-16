@@ -54,6 +54,54 @@ describe('type scale', () => {
   }
 });
 
+// Spacing and grid are snapshotted as the declaration that wins, not as
+// pixels: several of these are not lengths at all (grid-template-rows), and
+// this guard exists to catch a stray deletion rather than a rescale.
+const LAYOUT_PAIRS = [
+  ['.header', 'padding'], ['.header', 'min-height'],
+  ['#game-screen', 'grid-template-rows'], ['#game-screen', 'gap'], ['#game-screen', 'padding'],
+  ['#game-history-screen', 'padding'], ['#four-baggers-screen', 'padding'], ['#players-screen', 'padding'],
+  ['.scoreboards', 'gap'],
+  ['.team-card', 'padding'], ['.team-card', 'border-radius'], ['.team-card', 'min-height'],
+  ['.team-player', 'line-height'], ['.team-player2', 'line-height'],
+  ['.mini-btn', 'min-width'], ['.mini-btn', 'height'],
+  ['.score-boxes', 'gap'],
+  ['.score-box', 'min-height'], ['.score-box', 'border-radius'], ['.score-box', 'padding'],
+  ['.last-point-card', 'grid-template-columns'], ['.last-point-card', 'grid-template-rows'],
+  ['.last-point-card', 'column-gap'], ['.last-point-card', 'row-gap'],
+  ['.last-point-card', 'min-height'], ['.last-point-card', 'padding'], ['.last-point-card', 'border-radius'],
+  ['.entry-card', 'gap'],
+  ['.entry-panels', 'gap'],
+  ['.entry-panel', 'border-radius'], ['.entry-panel', 'padding'], ['.entry-panel', 'gap'],
+  ['.entry-grid', '--entry-btn-height'], ['.entry-grid', 'gap'],
+  ['.entry-btn', 'min-height'], ['.entry-btn', 'border-radius'],
+  ['.entry-mode', 'gap'], ['.entry-mode button', 'min-height'], ['.entry-mode button', 'border-radius'],
+  ['.bottom-bar', 'grid-template-columns'], ['.bottom-bar', 'gap'], ['.bottom-bar', 'padding'],
+  ['.bottom-bar', 'border-radius'], ['.bottom-bar', 'height'],
+  ['.primary-btn', 'min-height'], ['.primary-btn', 'height'], ['.primary-btn', 'border-radius'],
+  ['.history-card', 'border-radius'], ['.history-card', 'padding'], ['.history-card', 'min-height'],
+  ['.history-card', 'height'], ['.history-card', 'gap'], ['.history-card', 'max-height'],
+  ['.history-scroller', 'gap'], ['.history-scroller', 'height'], ['.history-scroller', 'min-height'],
+  ['.round-chip', 'min-width'], ['.round-chip', 'border-radius'],
+  ['.round-chip-head', 'padding'], ['.round-chip-score', 'padding'], ['.round-chip-label', 'padding'],
+  ['.pill', 'min-height'], ['.pill', 'border-radius'], ['.pill', 'padding'],
+  ['.modal', 'max-height'],
+  ['.color-preview', 'min-height'], ['#iro-picker', 'min-height'],
+  ['.icon-btn', 'height'], ['.icon-btn', 'border-radius'],
+];
+
+describe('spacing and grid', () => {
+  for (const [name, viewport] of Object.entries(DEVICES)) {
+    it(`resolves as expected on ${name}`, () => {
+      const layout = {};
+      for (const [selector, prop] of LAYOUT_PAIRS) {
+        layout[`${selector} ${prop}`] = resolve(declarations, selector, prop, viewport);
+      }
+      expect(layout).toMatchSnapshot();
+    });
+  }
+});
+
 describe('cascade invariants', () => {
   it('gives every type selector a size on every device', () => {
     for (const [name, viewport] of Object.entries(DEVICES)) {
