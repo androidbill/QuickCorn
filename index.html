@@ -30,10 +30,10 @@
   --danger: #cf4c4c;
   --red: #e8332a;
   --blue: #1a6fe8;
-  --team-red: var(--red);
-  --team-red-dark: #c0281f;
-  --team-blue: var(--blue);
-  --team-blue-dark: #1458c0;
+  --team-red: #2a9fd6;
+  --team-red-dark: #2386b4;
+  --team-blue: #ba55d3;
+  --team-blue-dark: #9c47b1;
   --tap: 48px;
   --radius: 14px;
   --shadow: 0 10px 26px rgba(0,0,0,0.24);
@@ -1879,7 +1879,7 @@ button { cursor: pointer; }
     </div>
 
     <div id="iro-picker"></div>
-    <div class="color-hex" id="color-hex-readout">#E8332A</div>
+    <div class="color-hex" id="color-hex-readout">#2A9FD6</div>
 
     <div class="modal-actions">
       <button class="btn-secondary" data-close="colors-modal-wrap">Close</button>
@@ -2012,7 +2012,7 @@ button { cursor: pointer; }
       mode: '2v2',
       scoringMode: 'acl',
       trackInOn: false,
-      teamColors: { red: '#e8332a', blue: '#1a6fe8' },
+      teamColors: { red: '#2a9fd6', blue: '#ba55d3' },
       teamThrowSide: { red: null, blue: null },
       firstShooter: { red: 0, blue: 0 },
       teams: {
@@ -2200,7 +2200,7 @@ button { cursor: pointer; }
 
     iroPicker = new iro.ColorPicker('#iro-picker', {
       width: 250,
-      color: state.teamColors[activeColorTeam] || '#E8332A',
+      color: state.teamColors[activeColorTeam] || '#2A9FD6',
       borderWidth: 1,
       borderColor: '#25415f',
       layout: [
@@ -3075,7 +3075,7 @@ button { cursor: pointer; }
     syncColorPickerUI();
   });
   els.resetColorsBtn.addEventListener('click', () => {
-    setState(s => { s.teamColors.red = '#E8332A'; s.teamColors.blue = '#1A6FE8'; });
+    setState(s => { s.teamColors.red = '#2A9FD6'; s.teamColors.blue = '#BA55D3'; });
     syncColorPickerUI();
   });
   els.closeHistoryBtn.addEventListener('click', () => showScreen('game'));
