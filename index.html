@@ -1940,10 +1940,79 @@ button { cursor: pointer; }
   // the displayed version must describe the code actually running, and a
   // separate version file can be cached independently of this one, which lets
   // the two drift apart on a device.
-  const APP_VERSION = '2026.08.16.02';
+  const APP_VERSION = '2026.08.16.03';
   self.APP_VERSION = APP_VERSION;
   const STORAGE_KEY = 'quickcorn_rebuilt_v1';
   const TOTAL_VALUES = [0,1,2,3,4,5,6,7,8,9,10,12];
+
+  // ==== QUICKCORN RULES START ====
+  // The scoring rules, as pure functions. Nothing in here reads `state` - every
+  // input arrives as an argument. tests/rules.test.js slices this block out of
+  // index.html between the sentinel comments and runs it directly, so the tests
+  // exercise the exact code that ships. Keep it free of DOM and state access.
+  const QC_RULES = (() => {
+    // A bag in the hole is 3, on the board is 1, four bags per player per round.
+    function entryToPoints(entry, scoringMode) {
+      if (scoringMode === 'acl') return entry.in * 3 + entry.on;
+      if (entry.total == null) return 0;
+      return entry.total;
+    }
+    // Every in/on split that adds up to `total`. Length 0 means the total is not
+    // reachable with four bags (11 is the only such value), 1 means it is
+    // unambiguous, more than 1 means the app has to ask or assume.
+    function entryBreakdownOptions(total) {
+      const opts = [];
+      for (let i = 0; i <= 4; i++) for (let o = 0; o <= 4; o++) if (i + o <= 4 && i * 3 + o === total) opts.push({ in: i, on: o });
+      return opts;
+    }
+    function validateEntry(entry) {
+      return entry.in >= 0 && entry.on >= 0 && entry.in + entry.on <= 4;
+    }
+    // Cornhole is cancellation scoring: only the difference counts, to one side.
+    function scoreRound(redEntry, blueEntry, scoringMode) {
+      const redPts = entryToPoints(redEntry, scoringMode);
+      const bluePts = entryToPoints(blueEntry, scoringMode);
+      const net = redPts - bluePts;
+      return {
+        redIn: redEntry.in, redOn: redEntry.on, redTotalRaw: redEntry.total,
+        blueIn: blueEntry.in, blueOn: blueEntry.on, blueTotalRaw: blueEntry.total,
+        redGross: redPts, blueGross: bluePts,
+        redNet: net > 0 ? net : 0,
+        blueNet: net < 0 ? -net : 0,
+      };
+    }
+    function getTotals(rounds) {
+      return rounds.reduce((acc, round) => {
+        acc.red += round.redNet;
+        acc.blue += round.blueNet;
+        return acc;
+      }, { red: 0, blue: 0 });
+    }
+    function getWinnerSide(rounds, targetScore) {
+      const totals = getTotals(rounds);
+      if (totals.red < targetScore && totals.blue < targetScore) return null;
+      if (totals.red >= targetScore && totals.blue >= targetScore) return totals.red >= totals.blue ? 'red' : 'blue';
+      return totals.red >= targetScore ? 'red' : 'blue';
+    }
+    // In 2v2 the two partners alternate rounds; `firstShooter` says which of them
+    // opened the game. In 1v1 there is only ever player index 0.
+    function currentThrower(mode, firstShooter, sideIndex) {
+      if (mode === '1v1') return 0;
+      const first = Number(firstShooter) || 0;
+      return (first + sideIndex) % 2;
+    }
+    // All four bags in the hole. The gross/raw checks catch rounds entered as a
+    // total of 12 in Total Number mode, where the split may not be recorded.
+    function isFourBaggerRound(round, side) {
+      if (side === 'red') return round.redIn === 4 || round.redGross === 12 || round.redTotalRaw === 12;
+      return round.blueIn === 4 || round.blueGross === 12 || round.blueTotalRaw === 12;
+    }
+    function pointsPerRound(total, rounds) {
+      return rounds ? (total / rounds).toFixed(2) : '0.00';
+    }
+    return { entryToPoints, entryBreakdownOptions, validateEntry, scoreRound, getTotals, getWinnerSide, currentThrower, isFourBaggerRound, pointsPerRound };
+  })();
+  // ==== QUICKCORN RULES END ====
 
   function syncViewportHeight() {
     const height = window.visualViewport?.height || window.innerHeight;
@@ -2109,9 +2178,7 @@ button { cursor: pointer; }
     return teamNameList(teamKey).join(' & ');
   }
   function currentThrower(teamKey, sideIndex) {
-    if (state.mode === '1v1') return 0;
-    const first = Number(state.firstShooter && state.firstShooter[teamKey]) || 0;
-    return (first + sideIndex) % 2;
+    return QC_RULES.currentThrower(state.mode, state.firstShooter && state.firstShooter[teamKey], sideIndex);
   }
   function safeText(v, fallback='') {
     const t = String(v || '').trim();
@@ -2288,43 +2355,24 @@ button { cursor: pointer; }
       s.teamThrowSide[otherTeam] = oppositeThrowSide(icon);
     });
   }
+  // Thin bindings from app state onto the pure rules above.
   function entryToPoints(entry) {
-    if (state.scoringMode === 'acl') return entry.in * 3 + entry.on;
-    if (entry.total == null) return 0;
-    return entry.total;
+    return QC_RULES.entryToPoints(entry, state.scoringMode);
   }
   function entryBreakdownOptions(total) {
-    const opts = [];
-    for (let i=0;i<=4;i++) for (let o=0;o<=4;o++) if (i+o<=4 && i*3+o===total) opts.push({ in: i, on: o });
-    return opts;
+    return QC_RULES.entryBreakdownOptions(total);
   }
   function validateEntry(entry) {
-    return entry.in >= 0 && entry.on >= 0 && entry.in + entry.on <= 4;
+    return QC_RULES.validateEntry(entry);
   }
   function scoreRound(redEntry, blueEntry) {
-    const redPts = entryToPoints(redEntry);
-    const bluePts = entryToPoints(blueEntry);
-    const net = redPts - bluePts;
-    return {
-      redIn: redEntry.in, redOn: redEntry.on, redTotalRaw: redEntry.total,
-      blueIn: blueEntry.in, blueOn: blueEntry.on, blueTotalRaw: blueEntry.total,
-      redGross: redPts, blueGross: bluePts,
-      redNet: net > 0 ? net : 0,
-      blueNet: net < 0 ? -net : 0,
-    };
+    return QC_RULES.scoreRound(redEntry, blueEntry, state.scoringMode);
   }
   function getTotals() {
-    return state.game.rounds.reduce((acc, round) => {
-      acc.red += round.redNet;
-      acc.blue += round.blueNet;
-      return acc;
-    }, { red: 0, blue: 0 });
+    return QC_RULES.getTotals(state.game.rounds);
   }
   function getWinnerSide() {
-    const totals = getTotals();
-    if (totals.red < state.game.targetScore && totals.blue < state.game.targetScore) return null;
-    if (totals.red >= state.game.targetScore && totals.blue >= state.game.targetScore) return totals.red >= totals.blue ? 'red' : 'blue';
-    return totals.red >= state.game.targetScore ? 'red' : 'blue';
+    return QC_RULES.getWinnerSide(state.game.rounds, state.game.targetScore);
   }
   function computePlayerStats() {
     const rounds = state.game.rounds;
@@ -2353,7 +2401,7 @@ button { cursor: pointer; }
       color,
       total,
       rounds,
-      ppr: rounds ? (total / rounds).toFixed(2) : '0.00',
+      ppr: QC_RULES.pointsPerRound(total, rounds),
       icon: null,
       side: state.mode === '2v2' ? (playerIndex === first ? 'First' : 'Second') : ''
     };
@@ -2377,8 +2425,7 @@ button { cursor: pointer; }
     return Number.isNaN(date.getTime()) ? 'Unknown' : String(date.getFullYear());
   }
   function isFourBaggerRound(round, side) {
-    if (side === 'red') return round.redIn === 4 || round.redGross === 12 || round.redTotalRaw === 12;
-    return round.blueIn === 4 || round.blueGross === 12 || round.blueTotalRaw === 12;
+    return QC_RULES.isFourBaggerRound(round, side);
   }
   function getFourBaggerRecords(round, roundIndex, playedAt) {
     const totalsBefore = state.game.rounds.reduce((acc, item, index) => {
