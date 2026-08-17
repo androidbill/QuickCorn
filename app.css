@@ -244,8 +244,8 @@ button { cursor: pointer; border: 0; background: none; }
 
 .team-head { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-2); }
 .team-names { min-width: 0; flex: 1; }
-/* The names are buttons: tapping one opens Edit Teams with that box focused,
-   which is how you rename someone without hunting through the menu. */
+/* The names are buttons: tapping one opens Edit Teams with that player's field
+   marked, which is how you rename someone without hunting through the menu. */
 .team-name, .team-name-2 {
   display: block;
   width: 100%;
@@ -261,6 +261,17 @@ button { cursor: pointer; border: 0; background: none; }
 .team-name:active, .team-name-2:active { opacity: 0.7; }
 .team-name { font-size: var(--fs-player); }
 .team-name-2 { font-size: var(--fs-player-2); margin-top: var(--gap-1); color: rgba(255, 255, 255, 0.82); }
+
+/* In 2v2 the size follows whose turn it is, rather than which slot the name
+   happens to sit in - the thrower is the big one and the size swaps as the turn
+   passes. The two sizes are the same pair either way round, so the box is
+   exactly as tall before and after and nothing below it moves.
+
+   In 1v1 neither class is set and the single name keeps the larger size. */
+.team-name.is-throwing, .team-name-2.is-throwing { font-size: var(--fs-player); }
+.team-name.is-waiting, .team-name-2.is-waiting { font-size: var(--fs-player-2); }
+.team-name, .team-name-2 { transition: font-size 0.15s ease, opacity 0.15s ease; }
+
 .is-throwing { text-decoration: underline; text-underline-offset: 3px; color: #fff; }
 .is-waiting { opacity: 0.35; }
 

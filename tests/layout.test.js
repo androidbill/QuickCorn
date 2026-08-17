@@ -42,6 +42,29 @@ describe('game screen rows', () => {
   });
 });
 
+describe('the name sizes follow whose turn it is', () => {
+  it('sizes the thrower large and the partner small, whichever slot they are in', () => {
+    // Otherwise player one is permanently the bigger name, which reads as an
+    // inconsistency rather than as information.
+    expect(css).toMatch(/\.team-name\.is-throwing, \.team-name-2\.is-throwing \{ font-size: var\(--fs-player\); \}/);
+    expect(css).toMatch(/\.team-name\.is-waiting, \.team-name-2\.is-waiting \{ font-size: var\(--fs-player-2\); \}/);
+  });
+
+  it('leaves the single name in 1v1 at the larger size', () => {
+    // Neither class is set in 1v1, so the base rule has to be the large one.
+    expect(ruleBody('.team-name')).toMatch(/font-size:\s*var\(--fs-player\)/);
+  });
+
+  it('is always one large and one small, so the box height cannot change', () => {
+    // The same pair of sizes either way round means nothing below the names
+    // moves when the turn passes.
+    const throwing = css.match(/\.is-throwing \{ font-size: var\((--fs-player[^)]*)\)/);
+    const waiting = css.match(/\.is-waiting \{ font-size: var\((--fs-player[^)]*)\)/);
+    expect(throwing[1]).toBe('--fs-player');
+    expect(waiting[1]).toBe('--fs-player-2');
+  });
+});
+
 describe('tapping a name to edit it', () => {
   it('never focuses a field itself, which is what raises the keyboard', () => {
     // The keyboard covers half the modal, and Edit Teams is as often opened to
