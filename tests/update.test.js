@@ -95,7 +95,7 @@ describe('update check', () => {
 describe('service worker', () => {
   it('takes its version from the ?v= it was registered with', () => {
     expect(worker).toMatch(/searchParams\.get\('v'\)/);
-    expect(worker).toMatch(/const CACHE = `quickcorn2-\$\{APP_VERSION\}`/);
+    expect(worker).toMatch(/const CACHE = `quickcorn-\$\{APP_VERSION\}`/);
   });
 
   it('is registered with the version in the URL, which is what forces an update', () => {

@@ -6,7 +6,7 @@
  * there is no version literal here to fall out of step with the app.
  */
 const APP_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
-const CACHE = `quickcorn2-${APP_VERSION}`;
+const CACHE = `quickcorn-${APP_VERSION}`;
 
 self.addEventListener('install', () => {
   // Nothing is precached. The old app kept a hand-written list of shell files

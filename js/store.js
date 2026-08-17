@@ -7,19 +7,7 @@
  * history; here a subscriber sees which top level keys moved and decides.
  */
 
-/**
- * The key keeps its name. It was chosen when this app ran at /test/ alongside
- * the single-file version, because localStorage is shared per origin rather
- * than per path and the two would otherwise have written over each other.
- * Renaming it now that this app has taken the root would orphan every game and
- * 4-bagger already saved on a device, which is the whole point of the store.
- *
- * The legacy import below matters more since the promotion, not less: it is how
- * anyone still holding the old app's data carries it across. The old key is
- * only ever read.
- */
-const STORAGE_KEY = 'quickcorn2';
-const LEGACY_KEY = 'quickcorn_rebuilt_v1';
+const STORAGE_KEY = 'quickcorn';
 
 export const DEFAULT_COLORS = { left: '#2a9fd6', right: '#ba55d3' };
 
@@ -70,45 +58,6 @@ function merge(base, incoming) {
   return incoming === undefined ? base : incoming;
 }
 
-/**
- * Read QuickCorn 1's saved data, renaming its red/blue sides to left/right.
- * Read only - the old key is never written to, so the live app is unaffected
- * whatever happens here.
- */
-function importLegacy() {
-  try {
-    const raw = localStorage.getItem(LEGACY_KEY);
-    if (!raw) return null;
-    const old = JSON.parse(raw);
-    return {
-      mode: old.mode,
-      scoringMode: old.scoringMode,
-      trackInOn: old.trackInOn,
-      teamColors: { left: old.teamColors?.red || DEFAULT_COLORS.left, right: old.teamColors?.blue || DEFAULT_COLORS.right },
-      firstShooter: { left: Number(old.firstShooter?.red) || 0, right: Number(old.firstShooter?.blue) || 0 },
-      teams: {
-        left: { players: old.teams?.red?.players || ['Player 1', 'Player 2'] },
-        right: { players: old.teams?.blue?.players || ['Player 3', 'Player 4'] },
-      },
-      playerHistory: old.playerHistory || [],
-      gameHistory: (old.gameHistory || []).map((entry) => ({
-        ...entry,
-        winnerSide: entry.winnerSide === 'red' ? 'left' : entry.winnerSide === 'blue' ? 'right' : entry.winnerSide,
-        stats: (entry.stats || []).map((row) => ({
-          ...row,
-          side: row.color === 'red' ? 'left' : row.color === 'blue' ? 'right' : row.side,
-        })),
-      })),
-      fourBaggers: (old.fourBaggers || []).map((entry) => ({
-        ...entry,
-        side: entry.side === 'red' ? 'left' : entry.side === 'blue' ? 'right' : entry.side,
-      })),
-    };
-  } catch {
-    return null;
-  }
-}
-
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -116,13 +65,6 @@ function load() {
       const state = merge(defaultState(), JSON.parse(raw));
       state.screen = 'game';
       state.ui.breakdown = null;
-      return state;
-    }
-    const legacy = importLegacy();
-    if (legacy) {
-      const state = merge(defaultState(), legacy);
-      state.game = newGame();
-      state.screen = 'game';
       return state;
     }
   } catch {
