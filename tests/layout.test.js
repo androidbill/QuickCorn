@@ -95,13 +95,32 @@ describe('the shell matches the height that is actually on screen', () => {
   it('sets that variable from the visible height at runtime', () => {
     const fn = app.slice(app.indexOf('function trackViewportHeight'));
     const body = fn.slice(0, fn.indexOf('\n}'));
-    expect(body).toMatch(/setProperty\('--app-height', `\$\{window\.innerHeight\}px`\)/);
+    expect(body).toMatch(/setProperty\('--app-height'/);
+    expect(body).toMatch(/visibleHeight\(\)/);
     expect(body).toMatch(/addEventListener\('resize'/);
     expect(body).toMatch(/addEventListener\('orientationchange'/);
     // A resize with a field focused is the keyboard, and resizing to fit above
     // it would squash the board.
     expect(body).toMatch(/activeElement\?\.tagName === 'INPUT'/);
     expect(app).toMatch(/function init\(\) \{\s*\n\s*trackViewportHeight\(\);/);
+  });
+
+  it('takes the smaller of innerHeight and visualViewport', () => {
+    // innerHeight can include the area behind system bars; visualViewport is
+    // what is genuinely on screen. Neither alone has proved reliable.
+    const fn = app.slice(app.indexOf('export function visibleHeight'));
+    const body = fn.slice(0, fn.indexOf('\n}'));
+    expect(body).toMatch(/window\.innerHeight/);
+    expect(body).toMatch(/window\.visualViewport\?\.height/);
+    expect(body).toMatch(/Math\.min\(inner, visual\)/);
+  });
+
+  it('keeps the diagnostic off a normal load', () => {
+    // Dynamically imported behind ?diag=1, so the file is never fetched unless
+    // it is asked for.
+    expect(app).toMatch(/import\('\.\/diag\.js'\)/);
+    expect(app).toMatch(/URLSearchParams\(location\.search\)\.has\('diag'\)/);
+    expect(app).not.toMatch(/^import .*diag\.js/m);
   });
 });
 

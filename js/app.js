@@ -839,18 +839,33 @@ function render(state, changed) {
  * to fit above it would squash the whole board, so those are left alone - the
  * keyboard covers the app rather than resizing it.
  */
+export function visibleHeight() {
+  // visualViewport is what is genuinely on screen; innerHeight can still include
+  // area behind system bars. Take the smaller, and ignore a visualViewport that
+  // has shrunk for the keyboard - that is handled by not applying at all while a
+  // field has focus.
+  const inner = window.innerHeight || 0;
+  const visual = window.visualViewport?.height || 0;
+  if (!inner) return visual;
+  if (!visual) return inner;
+  return Math.min(inner, visual);
+}
+
 function trackViewportHeight() {
   const apply = () => {
     // A zero reading happens mid-load in some browsers; leaving the variable
     // unset falls back to 100svh rather than collapsing the app to nothing.
-    if (!window.innerHeight) return;
-    document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    const height = visibleHeight();
+    if (!height) return;
+    document.documentElement.style.setProperty('--app-height', `${Math.round(height)}px`);
   };
   apply();
-  window.addEventListener('resize', () => {
+  const onResize = () => {
     if (document.activeElement?.tagName === 'INPUT') return;
     apply();
-  });
+  };
+  window.addEventListener('resize', onResize);
+  window.visualViewport?.addEventListener('resize', onResize);
   // The reported height lags the rotation, so read it after the browser settles.
   window.addEventListener('orientationchange', () => setTimeout(apply, 150));
 }
@@ -865,6 +880,11 @@ function init() {
   startUpdateWatch(APP_VERSION, (liveVersion) => {
     toast(`Update to ${liveVersion}`, applyUpdate);
   });
+  // ?diag=1 reads the layout numbers off the device. Fetched only when asked
+  // for, so a normal load never sees it.
+  if (new URLSearchParams(location.search).has('diag')) {
+    import('./diag.js').then((m) => m.showDiagnostics()).catch(() => {});
+  }
 }
 
 init();
