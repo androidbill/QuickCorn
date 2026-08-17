@@ -114,6 +114,17 @@ describe('editing names by tapping the scoreboard', () => {
     document.querySelector('#modal-teams [data-dismiss]').click();
   });
 
+  it('leaves the caret collapsed rather than selecting the name', () => {
+    document.querySelector('[data-edit="right-0"]').click();
+    const input = document.querySelector('#in-right-1');
+    // Only that nothing is highlighted can be checked here: happy-dom empties an
+    // input when it takes focus, so the caret cannot be observed sitting at the
+    // end of a real name. The position itself is pinned in layout.test.js
+    // against the source, and was confirmed in a browser.
+    expect(input.selectionStart).toBe(input.selectionEnd);
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
   it('renames a player and shows it on the scoreboard', () => {
     document.querySelector('[data-edit="left-0"]').click();
     const input = document.querySelector('#in-left-1');

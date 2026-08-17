@@ -719,7 +719,11 @@ function wire() {
     const input = $(`#in-${side}-${Number(index) + 1}`);
     if (!input || input.closest('[data-second-player]')?.hidden) return;
     input.focus();
-    input.select?.();
+    // Caret at the end rather than the whole name selected. A name is usually
+    // being corrected rather than replaced, and a highlighted one is a single
+    // stray keypress away from gone.
+    const end = input.value.length;
+    input.setSelectionRange?.(end, end);
   });
 
   // Target score

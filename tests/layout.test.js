@@ -14,6 +14,7 @@ import { describe, it, expect } from 'vitest';
  */
 const css = readFileSync(resolve(process.cwd(), 'app.css'), 'utf8');
 const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+const app = readFileSync(resolve(process.cwd(), 'js/app.js'), 'utf8');
 
 function ruleBody(selector) {
   const escaped = selector.replace(/[.#*]/g, '\\$&');
@@ -38,6 +39,24 @@ describe('game screen rows', () => {
     expect(padding, 'no padding-bottom on #screen-game').toBeTruthy();
     expect(padding[1]).toMatch(/^max\(/);
     expect(padding[1]).toContain('safe-area-inset-bottom');
+  });
+});
+
+describe('tapping a name to edit it', () => {
+  // happy-dom empties an input the moment it takes focus, so where the caret
+  // lands cannot be observed in a DOM test. Asserted against the source here for
+  // the same reason the layout contracts above are.
+  const handler = app.slice(app.indexOf("'[data-edit]'"));
+  const body = handler.slice(0, handler.indexOf('\n  });'));
+
+  it('places the caret at the end of the name', () => {
+    expect(body).toMatch(/setSelectionRange\?\.\(end,\s*end\)/);
+    expect(body).toMatch(/const end = input\.value\.length/);
+  });
+
+  it('does not select the name, which one keypress would wipe', () => {
+    expect(body).not.toMatch(/\.select\(\)/);
+    expect(body).not.toMatch(/\.select\?\.\(\)/);
   });
 });
 
