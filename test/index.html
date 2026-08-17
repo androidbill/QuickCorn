@@ -21,7 +21,7 @@
      file, and because that file could be cached separately from the page using
      it, the app reported a version whose code was not running. The update check
      polls this document and reads this same line. */
-  window.APP_VERSION = '2026.08.16.06';
+  window.APP_VERSION = '2026.08.16.07';
 </script>
 </head>
 <body>
@@ -257,10 +257,12 @@
 </div>
 
 <div class="modal-wrap" id="modal-about" hidden>
-  <div class="modal">
+  <div class="modal modal--about">
+    <img class="about-icon" src="../quickcorn-icon.svg" alt="" width="80" height="80" />
     <h2>QuickCorn</h2>
     <p class="sub" id="about-version"></p>
-    <p style="font-size:14px;line-height:1.5;color:var(--muted)">
+    <p class="about-author">Created by: Bill Parsons</p>
+    <p class="about-blurb">
       Cornhole scoring built for a phone. Cancellation scoring, 1v1 or 2v2,
       per&#8209;player points per round, and a running 4&#8209;bagger record.
       Everything is stored on this device.

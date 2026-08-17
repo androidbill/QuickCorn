@@ -260,6 +260,37 @@ describe('scoring a round through the UI', () => {
   });
 });
 
+describe('the About box', () => {
+  it('reads icon, name, version, then author', () => {
+    document.querySelector('[data-menu="about"]').click();
+    expect(document.querySelector('#modal-about').hidden).toBe(false);
+
+    const modal = document.querySelector('#modal-about .modal--about');
+    // Order is the point, so assert the sequence rather than mere presence.
+    const order = [...modal.children]
+      .filter((el) => !el.classList.contains('modal-actions'))
+      .map((el) => el.className || el.tagName.toLowerCase());
+    expect(order).toEqual(['about-icon', 'h2', 'sub', 'about-author', 'about-blurb']);
+  });
+
+  it('shows the app icon, and hides it from the screen reader as decoration', () => {
+    const icon = document.querySelector('#modal-about .about-icon');
+    expect(icon.tagName).toBe('IMG');
+    expect(icon.getAttribute('src')).toBe('../quickcorn-icon.svg');
+    // The name is right underneath as real text, so alt would only repeat it.
+    expect(icon.getAttribute('alt')).toBe('');
+  });
+
+  it('names the app, the running version and the author', () => {
+    const modal = document.querySelector('#modal-about .modal--about');
+    expect(modal.querySelector('h2').textContent).toBe('QuickCorn');
+    expect(modal.querySelector('#about-version').textContent).toBe(`Version ${VERSION}`);
+    expect(modal.querySelector('.about-author').textContent).toBe('Created by: Bill Parsons');
+    document.querySelector('#modal-about [data-dismiss]').click();
+    expect(document.querySelector('#modal-about').hidden).toBe(true);
+  });
+});
+
 describe('the chip for the round in play', () => {
   const strip = () => [...document.querySelectorAll('#rounds-strip .round-chip')];
   const now = () => document.querySelector('#rounds-strip .round-chip--now');

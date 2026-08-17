@@ -467,6 +467,14 @@ button { cursor: pointer; border: 0; background: none; }
 .modal-actions { display: flex; gap: var(--gap-2); margin-top: var(--gap-4); }
 .modal-actions .btn { flex: 1; }
 
+/* About reads as a title card: icon, name, version, author. The blurb below it
+   stays left aligned, since centred body copy is harder to read. */
+.modal--about { text-align: center; }
+.about-icon { display: block; width: 80px; height: 80px; margin: 0 auto var(--gap-3); }
+.modal--about .sub { margin: 4px 0 0; }
+.about-author { margin-top: var(--gap-3); font-size: var(--fs-body); font-weight: 800; }
+.about-blurb { margin-top: var(--gap-4); font-size: 14px; line-height: 1.5; color: var(--muted); text-align: left; }
+
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field label { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 800; }
 .field input {
