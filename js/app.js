@@ -230,6 +230,36 @@ function clearEntry() {
   }, ['game']);
 }
 
+/**
+ * Focus a text field with the caret after the last character, nothing selected.
+ *
+ * A name is nearly always being corrected rather than swapped for a different
+ * one, so selecting it just puts it one keypress from gone.
+ *
+ * Collapsing the selection once is not enough on a phone. Chrome on Android
+ * selects the whole value itself as it raises the keyboard, which happens after
+ * a synchronous call has already run, so the field arrives highlighted anyway -
+ * which a desktop browser does not do, and is why this looked fixed when it was
+ * not.
+ *
+ * So it is collapsed again on the next frame and twice more while the keyboard
+ * is arriving. Listening for the field's own `select` event would be tidier, but
+ * a scripted setSelectionRange does not raise one, so there is nothing to hear.
+ * The retries stop well before anyone could make a selection deliberately.
+ */
+const CARET_RETRIES_MS = [150, 350];
+
+function focusAtEnd(input) {
+  const collapse = () => {
+    const end = input.value.length;
+    try { input.setSelectionRange(end, end); } catch { /* not a field with a caret */ }
+  };
+  input.focus();
+  collapse();
+  requestAnimationFrame(collapse);
+  for (const delay of CARET_RETRIES_MS) setTimeout(collapse, delay);
+}
+
 function selectRound(index) {
   setState((s) => {
     const pending = s.game.rounds[index] === undefined;
@@ -718,12 +748,7 @@ function wire() {
     openTeamsModal();
     const input = $(`#in-${side}-${Number(index) + 1}`);
     if (!input || input.closest('[data-second-player]')?.hidden) return;
-    input.focus();
-    // Caret at the end rather than the whole name selected. A name is usually
-    // being corrected rather than replaced, and a highlighted one is a single
-    // stray keypress away from gone.
-    const end = input.value.length;
-    input.setSelectionRange?.(end, end);
+    focusAtEnd(input);
   });
 
   // Target score
@@ -799,7 +824,39 @@ function render(state, changed) {
   }
 }
 
+/**
+ * Pin the shell to the height that is actually on screen.
+ *
+ * The app is one fixed-height screen with no scrolling, so if the shell is
+ * taller than the visible area the bottom row simply is not there - and the
+ * bottom row is the submit button. Viewport units are not dependable for this on
+ * a phone: on Android the value can come back including the area behind the
+ * system bars, which is exactly how the button ended up below the fold.
+ * window.innerHeight is the number that is really visible, so it wins where it
+ * exists, and the CSS keeps svh as the fallback.
+ *
+ * A resize while a field has focus is the keyboard opening. Shrinking the shell
+ * to fit above it would squash the whole board, so those are left alone - the
+ * keyboard covers the app rather than resizing it.
+ */
+function trackViewportHeight() {
+  const apply = () => {
+    // A zero reading happens mid-load in some browsers; leaving the variable
+    // unset falls back to 100svh rather than collapsing the app to nothing.
+    if (!window.innerHeight) return;
+    document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+  };
+  apply();
+  window.addEventListener('resize', () => {
+    if (document.activeElement?.tagName === 'INPUT') return;
+    apply();
+  });
+  // The reported height lags the rotation, so read it after the browser settles.
+  window.addEventListener('orientationchange', () => setTimeout(apply, 150));
+}
+
 function init() {
+  trackViewportHeight();
   setText($('#brand-version'), `v${APP_VERSION}`);
   setText($('#about-version'), `Version ${APP_VERSION}`);
   wire();

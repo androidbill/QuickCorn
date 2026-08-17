@@ -86,8 +86,16 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+/* --app-height is set from window.innerHeight at runtime; see trackViewportHeight
+   in js/app.js. The shell is a fixed height with no scroll, so it has to match
+   the height actually on screen, and 100dvh does not on every phone - on Android
+   it can come back including the area behind the system bars, which hangs the
+   bottom of the shell below the fold and takes the submit button with it. The
+   two declarations are the ladder for browsers without svh, then without the
+   variable. */
 html, body {
   height: 100dvh;
+  height: var(--app-height, 100svh);
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
@@ -100,6 +108,7 @@ button { cursor: pointer; border: 0; background: none; }
 
 #app {
   height: 100dvh;
+  height: var(--app-height, 100svh);
   width: 100%;
   max-width: 540px;
   margin: 0 auto;

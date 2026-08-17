@@ -46,17 +46,62 @@ describe('tapping a name to edit it', () => {
   // happy-dom empties an input the moment it takes focus, so where the caret
   // lands cannot be observed in a DOM test. Asserted against the source here for
   // the same reason the layout contracts above are.
-  const handler = app.slice(app.indexOf("'[data-edit]'"));
-  const body = handler.slice(0, handler.indexOf('\n  });'));
+  const fn = app.slice(app.indexOf('function focusAtEnd'));
+  const body = fn.slice(0, fn.indexOf('\n}'));
 
   it('places the caret at the end of the name', () => {
-    expect(body).toMatch(/setSelectionRange\?\.\(end,\s*end\)/);
+    expect(body).toMatch(/setSelectionRange\(end,\s*end\)/);
     expect(body).toMatch(/const end = input\.value\.length/);
   });
 
   it('does not select the name, which one keypress would wipe', () => {
     expect(body).not.toMatch(/\.select\(\)/);
-    expect(body).not.toMatch(/\.select\?\.\(\)/);
+    expect(app.slice(app.indexOf("'[data-edit]'"))).not.toMatch(/\.select\(\)/);
+  });
+
+  it('collapses again after the keyboard opens, which re-selects on Android', () => {
+    // A single synchronous call is not enough: Chrome on Android selects the
+    // whole value as it raises the keyboard, after that call has run.
+    expect(body).toMatch(/requestAnimationFrame\(collapse\)/);
+    expect(body).toMatch(/for \(const delay of CARET_RETRIES_MS\) setTimeout\(collapse, delay\)/);
+  });
+
+  it('keeps retrying past the keyboard, and stops well before a deliberate selection', () => {
+    const retries = app.match(/const CARET_RETRIES_MS = \[([^\]]+)\]/)[1].split(',').map((n) => Number(n.trim()));
+    expect(retries.length).toBeGreaterThanOrEqual(2);
+    // Long enough to outlast the keyboard animation, short enough that a
+    // selection the user makes on purpose is never undone.
+    expect(Math.max(...retries)).toBeGreaterThanOrEqual(300);
+    expect(Math.max(...retries)).toBeLessThan(600);
+  });
+});
+
+describe('the shell matches the height that is actually on screen', () => {
+  // The app is one fixed-height screen with no scroll, so a shell taller than
+  // the visible area does not clip gracefully - it puts the bottom row, which
+  // is the submit button, below the fold. This happened on a real phone where
+  // 100dvh came back including the area behind the system bars.
+  it('drives the height from a variable, with viewport units as the fallback', () => {
+    for (const selector of ['html, body', '#app']) {
+      const rule = ruleBody(selector);
+      expect(rule, `no rule for ${selector}`).toBeTruthy();
+      expect(rule).toMatch(/height:\s*var\(--app-height,\s*100svh\)/);
+      // The plain declaration first, for anything without svh or custom props.
+      expect(rule).toMatch(/height:\s*100dvh/);
+      expect(rule.indexOf('100dvh')).toBeLessThan(rule.indexOf('--app-height'));
+    }
+  });
+
+  it('sets that variable from the visible height at runtime', () => {
+    const fn = app.slice(app.indexOf('function trackViewportHeight'));
+    const body = fn.slice(0, fn.indexOf('\n}'));
+    expect(body).toMatch(/setProperty\('--app-height', `\$\{window\.innerHeight\}px`\)/);
+    expect(body).toMatch(/addEventListener\('resize'/);
+    expect(body).toMatch(/addEventListener\('orientationchange'/);
+    // A resize with a field focused is the keyboard, and resizing to fit above
+    // it would squash the board.
+    expect(body).toMatch(/activeElement\?\.tagName === 'INPUT'/);
+    expect(app).toMatch(/function init\(\) \{\s*\n\s*trackViewportHeight\(\);/);
   });
 });
 
