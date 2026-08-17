@@ -502,6 +502,13 @@ button { cursor: pointer; border: 0; background: none; }
   padding: 0 var(--gap-3);
   min-width: 0;
 }
+/* The field for the name that was tapped on the scoreboard. It is a mark rather
+   than focus on purpose: focusing would throw the keyboard up over the modal
+   before anything had been asked of it. */
+.field input.is-target {
+  border-color: var(--good);
+  box-shadow: 0 0 0 2px rgba(106, 191, 69, 0.3);
+}
 .team-block { margin-bottom: var(--gap-4); }
 .team-block-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 900; margin-bottom: var(--gap-2); }
 .team-block--left .team-block-title { color: var(--team-left); }

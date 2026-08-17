@@ -231,33 +231,24 @@ function clearEntry() {
 }
 
 /**
- * Focus a text field with the caret after the last character, nothing selected.
+ * Point at the field for the name that was tapped, without focusing it.
  *
- * A name is nearly always being corrected rather than swapped for a different
- * one, so selecting it just puts it one keypress from gone.
+ * Focusing raised the keyboard over half the modal the instant it opened, before
+ * anything had been asked of it - and Edit Teams is as often opened to swap the
+ * matchup or the team size as to type. So the field is only marked, and tapping
+ * it is what asks for the keyboard.
  *
- * Collapsing the selection once is not enough on a phone. Chrome on Android
- * selects the whole value itself as it raises the keyboard, which happens after
- * a synchronous call has already run, so the field arrives highlighted anyway -
- * which a desktop browser does not do, and is why this looked fixed when it was
- * not.
- *
- * So it is collapsed again on the next frame and twice more while the keyboard
- * is arriving. Listening for the field's own `select` event would be tidier, but
- * a scripted setSelectionRange does not raise one, so there is nothing to hear.
- * The retries stop well before anyone could make a selection deliberately.
+ * This also retires the caret handling that sat here. It existed because
+ * focusing selected the whole name on Android, and nothing selects a name any
+ * more: a tap puts the caret where the finger went.
  */
-const CARET_RETRIES_MS = [150, 350];
+function markTargetField(input) {
+  clearTargetField();
+  input.classList.add('is-target');
+}
 
-function focusAtEnd(input) {
-  const collapse = () => {
-    const end = input.value.length;
-    try { input.setSelectionRange(end, end); } catch { /* not a field with a caret */ }
-  };
-  input.focus();
-  collapse();
-  requestAnimationFrame(collapse);
-  for (const delay of CARET_RETRIES_MS) setTimeout(collapse, delay);
+function clearTargetField() {
+  for (const field of $$('#modal-teams input.is-target')) field.classList.remove('is-target');
 }
 
 function selectRound(index) {
@@ -507,6 +498,9 @@ function openTeamsModal() {
   $('#in-right-1').value = state.mode === '1v1' ? safeText(state.teams.right.players[0], 'Player 2') : safeText(state.teams.right.players[0], 'Player 3');
   $('#in-right-2').value = safeText(state.teams.right.players[1], 'Player 4');
   setHtml($('#player-names'), state.playerHistory.map((n) => html`<option value="${n}"></option>`).join(''));
+  // Opened from the menu there is no name being pointed at; the tap-a-name path
+  // marks its field straight after this.
+  clearTargetField();
   syncTeamsModal();
   openModal('modal-teams');
 }
@@ -697,6 +691,9 @@ function wire() {
   on(document.body, 'click', '[data-round]', (e, btn) => selectRound(Number(btn.dataset.round)));
   on(document.body, 'click', '[data-color-btn]', (e, btn) => openColorsModal(btn.dataset.colorBtn));
 
+  // Once a field is being typed in, the mark has done its job.
+  $('#modal-teams').addEventListener('focusin', clearTargetField);
+
   // The way into the diagnostic from inside the installed app; see openDiagnostics.
   $('#brand-version').addEventListener('click', openDiagnostics);
 
@@ -751,7 +748,7 @@ function wire() {
     openTeamsModal();
     const input = $(`#in-${side}-${Number(index) + 1}`);
     if (!input || input.closest('[data-second-player]')?.hidden) return;
-    focusAtEnd(input);
+    markTargetField(input);
   });
 
   // Target score

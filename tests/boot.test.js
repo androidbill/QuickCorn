@@ -101,27 +101,51 @@ describe('boot', () => {
 });
 
 describe('editing names by tapping the scoreboard', () => {
-  it('opens Edit Teams focused on the player that was tapped', () => {
+  it('opens Edit Teams marking the player that was tapped', () => {
     document.querySelector('[data-edit="right-0"]').click();
     expect(document.querySelector('#modal-teams').hidden).toBe(false);
-    expect(document.activeElement.id).toBe('in-right-1');
+    expect(document.querySelector('#in-right-1').classList.contains('is-target')).toBe(true);
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
+  it('does not raise the keyboard by focusing anything', () => {
+    document.querySelector('[data-edit="right-0"]').click();
+    // Nothing in the modal takes focus, so the keyboard stays down until the
+    // field itself is tapped.
+    expect(document.activeElement.id).not.toBe('in-right-1');
+    expect(document.activeElement.closest?.('#modal-teams')).toBeFalsy();
     document.querySelector('#modal-teams [data-dismiss]').click();
   });
 
   it('reaches the second player of a team too', () => {
     document.querySelector('[data-edit="left-1"]').click();
-    expect(document.activeElement.id).toBe('in-left-2');
+    expect(document.querySelector('#in-left-2').classList.contains('is-target')).toBe(true);
     document.querySelector('#modal-teams [data-dismiss]').click();
   });
 
-  it('leaves the caret collapsed rather than selecting the name', () => {
+  it('marks only one field, so an earlier mark does not linger', () => {
+    document.querySelector('[data-edit="left-1"]').click();
+    document.querySelector('#modal-teams [data-dismiss]').click();
+    document.querySelector('[data-edit="right-0"]').click();
+    expect(document.querySelectorAll('#modal-teams input.is-target').length).toBe(1);
+    expect(document.querySelector('#in-right-1').classList.contains('is-target')).toBe(true);
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
+  it('marks nothing when opened from the menu, where no name was tapped', () => {
+    document.querySelector('[data-edit="right-0"]').click();
+    document.querySelector('#modal-teams [data-dismiss]').click();
+    document.querySelector('[data-menu="teams"]').click();
+    expect(document.querySelectorAll('#modal-teams input.is-target').length).toBe(0);
+    document.querySelector('#modal-teams [data-dismiss]').click();
+  });
+
+  it('drops the mark once a field is being typed in', () => {
     document.querySelector('[data-edit="right-0"]').click();
     const input = document.querySelector('#in-right-1');
-    // Only that nothing is highlighted can be checked here: happy-dom empties an
-    // input when it takes focus, so the caret cannot be observed sitting at the
-    // end of a real name. The position itself is pinned in layout.test.js
-    // against the source, and was confirmed in a browser.
-    expect(input.selectionStart).toBe(input.selectionEnd);
+    expect(input.classList.contains('is-target')).toBe(true);
+    input.dispatchEvent(new Event('focusin', { bubbles: true }));
+    expect(input.classList.contains('is-target')).toBe(false);
     document.querySelector('#modal-teams [data-dismiss]').click();
   });
 

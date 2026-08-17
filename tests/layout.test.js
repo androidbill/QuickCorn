@@ -43,36 +43,21 @@ describe('game screen rows', () => {
 });
 
 describe('tapping a name to edit it', () => {
-  // happy-dom empties an input the moment it takes focus, so where the caret
-  // lands cannot be observed in a DOM test. Asserted against the source here for
-  // the same reason the layout contracts above are.
-  const fn = app.slice(app.indexOf('function focusAtEnd'));
-  const body = fn.slice(0, fn.indexOf('\n}'));
-
-  it('places the caret at the end of the name', () => {
-    expect(body).toMatch(/setSelectionRange\(end,\s*end\)/);
-    expect(body).toMatch(/const end = input\.value\.length/);
-  });
-
-  it('does not select the name, which one keypress would wipe', () => {
+  it('never focuses a field itself, which is what raises the keyboard', () => {
+    // The keyboard covers half the modal, and Edit Teams is as often opened to
+    // change the matchup or the team size as to type a name.
+    const handler = app.slice(app.indexOf("'[data-edit]'"));
+    const body = handler.slice(0, handler.indexOf('\n  });'));
+    expect(body).toMatch(/markTargetField\(input\)/);
+    expect(body).not.toMatch(/\.focus\(\)/);
     expect(body).not.toMatch(/\.select\(\)/);
-    expect(app.slice(app.indexOf("'[data-edit]'"))).not.toMatch(/\.select\(\)/);
   });
 
-  it('collapses again after the keyboard opens, which re-selects on Android', () => {
-    // A single synchronous call is not enough: Chrome on Android selects the
-    // whole value as it raises the keyboard, after that call has run.
-    expect(body).toMatch(/requestAnimationFrame\(collapse\)/);
-    expect(body).toMatch(/for \(const delay of CARET_RETRIES_MS\) setTimeout\(collapse, delay\)/);
-  });
-
-  it('keeps retrying past the keyboard, and stops well before a deliberate selection', () => {
-    const retries = app.match(/const CARET_RETRIES_MS = \[([^\]]+)\]/)[1].split(',').map((n) => Number(n.trim()));
-    expect(retries.length).toBeGreaterThanOrEqual(2);
-    // Long enough to outlast the keyboard animation, short enough that a
-    // selection the user makes on purpose is never undone.
-    expect(Math.max(...retries)).toBeGreaterThanOrEqual(300);
-    expect(Math.max(...retries)).toBeLessThan(600);
+  it('has no caret handling left, since nothing selects a name any more', () => {
+    // It existed only because focusing selected the whole value on Android.
+    expect(app).not.toMatch(/setSelectionRange/);
+    expect(app).not.toMatch(/CARET_RETRIES_MS/);
+    expect(app).not.toMatch(/function focusAtEnd/);
   });
 });
 
