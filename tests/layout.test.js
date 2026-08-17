@@ -100,19 +100,6 @@ describe('the shell matches the height that is actually on screen', () => {
     expect(body).toMatch(/Math\.min\(inner, visual\)/);
   });
 
-  it('keeps the diagnostic off a normal load', () => {
-    // Dynamically imported, so the file is never fetched unless it is asked for.
-    expect(app).toMatch(/import\('\.\/diag\.js'\)/);
-    expect(app).toMatch(/URLSearchParams\(location\.search\)\.has\('diag'\)/);
-    expect(app).not.toMatch(/^import .*diag\.js/m);
-  });
-
-  it('can reach the diagnostic from inside the installed app', () => {
-    // The home screen icon starts at its own start_url, so a ?diag=1 link never
-    // reaches the case that is actually broken. The version line is the way in.
-    expect(app).toMatch(/\$\('#brand-version'\)\.addEventListener\('click', openDiagnostics\)/);
-  });
-
   it('leaves room for the status bar once installed', () => {
     // viewport-fit=cover means the viewport covers the whole screen in
     // standalone, and the status bar sits over the top of it.

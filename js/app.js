@@ -694,9 +694,6 @@ function wire() {
   // Once a field is being typed in, the mark has done its job.
   $('#modal-teams').addEventListener('focusin', clearTargetField);
 
-  // The way into the diagnostic from inside the installed app; see openDiagnostics.
-  $('#brand-version').addEventListener('click', openDiagnostics);
-
   $('#submit-btn').addEventListener('click', submitRound);
   $('#clear-btn').addEventListener('click', clearEntry);
 
@@ -880,19 +877,6 @@ function init() {
   startUpdateWatch(APP_VERSION, (liveVersion) => {
     toast(`Update to ${liveVersion}`, applyUpdate);
   });
-  if (new URLSearchParams(location.search).has('diag')) openDiagnostics();
-}
-
-/**
- * The layout numbers, read off the device.
- *
- * Reachable two ways because the interesting case is the installed app, and a
- * ?diag=1 URL cannot get there - the home screen icon carries its own start_url.
- * The version line under the title is the way in from inside. The module is
- * imported here rather than at the top so a normal load never fetches it.
- */
-function openDiagnostics() {
-  import('./diag.js').then((m) => m.showDiagnostics()).catch(() => {});
 }
 
 init();
