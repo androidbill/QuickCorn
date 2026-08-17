@@ -41,6 +41,24 @@ describe('game screen rows', () => {
   });
 });
 
+describe('the round strip scrolls instead of stretching the screen', () => {
+  it('lets the strip and its row shrink below their content width', () => {
+    // A grid item's min-width is auto, so without these the strip held the whole
+    // column open at the combined width of its chips - around round seven that
+    // came to 574px on a 375px screen and carried the right team's score and pad
+    // off the edge. Not catchable in happy-dom, which lays nothing out.
+    expect(ruleBody('.rounds')).toMatch(/min-width:\s*0/);
+    expect(ruleBody('.rounds-strip')).toMatch(/min-width:\s*0/);
+  });
+
+  it('scrolls the strip itself horizontally', () => {
+    expect(ruleBody('.rounds-strip')).toMatch(/overflow-x:\s*auto/);
+    // Chips keep their size and go off the end, rather than squeezing thinner
+    // and thinner as the game runs long.
+    expect(ruleBody('.round-chip')).toMatch(/flex:\s*0 0 auto/);
+  });
+});
+
 describe('entry pads absorb the mode change', () => {
   it('lets the pad and its grid shrink rather than push', () => {
     expect(ruleBody('.pads')).toMatch(/min-height:\s*0/);

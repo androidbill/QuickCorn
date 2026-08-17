@@ -54,6 +54,15 @@ describe('boot', () => {
     expect(document.querySelector('#nextup-name').textContent).toBe('No points yet');
   });
 
+  it('opens with a chip for round 1 rather than an empty strip', () => {
+    // The strip used to render only scored rounds, so it had no height until the
+    // first submit - at which point a chip appeared and every row above it moved.
+    const chips = document.querySelectorAll('#rounds-strip .round-chip');
+    expect(chips.length).toBe(1);
+    expect(chips[0].querySelector('.round-no').textContent).toBe('R1');
+    expect(chips[0].getAttribute('aria-pressed')).toBe('true');
+  });
+
   it('shows the game screen and hides the others', () => {
     expect(document.querySelector('#screen-game').hidden).toBe(false);
     for (const id of ['#screen-history', '#screen-baggers', '#screen-players']) {
@@ -151,6 +160,25 @@ describe('team colours', () => {
     expect(document.documentElement.style.getPropertyValue('--team-right')).toBe('#ba55d3');
     document.querySelector('#modal-colors [data-dismiss]').click();
   });
+
+  it('opens the picker on the right team from the palette by its name', () => {
+    document.querySelector('[data-color-btn="right"]').click();
+    expect(document.querySelector('#modal-colors').hidden).toBe(false);
+    expect(document.querySelector('[data-color-side="right"]').getAttribute('aria-pressed')).toBe('true');
+    document.querySelector('#modal-colors [data-dismiss]').click();
+  });
+
+  it('opens it on the left team from the other palette', () => {
+    document.querySelector('[data-color-btn="left"]').click();
+    expect(document.querySelector('[data-color-side="left"]').getAttribute('aria-pressed')).toBe('true');
+    document.querySelector('#modal-colors [data-dismiss]').click();
+  });
+
+  it('has no lane control left beside the names', () => {
+    // The L/R lane tracker that used to sit here is gone; the palette took its
+    // slot. Asserted so it does not come back with a copied-over block.
+    expect(document.querySelectorAll('[data-lane]').length).toBe(0);
+  });
 });
 
 describe('scoring a round through the UI', () => {
@@ -161,7 +189,9 @@ describe('scoring a round through the UI', () => {
 
     expect(document.querySelector('#score-left').textContent).toBe('3');
     expect(document.querySelector('#score-right').textContent).toBe('0');
-    expect(document.querySelectorAll('#rounds-strip .round-chip').length).toBe(1);
+    // R1 scored, plus the chip for R2 now in play.
+    expect(document.querySelectorAll('#rounds-strip .round-chip').length).toBe(2);
+    expect(document.querySelector('#rounds-strip .round-chip--now .round-no').textContent).toBe('R2');
     expect(document.querySelector('#nextup-value').textContent).toBe('+3 R1');
   });
 
@@ -214,12 +244,67 @@ describe('scoring a round through the UI', () => {
     expect(document.querySelector('#modal-win').hidden).toBe(false);
     expect(document.querySelector('#win-score').textContent).toBe('25 - 0');
     expect(document.querySelectorAll('#win-stats .stat-grid').length).toBe(1);
+    // The game is over, so there is no next round to offer a chip for.
+    expect(document.querySelector('#rounds-strip .round-chip--now')).toBe(null);
   });
 
   it('starts a fresh game from the win screen', () => {
     document.querySelector('#play-again').click();
     expect(document.querySelector('#modal-win').hidden).toBe(true);
     expect(document.querySelector('#score-left').textContent).toBe('0');
-    expect(document.querySelectorAll('#rounds-strip .round-chip').length).toBe(0);
+    // Not an empty strip: a fresh game shows the chip for R1 waiting to be thrown.
+    const chips = document.querySelectorAll('#rounds-strip .round-chip');
+    expect(chips.length).toBe(1);
+    expect(chips[0].classList.contains('round-chip--now')).toBe(true);
+    expect(chips[0].querySelector('.round-no').textContent).toBe('R1');
+  });
+});
+
+describe('the chip for the round in play', () => {
+  const strip = () => [...document.querySelectorAll('#rounds-strip .round-chip')];
+  const now = () => document.querySelector('#rounds-strip .round-chip--now');
+
+  it('fills in on submit and hands off to the next round', () => {
+    // Starts on a fresh game, left over from the play-again test above.
+    expect(now().querySelector('.round-no').textContent).toBe('R1');
+
+    document.querySelector('#pad-left [data-value="5"]').click();
+    document.querySelector('#submit-btn').click();
+
+    const chips = strip();
+    expect(chips.length).toBe(2);
+    // R1 is a scored chip now, carrying the running total.
+    expect(chips[0].classList.contains('round-chip--now')).toBe(false);
+    expect(chips[0].querySelector('.round-left').textContent).toBe('5');
+    // ...and R2 has taken over as the one in play.
+    expect(chips[1]).toBe(now());
+    expect(now().querySelector('.round-no').textContent).toBe('R2');
+  });
+
+  it('holds no score of its own until it is thrown', () => {
+    expect(now().querySelector('.round-left').textContent).toBe('–');
+    expect(now().querySelector('.round-right').textContent).toBe('–');
+  });
+
+  it('gives up the selection when an earlier round is opened for editing', () => {
+    strip()[0].click();
+    expect(document.querySelector('[data-round="0"]').getAttribute('aria-pressed')).toBe('true');
+    expect(now().getAttribute('aria-pressed')).toBe('false');
+    expect(document.querySelector('#submit-btn').textContent).toBe('UPDATE');
+  });
+
+  it('comes back to the round in play when tapped', () => {
+    now().click();
+    expect(now().getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('[data-round="0"]').getAttribute('aria-pressed')).toBe('false');
+    expect(document.querySelector('#submit-btn').textContent).toBe('SUBMIT');
+  });
+
+  it('keeps the taps already made when tapped while it is the one in play', () => {
+    document.querySelector('#pad-left [data-value="7"]').click();
+    now().click();
+    document.querySelector('#submit-btn').click();
+    // 5 from R1 and 7 from R2: the tap survived, so nothing was thrown away.
+    expect(document.querySelector('#score-left').textContent).toBe('12');
   });
 });

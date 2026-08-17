@@ -25,7 +25,6 @@ export function defaultState() {
     scoringMode: 'acl',
     trackInOn: false,
     teamColors: { ...DEFAULT_COLORS },
-    teamThrowSide: { left: null, right: null },
     firstShooter: { left: 0, right: 0 },
     teams: {
       left: { players: ['Player 1', 'Player 2'] },
@@ -76,13 +75,11 @@ function importLegacy() {
     const raw = localStorage.getItem(LEGACY_KEY);
     if (!raw) return null;
     const old = JSON.parse(raw);
-    const side = (v, l, r) => ({ left: v?.[l] ?? null, right: v?.[r] ?? null });
     return {
       mode: old.mode,
       scoringMode: old.scoringMode,
       trackInOn: old.trackInOn,
       teamColors: { left: old.teamColors?.red || DEFAULT_COLORS.left, right: old.teamColors?.blue || DEFAULT_COLORS.right },
-      teamThrowSide: side(old.teamThrowSide, 'red', 'blue'),
       firstShooter: { left: Number(old.firstShooter?.red) || 0, right: Number(old.firstShooter?.blue) || 0 },
       teams: {
         left: { players: old.teams?.red?.players || ['Player 1', 'Player 2'] },

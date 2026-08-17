@@ -41,11 +41,6 @@ function renderTeams(state) {
     toggleClass(one, 'is-waiting', !solo && throwing !== 0);
     toggleClass(two, 'is-throwing', !solo && throwing === 1);
     toggleClass(two, 'is-waiting', !solo && throwing !== 1);
-
-    const lane = $(`[data-lane="${side}"]`);
-    const value = state.teamThrowSide[side];
-    setText(lane, value === 'left' ? 'L' : value === 'right' ? 'R' : '–');
-    lane.setAttribute('aria-pressed', value ? 'true' : 'false');
   }
 }
 
@@ -122,13 +117,38 @@ function renderRounds(state) {
       <span class="round-right">${right}</span>
     </button>`;
   });
+  /* The round being entered gets a chip of its own, ahead of being scored. A new
+     game used to open with an empty strip, so the row had no height and every
+     box above it sat too tall until the first submit dropped a chip in and
+     everything shifted. Now R1 is there from the start, submitting fills it in,
+     and a fresh chip takes its place. A won game gets none - there is no next
+     round to enter. */
+  if (!R.getWinnerSide(state.game.rounds, state.game.targetScore)) {
+    const next = state.game.rounds.length;
+    const pressed = state.game.editingRound == null ? 'true' : 'false';
+    chips.push(html`<button class="round-chip round-chip--now" data-round="${next}" aria-pressed="${pressed}">
+      <span class="round-no">R${next + 1}</span>
+      <span class="round-left">&ndash;</span>
+      <span class="round-right">&ndash;</span>
+    </button>`);
+  }
   setHtml($('#rounds-strip'), chips.join(''));
+  scrollCurrentChipIntoView();
 
   const entries = state.game.currentEntry;
   const valid = R.validateEntry(entries.left) && R.validateEntry(entries.right);
   $('#submit-btn').disabled = !valid;
   setText($('#submit-btn'), state.game.editingRound != null ? 'UPDATE' : 'SUBMIT');
   $('#clear-btn').hidden = state.game.editingRound == null && !hasEntry(state);
+}
+
+/* The strip is rebuilt whole, which resets its scroll to the left, so put the
+   chip in play back in view. Past round eight it would otherwise sit off the
+   right edge - showing the current round is the whole point of it. */
+function scrollCurrentChipIntoView() {
+  const strip = $('#rounds-strip');
+  const chip = strip && $('[aria-pressed="true"]', strip);
+  if (chip) strip.scrollLeft = chip.offsetLeft + chip.offsetWidth - strip.clientWidth;
 }
 
 const hasEntry = (state) =>
@@ -212,6 +232,16 @@ function clearEntry() {
 
 function selectRound(index) {
   setState((s) => {
+    const pending = s.game.rounds[index] === undefined;
+    if (pending) {
+      // The chip for the round in play. Tapping it while editing an earlier
+      // round comes back here; tapping it when already here leaves the taps
+      // alone, since Clear is the button for throwing them away.
+      if (s.game.editingRound == null) return;
+      s.game.editingRound = null;
+      s.game.currentEntry = { left: emptyEntry(), right: emptyEntry() };
+      return;
+    }
     if (s.game.editingRound === index) {
       s.game.editingRound = null;
       s.game.currentEntry = { left: emptyEntry(), right: emptyEntry() };
@@ -635,15 +665,7 @@ function wire() {
     closeModal('modal-breakdown');
   });
   on(document.body, 'click', '[data-round]', (e, btn) => selectRound(Number(btn.dataset.round)));
-  on(document.body, 'click', '[data-lane]', (e, btn) => {
-    const side = btn.dataset.lane;
-    setState((s) => {
-      const current = s.teamThrowSide[side];
-      const next = current === 'left' ? 'right' : current === 'right' ? null : 'left';
-      s.teamThrowSide[side] = next;
-      s.teamThrowSide[R.otherSide(side)] = next ? (next === 'left' ? 'right' : 'left') : null;
-    }, ['teamThrowSide']);
-  });
+  on(document.body, 'click', '[data-color-btn]', (e, btn) => openColorsModal(btn.dataset.colorBtn));
 
   $('#submit-btn').addEventListener('click', submitRound);
   $('#clear-btn').addEventListener('click', clearEntry);
@@ -759,7 +781,7 @@ function wire() {
 
 /* ------------------------------------------------------------------- boot */
 
-const GAME_KEYS = ['game', 'teams', 'mode', 'scoringMode', 'firstShooter', 'teamThrowSide', 'teamColors', 'trackInOn'];
+const GAME_KEYS = ['game', 'teams', 'mode', 'scoringMode', 'firstShooter', 'teamColors', 'trackInOn'];
 
 function render(state, changed) {
   const all = !changed || changed.size === 0;

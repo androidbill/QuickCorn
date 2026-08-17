@@ -247,17 +247,18 @@ button { cursor: pointer; border: 0; background: none; }
 .is-throwing { text-decoration: underline; text-underline-offset: 3px; color: #fff; }
 .is-waiting { opacity: 0.35; }
 
-.lane-btn {
+/* Opens the colour picker for this team, the way version 1 did. */
+.color-btn {
   min-width: 34px;
   height: 34px;
   flex: 0 0 auto;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.28);
   background: rgba(0, 0, 0, 0.16);
-  font-weight: 900;
   font-size: var(--fs-body);
+  line-height: 1;
 }
-.lane-btn[aria-pressed='true'] { background: rgba(0, 0, 0, 0.4); border-color: #fff; }
+.color-btn:active { background: rgba(0, 0, 0, 0.4); border-color: #fff; }
 
 .score {
   min-height: 0;
@@ -380,8 +381,13 @@ button { cursor: pointer; border: 0; background: none; }
 
 /* ---------------------------------------------------------------- rounds */
 
-.rounds { min-height: 0; display: flex; flex-direction: column; gap: var(--gap-2); }
-.rounds-strip { display: flex; gap: var(--gap-2); overflow-x: auto; padding-bottom: 2px; }
+/* min-width matters as much as min-height here. A grid item's min-width is auto,
+   so without this the strip refuses to shrink below the combined width of its
+   chips: around round seven it stretched the whole grid column to 574px on a
+   375px screen, pushing the right team's score and pad off the edge. The strip
+   is the row that should scroll, not the app. */
+.rounds { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--gap-2); }
+.rounds-strip { min-width: 0; display: flex; gap: var(--gap-2); overflow-x: auto; padding-bottom: 2px; }
 .round-chip {
   flex: 0 0 auto;
   min-width: 52px;
@@ -396,6 +402,11 @@ button { cursor: pointer; border: 0; background: none; }
 .round-chip .round-no { font-size: var(--fs-label); background: var(--panel-2); color: var(--muted); }
 .round-chip .round-left { color: var(--team-left); }
 .round-chip .round-right { color: var(--team-right); }
+/* The round in play. Dashed and muted so it reads as not thrown yet, rather
+   than as a round that genuinely scored nothing. */
+.round-chip--now { border-style: dashed; }
+.round-chip--now .round-left,
+.round-chip--now .round-right { color: var(--muted); }
 
 .actions { display: grid; grid-template-columns: 1fr auto; gap: var(--gap-2); }
 .btn {
