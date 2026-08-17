@@ -120,12 +120,19 @@ button { cursor: pointer; border: 0; background: none; }
 
 /* ---------------------------------------------------------------- header */
 
+/* The top inset matters once the app is installed. The page asks for
+   viewport-fit=cover, so in standalone the viewport runs the full height of the
+   screen and the status bar sits over the top of it - the browser leaves room
+   for its own chrome instead, which is why this is only wrong once installed.
+   Without this the header hides behind the status bar and every row below is
+   carried down by that much, which is how the submit button leaves the screen. */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-3);
   padding: var(--gap-2) var(--gap-4);
+  padding-top: max(var(--gap-2), env(safe-area-inset-top));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
   z-index: 10;

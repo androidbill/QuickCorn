@@ -33,8 +33,11 @@ function collect() {
   const vv = window.visualViewport;
   const submit = rect('#submit-btn');
   const visible = window.innerHeight;
+  const display = ['standalone', 'fullscreen', 'minimal-ui', 'browser']
+    .find((mode) => window.matchMedia(`(display-mode: ${mode})`).matches) || 'unknown';
   return {
     version: window.APP_VERSION,
+    displayMode: display,
     standalone: window.matchMedia('(display-mode: standalone)').matches,
     dpr: window.devicePixelRatio,
     innerHeight: window.innerHeight,
@@ -49,6 +52,7 @@ function collect() {
     safeBottom: probe('env(safe-area-inset-bottom)'),
     appHeightVar: getComputedStyle(document.documentElement).getPropertyValue('--app-height').trim() || '(unset)',
     appBox: rect('#app'),
+    headerBox: rect('.header'),
     screenBox: rect('#screen-game'),
     padsBox: rect('.pads'),
     roundsBox: rect('.rounds'),

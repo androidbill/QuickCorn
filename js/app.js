@@ -697,6 +697,9 @@ function wire() {
   on(document.body, 'click', '[data-round]', (e, btn) => selectRound(Number(btn.dataset.round)));
   on(document.body, 'click', '[data-color-btn]', (e, btn) => openColorsModal(btn.dataset.colorBtn));
 
+  // The way into the diagnostic from inside the installed app; see openDiagnostics.
+  $('#brand-version').addEventListener('click', openDiagnostics);
+
   $('#submit-btn').addEventListener('click', submitRound);
   $('#clear-btn').addEventListener('click', clearEntry);
 
@@ -880,11 +883,19 @@ function init() {
   startUpdateWatch(APP_VERSION, (liveVersion) => {
     toast(`Update to ${liveVersion}`, applyUpdate);
   });
-  // ?diag=1 reads the layout numbers off the device. Fetched only when asked
-  // for, so a normal load never sees it.
-  if (new URLSearchParams(location.search).has('diag')) {
-    import('./diag.js').then((m) => m.showDiagnostics()).catch(() => {});
-  }
+  if (new URLSearchParams(location.search).has('diag')) openDiagnostics();
+}
+
+/**
+ * The layout numbers, read off the device.
+ *
+ * Reachable two ways because the interesting case is the installed app, and a
+ * ?diag=1 URL cannot get there - the home screen icon carries its own start_url.
+ * The version line under the title is the way in from inside. The module is
+ * imported here rather than at the top so a normal load never fetches it.
+ */
+function openDiagnostics() {
+  import('./diag.js').then((m) => m.showDiagnostics()).catch(() => {});
 }
 
 init();
