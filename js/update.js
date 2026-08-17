@@ -12,7 +12,11 @@
  * cannot race, and it works the same in every browser.
  */
 
-const CHECK_INTERVAL_MS = 15 * 60 * 1000;
+/* Five minutes rather than fifteen. The foreground check catches most of it -
+   a phone locks between rounds - but an app left open on a table through a game
+   should not sit a quarter of an hour behind. The request is one small document
+   and the response is not cached, so the cost is negligible. */
+const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 /** Read the version out of the served index.html. */
 async function fetchLiveVersion() {
@@ -71,6 +75,9 @@ export function startUpdateWatch(runningVersion, onUpdate) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') check();
   });
+  // A check made with no signal fails silently and waits for the next one, which
+  // in a backyard could be the whole game. Take the reconnection as a cue.
+  window.addEventListener('online', check);
 
   registerWorker(runningVersion);
 }
