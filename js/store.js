@@ -8,10 +8,15 @@
  */
 
 /**
- * Deliberately not QuickCorn 1's key. localStorage is shared per origin, not
- * per path, so this app running at /test/ would otherwise read and write the
- * live app's saved games. It seeds itself from a copy instead, and never
- * writes to the old key.
+ * The key keeps its name. It was chosen when this app ran at /test/ alongside
+ * the single-file version, because localStorage is shared per origin rather
+ * than per path and the two would otherwise have written over each other.
+ * Renaming it now that this app has taken the root would orphan every game and
+ * 4-bagger already saved on a device, which is the whole point of the store.
+ *
+ * The legacy import below matters more since the promotion, not less: it is how
+ * anyone still holding the old app's data carries it across. The old key is
+ * only ever read.
  */
 const STORAGE_KEY = 'quickcorn2';
 const LEGACY_KEY = 'quickcorn_rebuilt_v1';

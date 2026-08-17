@@ -1,7 +1,7 @@
 /**
  * @vitest-environment happy-dom
  *
- * Boots QuickCorn 2 exactly as a browser would: real index.html into a real
+ * Boots QuickCorn exactly as a browser would: real index.html into a real
  * DOM, then the real entry module. An init-time error here is the difference
  * between a working app and a blank screen on a phone, and static checks cannot
  * catch it - so it is a test rather than something to remember to try.
@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 
-const html = readFileSync(resolve(process.cwd(), 'test/index.html'), 'utf8');
+const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
 // Taken from the page rather than restated, so a version bump is not a chore
 // here and the assertions below cannot drift from what ships.
 const VERSION = html.match(/window\.APP_VERSION\s*=\s*'([^']+)'/)[1];
@@ -18,7 +18,6 @@ const VERSION = html.match(/window\.APP_VERSION\s*=\s*'([^']+)'/)[1];
 const errors = [];
 
 beforeAll(async () => {
-  // The page is served from /test/, so relative fetches resolve against it.
   const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
   document.body.innerHTML = body.replace(/<script[\s\S]*?<\/script>/g, '');
   window.APP_VERSION = VERSION;
@@ -33,7 +32,7 @@ beforeAll(async () => {
   window.addEventListener('error', (e) => errors.push(e.message));
   window.onunhandledrejection = (e) => errors.push(String(e.reason));
 
-  await import('../test/js/app.js');
+  await import('../js/app.js');
   // Let the update check settle.
   await new Promise((r) => setTimeout(r, 0));
 });
@@ -276,7 +275,7 @@ describe('the About box', () => {
   it('shows the app icon, and hides it from the screen reader as decoration', () => {
     const icon = document.querySelector('#modal-about .about-icon');
     expect(icon.tagName).toBe('IMG');
-    expect(icon.getAttribute('src')).toBe('../quickcorn-icon.svg');
+    expect(icon.getAttribute('src')).toBe('./quickcorn-icon.svg');
     // The name is right underneath as real text, so alt would only repeat it.
     expect(icon.getAttribute('alt')).toBe('');
   });

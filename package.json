@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Tooling only. QuickCorn itself is a single static index.html with no build step - nothing here is deployed.",
+  "description": "Tooling only. QuickCorn itself is static files with no build step - nothing here is deployed.",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest"

@@ -1,130 +1,101 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { loadStylesheet, parseDeclarations, resolve, computedPx } from './css-cascade.js';
 
-// A snapshot of what the stylesheet actually resolves to at real device sizes.
-//
-// QuickCorn's type sizes are tuned by eye on a phone, across overlapping width
-// and height media queries, and the same selector is often set more than once
-// at the same breakpoint where only the last wins. That makes the stylesheet
-// easy to change by accident. These expectations are the guard: touch the CSS
-// and any size that moves shows up here as a diff to approve or reject, rather
-// than as a surprise on the phone.
-const declarations = parseDeclarations(loadStylesheet(new URL('../index.html', import.meta.url)));
+/**
+ * Layout contracts for the game screen.
+ *
+ * These exist because of a real bug: IN/ON keys carry two lines of text where
+ * Total keys carry one, so the pads are taller in that mode. With the round
+ * strip as the flexible row, the extra height pushed the submit button off the
+ * bottom of the screen in one mode and not the other. A DOM test cannot catch
+ * that - happy-dom does not lay anything out - so the contract is asserted
+ * against the stylesheet instead.
+ */
+const css = readFileSync(resolve(process.cwd(), 'app.css'), 'utf8');
+const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
 
-const DEVICES = {
-  'small phone 360x640': { width: 360, height: 640 },
-  'phone short 390x760': { width: 390, height: 760 },
-  'phone tall 390x844': { width: 390, height: 844 },
-  'phone large 430x932': { width: 430, height: 932 },
-  'tablet 768x1024': { width: 768, height: 1024 },
-};
+function ruleBody(selector) {
+  const escaped = selector.replace(/[.#*]/g, '\\$&');
+  const match = css.match(new RegExp(`(?:^|\\})\\s*${escaped}\\s*\\{([^}]*)\\}`, 'm'));
+  return match ? match[1] : null;
+}
 
-const TYPE_SELECTORS = [
-  '.brand-title',
-  '.brand-sub',
-  '.score-box',
-  '.team-player',
-  '.team-player2',
-  '.last-point-label',
-  '.last-point-name',
-  '.last-point-value',
-  '.entry-btn-num',
-  '.entry-btn-kind',
-  '.entry-label',
-  '.round-chip-score',
-  '.round-chip-head',
-  '.primary-btn',
-  '.section-title',
-  '.stat-value',
-  '.stat-label',
-];
-
-// Snapshots hold rendered pixels, not declaration text, so the stylesheet can
-// be restructured and still be shown to render the same. A diff here is a real
-// visual change.
-describe('type scale', () => {
-  for (const [name, viewport] of Object.entries(DEVICES)) {
-    it(`renders at the expected sizes on ${name}`, () => {
-      const sizes = {};
-      for (const selector of TYPE_SELECTORS) {
-        sizes[selector] = computedPx(declarations, selector, 'font-size', viewport);
-      }
-      expect(sizes).toMatchSnapshot();
-    });
-  }
-});
-
-// Spacing and grid are snapshotted as the declaration that wins, not as
-// pixels: several of these are not lengths at all (grid-template-rows), and
-// this guard exists to catch a stray deletion rather than a rescale.
-const LAYOUT_PAIRS = [
-  ['.header', 'padding'], ['.header', 'min-height'],
-  ['#game-screen', 'grid-template-rows'], ['#game-screen', 'gap'], ['#game-screen', 'padding'],
-  ['#game-history-screen', 'padding'], ['#four-baggers-screen', 'padding'], ['#players-screen', 'padding'],
-  ['.scoreboards', 'gap'],
-  ['.team-card', 'padding'], ['.team-card', 'border-radius'], ['.team-card', 'min-height'],
-  ['.team-player', 'line-height'], ['.team-player2', 'line-height'],
-  ['.mini-btn', 'min-width'], ['.mini-btn', 'height'],
-  ['.score-boxes', 'gap'],
-  ['.score-box', 'min-height'], ['.score-box', 'border-radius'], ['.score-box', 'padding'],
-  ['.last-point-card', 'grid-template-columns'], ['.last-point-card', 'grid-template-rows'],
-  ['.last-point-card', 'column-gap'], ['.last-point-card', 'row-gap'],
-  ['.last-point-card', 'min-height'], ['.last-point-card', 'padding'], ['.last-point-card', 'border-radius'],
-  ['.entry-card', 'gap'],
-  ['.entry-panels', 'gap'],
-  ['.entry-panel', 'border-radius'], ['.entry-panel', 'padding'], ['.entry-panel', 'gap'],
-  ['.entry-grid', '--entry-btn-height'], ['.entry-grid', 'gap'],
-  ['.entry-btn', 'min-height'], ['.entry-btn', 'border-radius'],
-  ['.entry-mode', 'gap'], ['.entry-mode button', 'min-height'], ['.entry-mode button', 'border-radius'],
-  ['.bottom-bar', 'grid-template-columns'], ['.bottom-bar', 'gap'], ['.bottom-bar', 'padding'],
-  ['.bottom-bar', 'border-radius'], ['.bottom-bar', 'height'],
-  ['.primary-btn', 'min-height'], ['.primary-btn', 'height'], ['.primary-btn', 'border-radius'],
-  ['.history-card', 'border-radius'], ['.history-card', 'padding'], ['.history-card', 'min-height'],
-  ['.history-card', 'height'], ['.history-card', 'gap'], ['.history-card', 'max-height'],
-  ['.history-scroller', 'gap'], ['.history-scroller', 'height'], ['.history-scroller', 'min-height'],
-  ['.round-chip', 'min-width'], ['.round-chip', 'border-radius'],
-  ['.round-chip-head', 'padding'], ['.round-chip-score', 'padding'],
-  ['.pill', 'min-height'], ['.pill', 'border-radius'], ['.pill', 'padding'],
-  ['.modal', 'max-height'],
-  ['.color-preview', 'min-height'], ['#iro-picker', 'min-height'],
-  ['.icon-btn', 'height'], ['.icon-btn', 'border-radius'],
-];
-
-describe('spacing and grid', () => {
-  for (const [name, viewport] of Object.entries(DEVICES)) {
-    it(`resolves as expected on ${name}`, () => {
-      const layout = {};
-      for (const [selector, prop] of LAYOUT_PAIRS) {
-        layout[`${selector} ${prop}`] = resolve(declarations, selector, prop, viewport);
-      }
-      expect(layout).toMatchSnapshot();
-    });
-  }
-});
-
-describe('cascade invariants', () => {
-  it('gives every type selector a size on every device', () => {
-    for (const [name, viewport] of Object.entries(DEVICES)) {
-      for (const selector of TYPE_SELECTORS) {
-        const value = resolve(declarations, selector, 'font-size', viewport);
-        expect(value, `${selector} on ${name}`).toBeTruthy();
-      }
-    }
+describe('game screen rows', () => {
+  it('has one row per section, in markup order', () => {
+    const order = [...html.matchAll(/<div class="(teams|scores|nextup|pads|rounds)[" ]/g)].map((m) => m[1]);
+    expect(order).toEqual(['teams', 'scores', 'nextup', 'pads', 'rounds']);
   });
 
-  it('never renders type below 7px on any device', () => {
-    for (const [name, viewport] of Object.entries(DEVICES)) {
-      for (const selector of TYPE_SELECTORS) {
-        const px = computedPx(declarations, selector, 'font-size', viewport);
-        expect(px, `${selector} on ${name}`).toBeGreaterThanOrEqual(7);
-      }
-    }
+  it('makes the pads the flexible row and leaves the rest to their content', () => {
+    const rows = ruleBody('#screen-game').match(/grid-template-rows:\s*([^;]+);/)[1].trim();
+    // teams, scores, nextup, PADS, rounds
+    expect(rows).toBe('auto auto auto minmax(0, 1fr) auto');
   });
 
-  it('keeps the app column capped so viewport units cannot outrun it', () => {
-    // Type is sized in vw while #app is width-capped, so the cap is load
-    // bearing: without it, wide screens would scale type off the column.
-    const maxWidth = resolve(declarations, '#app', 'max-width', { width: 1200, height: 900 });
-    expect(maxWidth).toBe('540px');
+  it('keeps the submit button clear of the home indicator', () => {
+    const padding = ruleBody('#screen-game').match(/padding-bottom:\s*([^;]+);/);
+    expect(padding, 'no padding-bottom on #screen-game').toBeTruthy();
+    expect(padding[1]).toMatch(/^max\(/);
+    expect(padding[1]).toContain('safe-area-inset-bottom');
+  });
+});
+
+describe('the round strip scrolls instead of stretching the screen', () => {
+  it('lets the strip and its row shrink below their content width', () => {
+    // A grid item's min-width is auto, so without these the strip held the whole
+    // column open at the combined width of its chips - around round seven that
+    // came to 574px on a 375px screen and carried the right team's score and pad
+    // off the edge. Not catchable in happy-dom, which lays nothing out.
+    expect(ruleBody('.rounds')).toMatch(/min-width:\s*0/);
+    expect(ruleBody('.rounds-strip')).toMatch(/min-width:\s*0/);
+  });
+
+  it('scrolls the strip itself horizontally', () => {
+    expect(ruleBody('.rounds-strip')).toMatch(/overflow-x:\s*auto/);
+    // Chips keep their size and go off the end, rather than squeezing thinner
+    // and thinner as the game runs long.
+    expect(ruleBody('.round-chip')).toMatch(/flex:\s*0 0 auto/);
+  });
+});
+
+describe('entry pads absorb the mode change', () => {
+  it('lets the pad and its grid shrink rather than push', () => {
+    expect(ruleBody('.pads')).toMatch(/min-height:\s*0/);
+    const pad = ruleBody('.pad');
+    expect(pad).toMatch(/min-height:\s*0/);
+    expect(pad).toMatch(/grid-template-rows:\s*auto minmax\(0, 1fr\)/);
+  });
+
+  it('shares the pad height equally between key rows', () => {
+    const grid = ruleBody('.pad-grid');
+    expect(grid).toMatch(/height:\s*100%/);
+    expect(grid).toMatch(/grid-auto-rows:\s*minmax\(0, 1fr\)/);
+  });
+
+  it('lets a key shrink and clip rather than grow the pad', () => {
+    const key = ruleBody('.key');
+    expect(key).toMatch(/min-height:\s*0/);
+    expect(key).toMatch(/overflow:\s*hidden/);
+  });
+
+  it('gives both modes the same number of key rows', () => {
+    // 8 keys over 2 columns and 12 over 3 both come to four rows, so the grid
+    // geometry does not change when the mode does.
+    const aclColumns = ruleBody('.pad-grid--acl').match(/grid-template-columns:\s*([^;]+);/)[1];
+    const totalColumns = ruleBody('.pad-grid--total').match(/grid-template-columns:\s*([^;]+);/)[1];
+    const aclCols = aclColumns.trim().split(/\s+/).length;
+    const totalCols = Number(totalColumns.match(/repeat\((\d+)/)[1]);
+    expect(8 / aclCols).toBe(4);
+    expect(12 / totalCols).toBe(4);
+  });
+
+  it('sizes the IN/ON number smaller, since that key also carries a label', () => {
+    expect(css).toMatch(/\.pad-grid--acl \.key-num\s*\{\s*font-size:\s*var\(--fs-entry-num-acl\)/);
+    for (const token of ['--fs-entry-num-acl']) {
+      const declarations = [...css.matchAll(new RegExp(`${token}:\\s*([^;]+);`, 'g'))];
+      // One default and one phone override.
+      expect(declarations.length).toBe(2);
+    }
   });
 });

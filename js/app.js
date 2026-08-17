@@ -602,7 +602,7 @@ const MENU = {
   history: () => showScreen('history'),
   baggers: () => showScreen('baggers'),
   players: () => showScreen('players'),
-  tournament: () => { window.location.href = '../../quickbracket/index.html'; },
+  tournament: () => { window.location.href = '../quickbracket/index.html'; },
   teams: openTeamsModal,
   colors: openColorsModal,
   target: openTargetModal,

@@ -1,10 +1,11 @@
-/* QuickCorn 2
+/* QuickCorn
    ---------------------------------------------------------------------------
    One stylesheet, one breakpoint.
 
-   QuickCorn 1 set type 66 times across twelve media queries because it was
-   tuned by eye on a phone: each "make it bigger" added another block, and the
-   later ones quietly cancelled the earlier ones. Here every size is a token,
+   The single-file version this replaced set type 66 times across twelve media
+   queries because it was tuned by eye on a phone: each "make it bigger" added
+   another block, and the later ones quietly cancelled the earlier ones. Here
+   every size is a token,
    and the sizes that need to react to a short screen do it with clamp() and
    dvh rather than by stepping at fixed heights.
 

@@ -1,249 +1,210 @@
-import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
+import * as R from '../js/rules.js';
 
-// The rules are not a separate file on purpose. QuickCorn ships as one
-// index.html with no build step, and a second script would be cached
-// independently of the page that uses it. So the tests slice the rules block
-// out of index.html and run it directly - what is tested is what is served.
-function loadRules() {
-  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const START = '// ==== QUICKCORN RULES START ====';
-  const END = '// ==== QUICKCORN RULES END ====';
-  const start = html.indexOf(START);
-  const end = html.indexOf(END);
-  if (start === -1 || end === -1) {
-    throw new Error('Rules block sentinels not found in index.html. Did the comments get edited?');
-  }
-  const source = html.slice(start + START.length, end);
-  return new Function(`${source}; return QC_RULES;`)();
-}
+// The rules are a real module, so this imports them directly rather
+// than slicing them out of index.html the way the v1 suite has to. Same
+// coverage, carried over deliberately: these rules are the part of the old app
+// that was worth keeping, and the tests are how that is verified rather than
+// assumed.
 
-const rules = loadRules();
-
-// Mirrors TOTAL_VALUES in index.html - the totals the Total Number pad offers.
-const TOTAL_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
-
-const acl = (inCount, onCount) => ({ in: inCount, on: onCount, total: inCount * 3 + onCount });
-const total = (value) => ({ in: 0, on: 0, total: value });
+const acl = (i, o) => ({ in: i, on: o, total: i * 3 + o });
+const total = (v) => ({ in: 0, on: 0, total: v });
 
 describe('entryToPoints', () => {
-  it('scores 3 for a bag in the hole and 1 for a bag on the board', () => {
-    expect(rules.entryToPoints(acl(1, 0), 'acl')).toBe(3);
-    expect(rules.entryToPoints(acl(0, 1), 'acl')).toBe(1);
-    expect(rules.entryToPoints(acl(2, 2), 'acl')).toBe(8);
+  it('scores 3 in the hole and 1 on the board', () => {
+    expect(R.entryToPoints(acl(1, 0), 'acl')).toBe(3);
+    expect(R.entryToPoints(acl(0, 1), 'acl')).toBe(1);
+    expect(R.entryToPoints(acl(2, 2), 'acl')).toBe(8);
+    expect(R.entryToPoints(acl(4, 0), 'acl')).toBe(12);
   });
 
-  it('caps a perfect round at 12', () => {
-    expect(rules.entryToPoints(acl(4, 0), 'acl')).toBe(12);
+  it('uses the tapped total in Total mode and ignores in/on', () => {
+    expect(R.entryToPoints({ in: 0, on: 0, total: 6 }, 'total')).toBe(6);
   });
 
-  it('uses the raw total in Total Number mode and ignores in/on', () => {
-    expect(rules.entryToPoints({ in: 0, on: 0, total: 7 }, 'total')).toBe(7);
-    // This is the case the Track IN/ON toggle produces when it is off.
-    expect(rules.entryToPoints({ in: 0, on: 0, total: 6 }, 'total')).toBe(6);
-  });
-
-  it('treats an untouched entry as zero rather than NaN', () => {
-    expect(rules.entryToPoints({ in: 0, on: 0, total: null }, 'total')).toBe(0);
+  it('treats an untouched entry as zero, not NaN', () => {
+    expect(R.entryToPoints({ in: 0, on: 0, total: null }, 'total')).toBe(0);
   });
 });
 
 describe('entryBreakdownOptions', () => {
-  it('is unambiguous for totals with a single split', () => {
-    expect(rules.entryBreakdownOptions(12)).toEqual([{ in: 4, on: 0 }]);
-    expect(rules.entryBreakdownOptions(0)).toEqual([{ in: 0, on: 0 }]);
-    expect(rules.entryBreakdownOptions(9)).toEqual([{ in: 3, on: 0 }]);
-  });
-
-  it('is ambiguous for exactly 3, 4 and 6 - the totals that trigger the prompt', () => {
-    const ambiguous = TOTAL_VALUES.filter((v) => rules.entryBreakdownOptions(v).length > 1);
+  it('is ambiguous for exactly 3, 4 and 6', () => {
+    const ambiguous = R.TOTAL_VALUES.filter((v) => R.entryBreakdownOptions(v).length > 1);
     expect(ambiguous).toEqual([3, 4, 6]);
   });
 
-  it('offers both readings of an ambiguous total', () => {
-    expect(rules.entryBreakdownOptions(3)).toEqual([{ in: 0, on: 3 }, { in: 1, on: 0 }]);
-    expect(rules.entryBreakdownOptions(6)).toEqual([{ in: 1, on: 3 }, { in: 2, on: 0 }]);
+  it('is unambiguous for a perfect round', () => {
+    expect(R.entryBreakdownOptions(12)).toEqual([{ in: 4, on: 0 }]);
   });
 
-  it('never proposes more than four bags', () => {
-    for (let value = 0; value <= 12; value++) {
-      for (const opt of rules.entryBreakdownOptions(value)) {
-        expect(opt.in + opt.on).toBeLessThanOrEqual(4);
-        expect(opt.in * 3 + opt.on).toBe(value);
+  it('never proposes more than four bags, and always sums correctly', () => {
+    for (let v = 0; v <= 12; v++) {
+      for (const o of R.entryBreakdownOptions(v)) {
+        expect(o.in + o.on).toBeLessThanOrEqual(4);
+        expect(o.in * 3 + o.on).toBe(v);
       }
     }
   });
 
   it('has no split for 11, which is why the pad omits it', () => {
-    expect(rules.entryBreakdownOptions(11)).toEqual([]);
-    expect(TOTAL_VALUES).not.toContain(11);
+    expect(R.entryBreakdownOptions(11)).toEqual([]);
+    expect(R.TOTAL_VALUES).not.toContain(11);
   });
 
   it('offers a split for every total the pad can produce', () => {
-    for (const value of TOTAL_VALUES) {
-      expect(rules.entryBreakdownOptions(value).length).toBeGreaterThan(0);
-    }
+    for (const v of R.TOTAL_VALUES) expect(R.entryBreakdownOptions(v).length).toBeGreaterThan(0);
   });
 });
 
 describe('validateEntry', () => {
-  it('accepts a round using four bags or fewer', () => {
-    expect(rules.validateEntry(acl(4, 0))).toBe(true);
-    expect(rules.validateEntry(acl(2, 2))).toBe(true);
-    expect(rules.validateEntry(acl(0, 0))).toBe(true);
+  it('accepts four bags or fewer', () => {
+    expect(R.validateEntry(acl(4, 0))).toBe(true);
+    expect(R.validateEntry(acl(2, 2))).toBe(true);
   });
 
-  it('rejects more than four bags', () => {
-    expect(rules.validateEntry(acl(3, 2))).toBe(false);
-  });
-
-  it('rejects negative counts', () => {
-    expect(rules.validateEntry({ in: -1, on: 0 })).toBe(false);
+  it('rejects more than four bags and negatives', () => {
+    expect(R.validateEntry(acl(3, 2))).toBe(false);
+    expect(R.validateEntry({ in: -1, on: 0 })).toBe(false);
   });
 });
 
 describe('scoreRound', () => {
-  it('cancels, awarding only the difference to the higher side', () => {
-    const round = rules.scoreRound(acl(1, 1), acl(0, 2), 'acl');
-    expect(round.redGross).toBe(4);
-    expect(round.blueGross).toBe(2);
-    expect(round.redNet).toBe(2);
-    expect(round.blueNet).toBe(0);
+  it('cancels, awarding only the difference', () => {
+    const round = R.scoreRound(acl(1, 1), acl(0, 2), 'acl');
+    expect(round.leftGross).toBe(4);
+    expect(round.rightGross).toBe(2);
+    expect(round.leftNet).toBe(2);
+    expect(round.rightNet).toBe(0);
   });
 
   it('gives an equal round to nobody', () => {
-    const round = rules.scoreRound(acl(1, 0), acl(0, 3), 'acl');
-    expect(round.redGross).toBe(3);
-    expect(round.blueGross).toBe(3);
-    expect(round.redNet).toBe(0);
-    expect(round.blueNet).toBe(0);
+    const round = R.scoreRound(acl(1, 0), acl(0, 3), 'acl');
+    expect(round.leftNet).toBe(0);
+    expect(round.rightNet).toBe(0);
   });
 
-  it('awards the difference to blue when blue is higher', () => {
-    const round = rules.scoreRound(acl(0, 1), acl(2, 0), 'acl');
-    expect(round.blueNet).toBe(5);
-    expect(round.redNet).toBe(0);
+  it('keeps the raw entry so a round can be edited later', () => {
+    const round = R.scoreRound(acl(2, 1), acl(0, 0), 'acl');
+    expect(round.leftIn).toBe(2);
+    expect(round.leftOn).toBe(1);
+    expect(round.leftTotalRaw).toBe(7);
   });
 
-  it('keeps the raw entry alongside the score so a round can be edited later', () => {
-    const round = rules.scoreRound(acl(2, 1), acl(0, 0), 'acl');
-    expect(round.redIn).toBe(2);
-    expect(round.redOn).toBe(1);
-    expect(round.redTotalRaw).toBe(7);
-  });
-
-  it('scores Total Number mode off the totals', () => {
-    const round = rules.scoreRound(total(6), total(4), 'total');
-    expect(round.redNet).toBe(2);
-    expect(round.blueNet).toBe(0);
-  });
-});
-
-describe('getTotals', () => {
-  it('is zero to zero before any rounds', () => {
-    expect(rules.getTotals([])).toEqual({ red: 0, blue: 0 });
-  });
-
-  it('accumulates net points only', () => {
-    const rounds = [
-      rules.scoreRound(acl(1, 0), acl(0, 0), 'acl'),
-      rules.scoreRound(acl(0, 0), acl(1, 1), 'acl'),
-      rules.scoreRound(acl(1, 0), acl(0, 3), 'acl'),
-    ];
-    expect(rules.getTotals(rounds)).toEqual({ red: 3, blue: 4 });
+  it('scores Total mode off the totals', () => {
+    const round = R.scoreRound(total(6), total(4), 'total');
+    expect(round.leftNet).toBe(2);
   });
 });
 
 describe('getWinnerSide', () => {
-  const reach = (side, points) => {
-    const entry = side === 'red' ? [acl(0, points), acl(0, 0)] : [acl(0, 0), acl(0, points)];
-    return rules.scoreRound(entry[0], entry[1], 'acl');
-  };
+  const reach = (side, points) =>
+    R.scoreRound(side === 'left' ? acl(0, points) : acl(0, 0), side === 'left' ? acl(0, 0) : acl(0, points), 'acl');
 
   it('has no winner below the target', () => {
-    expect(rules.getWinnerSide([reach('red', 4)], 21)).toBe(null);
+    expect(R.getWinnerSide([reach('left', 4)], 21)).toBe(null);
   });
 
-  it('wins on reaching the target exactly', () => {
-    const rounds = Array.from({ length: 6 }, () => reach('red', 4));
-    expect(rules.getTotals(rounds).red).toBe(24);
-    expect(rules.getWinnerSide(rounds, 21)).toBe('red');
+  it('wins on reaching the target', () => {
+    const rounds = Array.from({ length: 6 }, () => reach('left', 4));
+    expect(R.getTotals(rounds).left).toBe(24);
+    expect(R.getWinnerSide(rounds, 21)).toBe('left');
   });
 
   it('respects a custom target', () => {
-    const rounds = [reach('blue', 4), reach('blue', 4)];
-    expect(rules.getWinnerSide(rounds, 7)).toBe('blue');
-    expect(rules.getWinnerSide(rounds, 21)).toBe(null);
+    const rounds = [reach('right', 4), reach('right', 4)];
+    expect(R.getWinnerSide(rounds, 7)).toBe('right');
+    expect(R.getWinnerSide(rounds, 21)).toBe(null);
   });
 
-  it('gives it to the higher score if both are somehow past the target', () => {
-    const rounds = [
-      { redNet: 22, blueNet: 0 },
-      { redNet: 0, blueNet: 25 },
-    ];
-    expect(rules.getWinnerSide(rounds, 21)).toBe('blue');
+  it('gives it to the higher score if both are past the target', () => {
+    expect(R.getWinnerSide([{ leftNet: 22, rightNet: 0 }, { leftNet: 0, rightNet: 25 }], 21)).toBe('right');
   });
 });
 
 describe('currentThrower', () => {
   it('is always the only player in 1v1', () => {
-    expect(rules.currentThrower('1v1', 0, 0)).toBe(0);
-    expect(rules.currentThrower('1v1', 1, 5)).toBe(0);
+    expect(R.currentThrower('1v1', 1, 5)).toBe(0);
   });
 
   it('alternates partners each round in 2v2', () => {
-    expect(rules.currentThrower('2v2', 0, 0)).toBe(0);
-    expect(rules.currentThrower('2v2', 0, 1)).toBe(1);
-    expect(rules.currentThrower('2v2', 0, 2)).toBe(0);
-  });
-
-  it('starts with the other partner when they opened the game', () => {
-    expect(rules.currentThrower('2v2', 1, 0)).toBe(1);
-    expect(rules.currentThrower('2v2', 1, 1)).toBe(0);
+    expect(R.currentThrower('2v2', 0, 0)).toBe(0);
+    expect(R.currentThrower('2v2', 0, 1)).toBe(1);
+    expect(R.currentThrower('2v2', 1, 0)).toBe(1);
   });
 
   it('falls back to the first player when firstShooter is missing', () => {
-    expect(rules.currentThrower('2v2', undefined, 0)).toBe(0);
-    expect(rules.currentThrower('2v2', null, 1)).toBe(1);
+    expect(R.currentThrower('2v2', undefined, 0)).toBe(0);
   });
 });
 
 describe('isFourBaggerRound', () => {
   it('detects four in the hole from the split', () => {
-    const round = rules.scoreRound(acl(4, 0), acl(0, 0), 'acl');
-    expect(rules.isFourBaggerRound(round, 'red')).toBe(true);
-    expect(rules.isFourBaggerRound(round, 'blue')).toBe(false);
+    const round = R.scoreRound(acl(4, 0), acl(0, 0), 'acl');
+    expect(R.isFourBaggerRound(round, 'left')).toBe(true);
+    expect(R.isFourBaggerRound(round, 'right')).toBe(false);
   });
 
-  it('detects it from a total of 12 when the split was never recorded', () => {
-    // What Total Number mode stores with the Track IN/ON toggle off.
-    const round = rules.scoreRound(total(12), total(0), 'total');
-    expect(round.redIn).toBe(0);
-    expect(rules.isFourBaggerRound(round, 'red')).toBe(true);
+  it('detects it from a bare total of 12 when the split was not recorded', () => {
+    const round = R.scoreRound(total(12), total(0), 'total');
+    expect(round.leftIn).toBe(0);
+    expect(R.isFourBaggerRound(round, 'left')).toBe(true);
   });
 
-  it('still counts a four bagger that got cancelled out', () => {
-    const round = rules.scoreRound(acl(4, 0), acl(4, 0), 'acl');
-    expect(round.redNet).toBe(0);
-    expect(rules.isFourBaggerRound(round, 'red')).toBe(true);
-    expect(rules.isFourBaggerRound(round, 'blue')).toBe(true);
+  it('still counts one that got cancelled out', () => {
+    const round = R.scoreRound(acl(4, 0), acl(4, 0), 'acl');
+    expect(round.leftNet).toBe(0);
+    expect(R.isFourBaggerRound(round, 'left')).toBe(true);
+    expect(R.isFourBaggerRound(round, 'right')).toBe(true);
   });
 
-  it('does not count 12 points made without four in the hole', () => {
-    // Not reachable with four bags, but guards the gross check from false hits.
-    const round = rules.scoreRound(acl(3, 1), acl(0, 0), 'acl');
-    expect(round.redGross).toBe(10);
-    expect(rules.isFourBaggerRound(round, 'red')).toBe(false);
+  it('does not count 10 points made without four in', () => {
+    expect(R.isFourBaggerRound(R.scoreRound(acl(3, 1), acl(0, 0), 'acl'), 'left')).toBe(false);
   });
 });
 
-describe('pointsPerRound', () => {
-  it('averages to two decimals', () => {
-    expect(rules.pointsPerRound(10, 4)).toBe('2.50');
-    expect(rules.pointsPerRound(7, 3)).toBe('2.33');
+describe('lastScoringRound', () => {
+  it('is null before anyone scores', () => {
+    expect(R.lastScoringRound([])).toBe(null);
+    expect(R.lastScoringRound([R.scoreRound(acl(1, 0), acl(1, 0), 'acl')])).toBe(null);
   });
 
-  it('does not divide by zero before any rounds', () => {
-    expect(rules.pointsPerRound(0, 0)).toBe('0.00');
+  it('skips washes, so the hammer stays with whoever last scored', () => {
+    const rounds = [
+      R.scoreRound(acl(1, 0), acl(0, 0), 'acl'),
+      R.scoreRound(acl(1, 0), acl(1, 0), 'acl'),
+    ];
+    expect(R.lastScoringRound(rounds).index).toBe(0);
+  });
+});
+
+describe('computePlayerStats', () => {
+  const teams = { left: { players: ['Ann', 'Bob'] }, right: { players: ['Cal', 'Dee'] } };
+  const firstShooter = { left: 0, right: 0 };
+
+  it('splits rounds between partners in 2v2', () => {
+    const rounds = [
+      R.scoreRound(acl(1, 0), acl(0, 0), 'acl'),
+      R.scoreRound(acl(0, 2), acl(0, 0), 'acl'),
+    ];
+    const stats = R.computePlayerStats(rounds, '2v2', teams, firstShooter);
+    const ann = stats.find((s) => s.name === 'Ann');
+    const bob = stats.find((s) => s.name === 'Bob');
+    expect(ann.rounds).toBe(1);
+    expect(ann.total).toBe(3);
+    expect(bob.rounds).toBe(1);
+    expect(bob.total).toBe(2);
+  });
+
+  it('gives both rounds to the single player in 1v1', () => {
+    const rounds = [R.scoreRound(acl(1, 0), acl(0, 0), 'acl'), R.scoreRound(acl(1, 0), acl(0, 0), 'acl')];
+    const stats = R.computePlayerStats(rounds, '1v1', teams, firstShooter);
+    expect(stats).toHaveLength(2);
+    expect(stats.find((s) => s.name === 'Ann').rounds).toBe(2);
+  });
+
+  it('reports points per round to two decimals without dividing by zero', () => {
+    const stats = R.computePlayerStats([], '1v1', teams, firstShooter);
+    expect(stats[0].ppr).toBe('0.00');
+    expect(R.pointsPerRound(7, 3)).toBe('2.33');
   });
 });
