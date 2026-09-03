@@ -28,6 +28,15 @@ describe('game screen rows', () => {
     expect(order).toEqual(['teams', 'scores', 'nextup', 'pads', 'rounds']);
   });
 
+  it('orders the bottom block submit, rounds, then the mode switch', () => {
+    // Reordered in the markup rather than with column-reverse, so reading order
+    // and tab order match what is on the screen.
+    const block = html.slice(html.indexOf('<div class="rounds">'));
+    const inner = block.slice(0, block.indexOf('</section>'));
+    const order = [...inner.matchAll(/<div class="(actions|rounds-strip|modes)[" ]/g)].map((m) => m[1]);
+    expect(order).toEqual(['actions', 'rounds-strip', 'modes']);
+  });
+
   it('makes the pads the flexible row and leaves the rest to their content', () => {
     const rows = ruleBody('#screen-game').match(/grid-template-rows:\s*([^;]+);/)[1].trim();
     // teams, scores, nextup, PADS, rounds

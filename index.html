@@ -21,7 +21,7 @@
      file, and because that file could be cached separately from the page using
      it, the app reported a version whose code was not running. The update check
      polls this document and reads this same line. */
-  window.APP_VERSION = '2026.08.16.17';
+  window.APP_VERSION = '2026.08.16.18';
 </script>
 </head>
 <body>
@@ -102,14 +102,14 @@
     </div>
 
     <div class="rounds">
-      <div class="modes">
-        <button class="mode-btn" data-scoring="acl" aria-pressed="false">IN and ON</button>
-        <button class="mode-btn" data-scoring="total" aria-pressed="false">Total</button>
-      </div>
-      <div class="rounds-strip" id="rounds-strip"></div>
       <div class="actions">
         <button class="btn btn--primary" id="submit-btn">SUBMIT</button>
         <button class="btn" id="clear-btn">Clear</button>
+      </div>
+      <div class="rounds-strip" id="rounds-strip"></div>
+      <div class="modes">
+        <button class="mode-btn" data-scoring="acl" aria-pressed="false">IN and ON</button>
+        <button class="mode-btn" data-scoring="total" aria-pressed="false">Total</button>
       </div>
     </div>
   </section>
