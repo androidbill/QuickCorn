@@ -570,10 +570,14 @@ button { cursor: pointer; border: 0; background: none; }
 
 /* ---------------------------------------------------------------- toast */
 
+/* The bottom inset for the same reason the header needs the top one: installed,
+   the viewport covers the whole screen and the gesture bar sits over the bottom
+   of it. At 8px clearance the prompt - the one thing asking to be tapped - had
+   its lower edge under that bar. */
 .toast {
   position: fixed;
   left: 50%;
-  bottom: var(--gap-4);
+  bottom: max(var(--gap-4), env(safe-area-inset-bottom));
   transform: translateX(-50%);
   width: min(calc(100% - 24px), 480px);
   display: grid;

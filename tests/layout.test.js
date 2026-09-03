@@ -132,6 +132,12 @@ describe('the shell matches the height that is actually on screen', () => {
     expect(body).toMatch(/Math\.min\(inner, visual\)/);
   });
 
+  it('keeps the update prompt clear of the gesture bar', () => {
+    // It is the one thing on screen asking to be tapped, and installed it sat
+    // 8px off the bottom with the gesture bar over that.
+    expect(ruleBody('.toast')).toMatch(/bottom:\s*max\(.*safe-area-inset-bottom/);
+  });
+
   it('leaves room for the status bar once installed', () => {
     // viewport-fit=cover means the viewport covers the whole screen in
     // standalone, and the status bar sits over the top of it.
